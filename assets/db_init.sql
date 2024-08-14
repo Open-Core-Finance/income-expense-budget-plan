@@ -1,0 +1,12 @@
+CREATE TABLE IF NOT EXISTS assets(uid TEXT PRIMARY KEY, name TEXT, description TEXT, available_amount REAL, loan_amount REAL, deposit_amount REAL, credit_limit REAL, currency_uid TEXT);
+CREATE TABLE IF NOT EXISTS settings(id Integer PRIMARY KEY, locale TEXT, dark_mode Integer);
+CREATE TABLE IF NOT EXISTS currency(uid TEXT PRIMARY KEY, name TEXT, iso TEXT, deleted Integer, symbol TEXT, symbol_position TEXT, main_currency Integer, show Integer, decimal_point Inetger);
+CREATE TABLE IF NOT EXISTS assets_category(uid TEXT PRIMARY KEY, name TEXT, icon TEXT, system Integer, localize_names TEXT);
+CREATE TABLE IF NOT EXISTS transaction_category(uid TEXT PRIMARY KEY, name TEXT, icon TEXT, parent_uid TEXT, transaction_type TEXT, system Integer, localize_names TEXT);
+
+INSERT OR IGNORE INTO assets_category (uid, name, icon, "system", localize_names) VALUES('20240814-1000-8113-8670-ad6c80632fd4', 'Cash', '{"codePoint":63722,"fontFamily":"CupertinoIcons","fontPackage":"cupertino_icons","matchTextDirection":false}', 1, '{"en":"Cash","vi":"Tiền mặt"}');
+INSERT OR IGNORE INTO assets_category (uid, name, icon, "system", localize_names) VALUES('20240814-1016-8412-a943-a2e9d6ba37c9', 'Bank account', '{"codePoint":63178,"fontFamily":"CupertinoIcons","fontPackage":"cupertino_icons","matchTextDirection":false}', 1, '{"en":"Bank account","vi":"Tài khoản ngân hàng"}');
+INSERT OR IGNORE INTO assets_category (uid, name, icon, "system", localize_names) VALUES('20240814-1025-8e05-9011-a6fed676958f', 'Credit card', '{"codePoint":57759,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}', 1, '{"en":"Credit card","vi":"Thẻ tín dụng"}');
+INSERT OR IGNORE INTO assets_category (uid, name, icon, "system", localize_names) VALUES('20240814-1025-8e36-8674-8810941636df', 'E-Wallet', '{"codePoint":57409,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}', 1, '{"en":"E-Wallet","vi":"Ví điện tử"}');
+INSERT OR IGNORE INTO assets_category (uid, name, icon, "system", localize_names) VALUES('20240814-1026-8e32-a113-ce2ffa4f9305', 'Loan', '{"codePoint":58361,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}', 1, '{"en":"Loan","vi":"Khoản vay"}');
+INSERT OR IGNORE INTO assets_category (uid, name, icon, "system", localize_names) VALUES('20240814-1027-8317-9580-ef12a94c7312', 'Other', '{"codePoint":57842,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}', 1, '{"en":"Other","vi":"Tài khoản khác"}');
