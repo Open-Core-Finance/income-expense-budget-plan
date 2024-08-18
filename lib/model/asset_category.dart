@@ -10,11 +10,28 @@ class AssetCategory extends GenericModel<String> {
   String name;
   bool system = false;
   Map<String, String> localizeNames = {};
+  int positionIndex = 0;
+  late DateTime lastUpdated;
 
-  AssetCategory({required super.id, required this.icon, required this.name, bool? system, Map<String, String>? localizeNames}) {
+  AssetCategory(
+      {required super.id,
+      required this.icon,
+      required this.name,
+      bool? system,
+      Map<String, String>? localizeNames,
+      DateTime? updatedDateTime,
+      int? index}) {
     this.system = system == true;
     if (localizeNames != null) {
       this.localizeNames = localizeNames;
+    }
+    if (updatedDateTime == null) {
+      lastUpdated = DateTime.now();
+    } else {
+      lastUpdated = updatedDateTime!;
+    }
+    if (index != null) {
+      positionIndex = index;
     }
   }
 
@@ -26,7 +43,9 @@ class AssetCategory extends GenericModel<String> {
       'name': name,
       'icon': icon != null ? Util().iconDataToJSONString(icon!) : "",
       'system': system ? 1 : 0,
-      'localize_names': jsonEncode(localizeNames)
+      'localize_names': jsonEncode(localizeNames),
+      'position_index': positionIndex,
+      'last_updated': lastUpdated.millisecondsSinceEpoch
     };
   }
 
@@ -34,7 +53,8 @@ class AssetCategory extends GenericModel<String> {
   // each Assets when using the print statement.
   @override
   String toString() {
-    return '{"${idFieldName()}": "$id", "name": "$name", "icon": ${Util().iconDataToJSONString(icon)},"system": $system, "localizeNames": ${jsonEncode(localizeNames)}}';
+    return '{"${idFieldName()}": "$id", "name": "$name", "icon": ${Util().iconDataToJSONString(icon)},"system": $system, "localizeNames": ${jsonEncode(localizeNames)},'
+        '"positionIndex": $positionIndex, "lastUpdated": "${lastUpdated.toIso8601String()}"}';
   }
 
   factory AssetCategory.fromMap(Map<String, dynamic> json) => AssetCategory(
@@ -43,6 +63,8 @@ class AssetCategory extends GenericModel<String> {
         name: json['name'],
         system: json['system'] == 1,
         localizeNames: Util().fromLocalizeDbField(jsonDecode(json['localize_names'])),
+        index: json['position_index'],
+        updatedDateTime: DateTime.fromMicrosecondsSinceEpoch(json['last_updated']),
       );
 
   @override

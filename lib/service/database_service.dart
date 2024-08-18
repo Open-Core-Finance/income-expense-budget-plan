@@ -91,8 +91,8 @@ class DatabaseService {
     return [for (Map<String, Object?> record in dataMap) convert(record)];
   }
 
-  void deleteItemByField(
-      BuildContext context, String fieldName, dynamic fieldValue, Function(String) successLocalize, Function(String) errorLocalize,
+  void deleteItemByField(BuildContext context, String tableName, String fieldName, dynamic fieldValue, Function(String) successLocalize,
+      Function(String) errorLocalize,
       {String Function()? retrieveItemDisplay,
       Function? onComplete,
       Function? onSuccess,
@@ -108,14 +108,10 @@ class DatabaseService {
       closeErrorCallback = () => Navigator.of(context).pop();
     }
     database.then((db) {
-      db.delete(
-        tableNameAssetsCategory,
-        where: '$fieldName = ?',
-        whereArgs: [fieldValue],
-      ).then((deletedCount) {
+      db.delete(tableName, where: '$fieldName = ?', whereArgs: [fieldValue]).then((deletedCount) {
         if (onComplete != null) onComplete();
         if (kDebugMode) {
-          print("Deleted $deletedCount AssetCategory in table $tableNameAssetsCategory");
+          print("Deleted $deletedCount records in table $tableName");
         }
         if (retrieveItemDisplay != null) {
           if (deletedCount <= 0) {
@@ -125,14 +121,14 @@ class DatabaseService {
           }
         }
         if (onSuccess != null) onSuccess();
-      }, onError: (e) {
+      }, onError: (e, f) {
         throw e;
-      }).catchError((e) {
+      }).catchError((e, f) {
         if (onComplete != null) onComplete();
         if (retrieveItemDisplay != null) {
           Util().showErrorDialog(context, errorLocalize(retrieveItemDisplay()), closeErrorCallback);
         }
-        if (onError != null) onError();
+        if (onError != null) onError(e, f);
       });
     });
   }

@@ -49,10 +49,11 @@ class _AssetsCategoriesPanelState extends State<AssetsCategoriesPanel> {
         child: const Icon(Icons.add),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      body: ListView(
+      body: ReorderableListView(
         children: <Widget>[
           for (AssetCategory category in appState.systemAssetCategories)
             ListTile(
+              key: ValueKey(category),
               leading: Icon(category.icon, color: theme.iconTheme.color), // Icon on the left
               title: Text(category.localizeNames[currentAppState.systemSettings.locale?.languageCode]?.isNotEmpty == true
                   ? category.localizeNames[currentAppState.systemSettings.locale!.languageCode]!
@@ -64,6 +65,7 @@ class _AssetsCategoriesPanelState extends State<AssetsCategoriesPanel> {
               onTap: () => Util().navigateTo(context, AddAssetsCategoryPanel(editingCategory: category)),
             ),
         ],
+        onReorder: (oldIndex, newIndex) => appState.reOrderAssetCategory(oldIndex, newIndex),
       ),
       bottomNavigationBar: SizedBox(
         height: 40,
@@ -73,21 +75,19 @@ class _AssetsCategoriesPanelState extends State<AssetsCategoriesPanel> {
   }
 
   void _showRemoveDialog(BuildContext context, AssetCategory category) {
-    Util().showRemoveDialogByField(
-      context,
-      category,
-      titleLocalize: AppLocalizations.of(context)!.accountCategoryDeleteDialogTitle,
-      confirmLocalize: AppLocalizations.of(context)!.accountCategoryDeleteConfirm,
-      successLocalize: AppLocalizations.of(context)!.accountCategoryDeleteSuccess,
-      errorLocalize: AppLocalizations.of(context)!.accountCategoryDeleteError,
-      onSuccess: () => Util().refreshSystemAssetCategory(() => setState(() {})),
-    );
+    Util().showRemoveDialogByField(context, category,
+        tableName: tableNameAssetsCategory,
+        titleLocalize: AppLocalizations.of(context)!.accountCategoryDeleteDialogTitle,
+        confirmLocalize: AppLocalizations.of(context)!.accountCategoryDeleteConfirm,
+        successLocalize: AppLocalizations.of(context)!.accountCategoryDeleteSuccess,
+        errorLocalize: AppLocalizations.of(context)!.accountCategoryDeleteError,
+        onSuccess: () => Util().refreshSystemAssetCategory(() => setState(() {})));
   }
 }
 
 class AddAssetsCategoryPanel extends StatefulWidget {
-  AssetCategory? editingCategory;
-  AddAssetsCategoryPanel({super.key, this.editingCategory});
+  final AssetCategory? editingCategory;
+  const AddAssetsCategoryPanel({super.key, this.editingCategory});
 
   @override
   State<AddAssetsCategoryPanel> createState() => _AddAssetsCategoryPanelState();
@@ -222,7 +222,7 @@ class _AddAssetsCategoryPanelState extends State<AddAssetsCategoryPanel> {
                           children: [
                             CheckboxListTile(
                               title: Text(AppLocalizations.of(context)!.accountCategoryTurnOnLocalizeNames),
-                              value: state.value,
+                              value: _enableMultiLanguage,
                               onChanged: (value) {
                                 setState(() {
                                   _enableMultiLanguage = value!;
@@ -255,8 +255,9 @@ class _AddAssetsCategoryPanelState extends State<AddAssetsCategoryPanel> {
                         child: TextFormField(
                           obscureText: false,
                           decoration: InputDecoration(
-                              border: const OutlineInputBorder(),
-                              labelText: '${AppLocalizations.of(context)!.accountCategoryName} (${localeMap[entry.key]})'),
+                            border: const OutlineInputBorder(),
+                            labelText: '${AppLocalizations.of(context)!.accountCategoryName} (${localeMap[entry.key]})',
+                          ),
                           controller: entry.value,
                           validator: (value) {
                             return null;
@@ -296,7 +297,7 @@ class _AddAssetsCategoryPanelState extends State<AddAssetsCategoryPanel> {
       _isChecking = true;
       _isValidCategoryName = true;
     });
-    var future = AssetsDao().loadCategoryByNameAndIgnoreSpecificCategory(_categoryNameController.text, widget.editingCategory?.id);
+    var future = AssetsDao().loadCategoryByNameAndIgnoreSpecificCategory(_categoryNameController.text, _editingCategory?.id);
     future.then((List<Map<String, dynamic>> data) {
       setState(() {
         _isChecking = false;
@@ -327,7 +328,12 @@ class _AddAssetsCategoryPanelState extends State<AddAssetsCategoryPanel> {
         });
       } else {
         AssetCategory assetCategory = AssetCategory(
-            id: const UuidV8().generate(), icon: _selectedIcon, name: _categoryNameController.text, localizeNames: localizeMap);
+          id: const UuidV8().generate(),
+          icon: _selectedIcon,
+          name: _categoryNameController.text,
+          localizeNames: localizeMap,
+          index: appState.systemAssetCategories.length,
+        );
         DatabaseService().database.then((db) {
           db.insert(tableNameAssetsCategory, assetCategory.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
           setState(() {

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:income_expense_budget_plan/common/assets_categories_panel.dart';
 import 'package:income_expense_budget_plan/common/transaction_categories_panel.dart';
@@ -19,8 +20,6 @@ class MorePanel extends StatefulWidget {
 class _MorePanelState extends State<MorePanel> {
   @override
   Widget build(BuildContext context) {
-    final String accountCategoryLabel = AppLocalizations.of(context)!.menuAccountCategory;
-    final String incomeCategoryLabel = AppLocalizations.of(context)!.menuIncomeCategory;
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
     return ListView(
@@ -37,28 +36,55 @@ class _MorePanelState extends State<MorePanel> {
           iconColor: colorScheme.primary,
         ),
         ListTile(
-          title: Text(accountCategoryLabel),
+          title: Text(AppLocalizations.of(context)!.menuAccountCategory),
           onTap: () {
             Util().navigateTo(context, const AssetsCategoriesPanel());
           },
           iconColor: colorScheme.primary,
         ),
         ListTile(
-          title: Text(incomeCategoryLabel),
+          title: Text(AppLocalizations.of(context)!.menuExpenseCategory),
           onTap: () {
-            var txnType = TransactionType.income;
+            var txnType = TransactionType.expense;
             TransactionDao().transactionCategoryByType(txnType).then((List<TransactionCategory> loadCats) {
               var categories = Util().buildTransactionCategoryTree(loadCats);
-              var listPanelTitle = AppLocalizations.of(context)!.menuIncomeCategory;
-              var addPanelTitle = AppLocalizations.of(context)!.titleAddIncomeCategory;
+              if (kDebugMode) {
+                print("Final list expense categories $categories");
+              }
               var model = TransactionCategoriesListenable(transactionType: txnType, categories: categories);
               Util().navigateTo(
                 context,
                 ChangeNotifierProvider(
                   create: (context) => model,
+                  builder: (context, child) => child!,
                   child: TransactionCategoriesPanel(
-                    listPanelTitle: listPanelTitle,
-                    addPanelTitle: addPanelTitle,
+                    listPanelTitle: AppLocalizations.of(context)!.menuExpenseCategory,
+                    addPanelTitle: AppLocalizations.of(context)!.titleAddExpenseCategory,
+                  ),
+                ),
+              );
+            });
+          },
+          iconColor: colorScheme.primary,
+        ),
+        ListTile(
+          title: Text(AppLocalizations.of(context)!.menuIncomeCategory),
+          onTap: () {
+            var txnType = TransactionType.income;
+            TransactionDao().transactionCategoryByType(txnType).then((List<TransactionCategory> loadCats) {
+              var categories = Util().buildTransactionCategoryTree(loadCats);
+              if (kDebugMode) {
+                print("Final list income categories $categories");
+              }
+              var model = TransactionCategoriesListenable(transactionType: txnType, categories: categories);
+              Util().navigateTo(
+                context,
+                ChangeNotifierProvider(
+                  create: (context) => model,
+                  builder: (context, child) => child!,
+                  child: TransactionCategoriesPanel(
+                    listPanelTitle: AppLocalizations.of(context)!.menuIncomeCategory,
+                    addPanelTitle: AppLocalizations.of(context)!.titleAddIncomeCategory,
                   ),
                 ),
               );
@@ -84,7 +110,7 @@ class _MorePanelState extends State<MorePanel> {
                     title: Text(localeMap[localeConfig.key]!),
                     onTap: () {
                       currentAppState.systemSettings.locale = Locale(localeConfig.key);
-                      // currentAppState.notifyListeners();
+                      currentAppState.triggerNotify();
                       Navigator.of(context).pop();
                     },
                   )

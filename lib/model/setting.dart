@@ -27,7 +27,7 @@ class SettingModel extends ChangeNotifier {
     DatabaseService().database.then((Database db) {
       db.insert(tableNameSettings, toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
     });
-    currentAppState.notifyListeners();
+    notifyListeners();
   }
 
   set darkMode(int darkMode) {
@@ -35,7 +35,7 @@ class SettingModel extends ChangeNotifier {
     DatabaseService().database.then((Database db) {
       db.insert(tableNameSettings, toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
     });
-    currentAppState.notifyListeners();
+    notifyListeners();
   }
 
   String get currentLanguageText => localeMap[_locale?.languageCode] ?? 'English';
