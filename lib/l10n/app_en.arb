@@ -1,17 +1,16 @@
 {
   "appTitle": "Income Expense Budget Planing",
-  "@appTitle": {
-    "description": "The main title of the application"
-  },
   "navReport": "Report",
   "navHistory": "History",
   "navAccount": "Account",
   "navMore": "More",
   "menuAccountCategory": "Account category",
   "menuIncomeCategory": "Income category",
+  "menuExpenseCategory": "Expense category",
   "titleAccount": "Accounts",
   "titleAddAccountCategory": "Add account category",
   "titleAddIncomeCategory": "Add income category",
+  "titleAddExpenseCategory": "Add expense category",
   "titleError": "Error",
   "titleSuccess": "Success",
   "settingsDarkModeDark": "Dark mode",
@@ -36,6 +35,12 @@
   "transactionCategoryActionSelectIcon": "Select icon",
   "transactionCategoryValidateNameExisted": "Category name already existed!",
   "transactionCategoryValidateNameEmpty": "Please input category name!",
+  "transactionCategoryDeleteDialogTitle": "Confirm to delete category \"{categoryName}\"",
+  "transactionCategoryDeleteConfirm": "Are you sure to delete category \"{categoryName}\"?",
+  "transactionCategoryDeleteError": "Deleting category \"{categoryName}\" fail!",
+  "transactionCategoryDeleteSuccess": "Deleting category \"{categoryName}\" success!",
+  "transactionCategoryTurnOnLocalizeNames":  "Turn on multi-language support",
+  "transactionCategoryDragToInvalidTarget": "Only allow drag and drop between 2 categories with the same parent!",
   "actionConfirm": "Confirm",
   "actionClose": "Close",
   "actionOk": "OK"

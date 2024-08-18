@@ -18,13 +18,12 @@ class TransactionDao {
     return [for (Map<String, Object?> record in result) TransactionCategory.fromMap(record)];
   }
 
-  Future<List<Map<String, dynamic>>> loadCategoryByTransactionTypeAndName(TransactionType transactionType, String name) async {
+  Future<List<Map<String, dynamic>>> loadCategoryByTransactionTypeAndNameAndIgnoreSpecificCategory(
+      TransactionType transactionType, String name, String? uuidToIgnore) async {
     final db = await databaseService.database;
-    List<Map<String, dynamic>> result = await db.query(
-      tableNameTransactionCategory,
-      where: 'transaction_type = ? and name = ?',
-      whereArgs: [transactionType.name, name],
-    );
+    List<Map<String, dynamic>> result = await db.query(tableNameTransactionCategory,
+        where: 'transaction_type = ? and name = ?${uuidToIgnore != null ? ' and uid != ?' : ''}',
+        whereArgs: uuidToIgnore != null ? [transactionType.name, name, uuidToIgnore] : [transactionType.name, name]);
     return result;
   }
 }
