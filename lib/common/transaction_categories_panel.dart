@@ -6,7 +6,7 @@ import 'package:income_expense_budget_plan/common/transaction_category_tree.dart
 import 'package:income_expense_budget_plan/dao/transaction_dao.dart';
 import 'package:income_expense_budget_plan/model/transaction_category.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
-import 'package:income_expense_budget_plan/service/category_util.dart';
+import 'package:income_expense_budget_plan/service/form_util.dart';
 import 'package:income_expense_budget_plan/service/database_service.dart';
 import 'package:income_expense_budget_plan/service/util.dart';
 import 'package:provider/provider.dart';
@@ -48,7 +48,6 @@ class _TransactionCategoriesPanelState extends State<TransactionCategoriesPanel>
         addPanelTitle: _addPanelTitle);
     if (kDebugMode) {
       print("Body $body with categories ${transactionCategories.categories.length}\n");
-      print("Categories: ${transactionCategories.categories}\n");
     }
     return Scaffold(
       appBar: AppBar(
@@ -147,197 +146,173 @@ class _AddTransactionCategoryPanelState extends State<AddTransactionCategoryPane
           key: _formKey,
           child: Padding(
             padding: const EdgeInsets.all(5.0),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    const SizedBox(width: 10),
-                    Text(AppLocalizations.of(context)!.transactionCategoryActionSelectIcon),
-                    IconButton(
-                      onPressed: () {
-                        showIconPicker(context, iconPackModes: [
-                          IconPack.cupertino,
-                          IconPack.allMaterial,
-                          IconPack.custom,
-                          IconPack.fontAwesomeIcons,
-                          IconPack.lineAwesomeIcons
-                        ]).then((IconData? iconData) {
-                          if (iconData != null) setState(() => _selectedIcon = iconData);
-                        });
-                      },
-                      icon: Icon(_selectedIcon),
-                      iconSize: 50,
-                      color: theme.iconTheme.color,
-                    )
-                  ],
-                ),
-                Row(
-                  children: [
-                    Flexible(
-                      child: TextFormField(
-                        obscureText: false,
-                        decoration: InputDecoration(
-                          border: const OutlineInputBorder(),
-                          labelText: AppLocalizations.of(context)!.transactionCategoryName,
-                        ),
-                        controller: _categoryNameController,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return AppLocalizations.of(context)!.transactionCategoryValidateNameEmpty;
-                          }
-                          if (!_isValidCategoryName) {
-                            return AppLocalizations.of(context)!.transactionCategoryValidateNameExisted;
-                          }
-                          return null;
+            child: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Row(
+                    children: [
+                      const SizedBox(width: 10),
+                      Text(AppLocalizations.of(context)!.transactionCategoryActionSelectIcon),
+                      IconButton(
+                        onPressed: () {
+                          showIconPicker(context, iconPackModes: [
+                            IconPack.cupertino,
+                            IconPack.allMaterial,
+                            IconPack.custom,
+                            IconPack.fontAwesomeIcons,
+                            IconPack.lineAwesomeIcons
+                          ]).then((IconData? iconData) {
+                            if (iconData != null) setState(() => _selectedIcon = iconData);
+                          });
                         },
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () {
-                        // You can also use the controller to manipulate what is shown in the
-                        // text field. For example, the clear() method removes all the text
-                        // from the text field.
-                        _categoryNameController.clear();
-                      },
-                      icon: const Icon(Icons.clear),
-                      color: theme.colorScheme.error,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    const SizedBox(width: 10),
-                    Text(AppLocalizations.of(context)!.transactionCategoryParent),
-                    const SizedBox(width: 10),
-                    Flexible(
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(0, 0, 100, 0),
-                        child: ElevatedButton(
-                          onPressed: () => _chooseParentCategory(context, transactionCategories),
-                          child: Row(children: _buildParentCategoryDisplay(theme)),
+                        icon: Icon(_selectedIcon),
+                        iconSize: 50,
+                        color: theme.iconTheme.color,
+                      )
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: TextFormField(
+                          obscureText: false,
+                          decoration: InputDecoration(
+                            border: const OutlineInputBorder(),
+                            labelText: AppLocalizations.of(context)!.transactionCategoryName,
+                          ),
+                          controller: _categoryNameController,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return AppLocalizations.of(context)!.transactionCategoryValidateNameEmpty;
+                            }
+                            if (!_isValidCategoryName) {
+                              return AppLocalizations.of(context)!.transactionCategoryValidateNameExisted;
+                            }
+                            return null;
+                          },
                         ),
                       ),
-                    ),
-                    IconButton(
-                      onPressed: () {
-                        setState(() {
-                          _selectedParentCategory = null;
-                        });
-                      },
-                      icon: const Icon(Icons.clear),
-                      color: theme.colorScheme.error,
-                    ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Flexible(
-                      child: FormField<bool>(
-                        initialValue: _enableMultiLanguage,
-                        validator: (value) {
-                          return null;
+                      IconButton(
+                        onPressed: () {
+                          // You can also use the controller to manipulate what is shown in the
+                          // text field. For example, the clear() method removes all the text
+                          // from the text field.
+                          _categoryNameController.clear();
                         },
-                        builder: (FormFieldState<bool> state) {
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              CheckboxListTile(
-                                title: Text(AppLocalizations.of(context)!.transactionCategoryTurnOnLocalizeNames),
-                                value: _enableMultiLanguage,
-                                onChanged: (value) {
-                                  setState(() {
-                                    _enableMultiLanguage = value!;
-                                    if (_enableMultiLanguage) {
-                                      for (var entry in _localizeNamesMap.entries) {
-                                        if (entry.value.text.isEmpty) {
-                                          entry.value.text = _categoryNameController.text;
-                                        }
-                                      }
-                                    }
-                                    state.didChange(value);
-                                  });
-                                },
-                                controlAffinity: ListTileControlAffinity.leading,
-                              ),
-                              if (state.hasError)
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 10.0),
-                                  child: Text(
-                                    state.errorText!,
-                                    style: const TextStyle(color: Colors.red, fontSize: 12),
-                                  ),
-                                ),
-                            ],
-                          );
-                        },
+                        icon: const Icon(Icons.clear),
+                        color: theme.colorScheme.error,
                       ),
-                    ),
-                  ],
-                ),
-                if (_enableMultiLanguage)
-                  for (var entry in _localizeNamesMap.entries)
-                    Column(children: [
-                      const SizedBox(height: 10),
-                      Row(children: [
-                        Flexible(
-                          child: TextFormField(
-                            obscureText: false,
-                            decoration: InputDecoration(
-                              border: const OutlineInputBorder(),
-                              labelText: '${AppLocalizations.of(context)!.transactionCategoryName} (${localeMap[entry.key]})',
-                            ),
-                            controller: entry.value,
-                            validator: (value) {
-                              return null;
-                            },
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      const SizedBox(width: 10),
+                      Text(AppLocalizations.of(context)!.transactionCategoryParent),
+                      const SizedBox(width: 10),
+                      Flexible(
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 0, 100, 0),
+                          child: ElevatedButton(
+                            onPressed: () => _chooseParentCategory(context, transactionCategories),
+                            child: Row(children: _buildParentCategoryDisplay(theme)),
                           ),
                         ),
-                        IconButton(
-                          onPressed: () {
-                            entry.value.clear();
-                          },
-                          icon: const Icon(Icons.clear),
-                          color: theme.colorScheme.error,
-                        ),
-                      ]),
-                    ]),
-                const SizedBox(height: 20),
-                Row(
-                  children: CategoryUtil().buildCategoryFormActions(
-                    context,
-                    () {
-                      _validateForm(context, transactionCategories, (List<TransactionCategory> cats) {
-                        if (kDebugMode) {
-                          print("\n");
-                          print("\nCats: $cats\n");
-                          print("\n");
-                        }
-                        if (widget.editCallback != null) {
-                          var callback = widget.editCallback!;
-                          if (kDebugMode) {
-                            print("\nCallback: $callback\n");
-                          }
-                          callback(cats);
-                        }
-                        Navigator.of(context).pop();
-                      });
-                    },
-                    _isChecking,
-                    AppLocalizations.of(context)!.transactionCategoryActionSave,
-                    () {
-                      _validateForm(context, transactionCategories, (List<TransactionCategory> cats) {
-                        _initEmptyForm();
-                        if (widget.editCallback != null) {
-                          var callback = widget.editCallback!;
-                          callback(cats);
-                        }
-                      });
-                    },
-                    AppLocalizations.of(context)!.transactionCategoryActionSaveAddMore,
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          setState(() {
+                            _selectedParentCategory = null;
+                          });
+                        },
+                        icon: const Icon(Icons.clear),
+                        color: theme.colorScheme.error,
+                      ),
+                    ],
                   ),
-                )
-              ],
+                  Row(
+                    children: [
+                      Flexible(
+                          child: FormUtil().buildCheckboxFormField(context, theme,
+                              value: _enableMultiLanguage,
+                              title: AppLocalizations.of(context)!.transactionCategoryTurnOnLocalizeNames, onChanged: (value) {
+                        setState(() {
+                          _enableMultiLanguage = value!;
+                          if (_enableMultiLanguage) {
+                            for (var entry in _localizeNamesMap.entries) {
+                              if (entry.value.text.isEmpty) {
+                                entry.value.text = _categoryNameController.text;
+                              }
+                            }
+                          }
+                        });
+                      })),
+                    ],
+                  ),
+                  if (_enableMultiLanguage)
+                    for (var entry in _localizeNamesMap.entries)
+                      Column(children: [
+                        const SizedBox(height: 10),
+                        Row(children: [
+                          Flexible(
+                            child: TextFormField(
+                              obscureText: false,
+                              decoration: InputDecoration(
+                                border: const OutlineInputBorder(),
+                                labelText: '${AppLocalizations.of(context)!.transactionCategoryName} (${localeMap[entry.key]})',
+                              ),
+                              controller: entry.value,
+                              validator: (value) {
+                                return null;
+                              },
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              entry.value.clear();
+                            },
+                            icon: const Icon(Icons.clear),
+                            color: theme.colorScheme.error,
+                          ),
+                        ]),
+                      ]),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: FormUtil().buildCategoryFormActions(
+                      context,
+                      () {
+                        _validateForm(context, transactionCategories, (List<TransactionCategory> cats) {
+                          if (kDebugMode) {
+                            print("\n");
+                            print("\nCats: $cats\n");
+                            print("\n");
+                          }
+                          if (widget.editCallback != null) {
+                            var callback = widget.editCallback!;
+                            if (kDebugMode) {
+                              print("\nCallback: $callback\n");
+                            }
+                            callback(cats);
+                          }
+                          Navigator.of(context).pop();
+                        });
+                      },
+                      _isChecking,
+                      AppLocalizations.of(context)!.transactionCategoryActionSave,
+                      () {
+                        _validateForm(context, transactionCategories, (List<TransactionCategory> cats) {
+                          _initEmptyForm();
+                          if (widget.editCallback != null) {
+                            var callback = widget.editCallback!;
+                            callback(cats);
+                          }
+                        });
+                      },
+                      AppLocalizations.of(context)!.transactionCategoryActionSaveAddMore,
+                    ),
+                  )
+                ],
+              ),
             ),
           ),
         ),
@@ -377,6 +352,7 @@ class _AddTransactionCategoryPanelState extends State<AddTransactionCategoryPane
           _editingCategory!.name = _categoryNameController.text;
           _editingCategory!.localizeNames = localizeMap;
           _editingCategory!.parentUid = newParentUid;
+          _editingCategory?.lastUpdated = DateTime.now();
           var updateFuture = db.update(
             tableNameTransactionCategory,
             _editingCategory!.toMap(),

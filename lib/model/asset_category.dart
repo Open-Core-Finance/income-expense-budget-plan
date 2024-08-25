@@ -2,33 +2,34 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:income_expense_budget_plan/model/name_localized_model.dart';
 import 'package:income_expense_budget_plan/service/util.dart';
-import 'generic_model.dart';
+import 'assets.dart';
 
-class AssetCategory extends GenericModel<String> {
+abstract class AssetTreeNode extends NameLocalizedModel<String> {
   IconData? icon;
-  String name;
+  AssetTreeNode({required super.id, required super.name, super.localizeNames, required this.icon});
+}
+
+class AssetCategory extends AssetTreeNode {
   bool system = false;
-  Map<String, String> localizeNames = {};
   int positionIndex = 0;
   late DateTime lastUpdated;
+  List<Assets> assets = [];
 
   AssetCategory(
       {required super.id,
-      required this.icon,
-      required this.name,
+      required super.icon,
+      required super.name,
       bool? system,
-      Map<String, String>? localizeNames,
+      super.localizeNames,
       DateTime? updatedDateTime,
       int? index}) {
     this.system = system == true;
-    if (localizeNames != null) {
-      this.localizeNames = localizeNames;
-    }
     if (updatedDateTime == null) {
       lastUpdated = DateTime.now();
     } else {
-      lastUpdated = updatedDateTime!;
+      lastUpdated = updatedDateTime;
     }
     if (index != null) {
       positionIndex = index;

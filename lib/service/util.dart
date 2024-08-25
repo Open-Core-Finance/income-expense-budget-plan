@@ -3,6 +3,8 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:income_expense_budget_plan/dao/assets_dao.dart';
+import 'package:income_expense_budget_plan/model/asset_category.dart';
+import 'package:income_expense_budget_plan/model/assets.dart';
 import 'package:income_expense_budget_plan/model/generic_model.dart';
 import 'package:income_expense_budget_plan/model/transaction_category.dart';
 import 'dart:convert';
@@ -63,14 +65,19 @@ class Util {
   }
 
   List<TransactionCategory> buildTransactionCategoryTree(List<TransactionCategory> categories) {
-    return findChild(categories, null);
+    if (kDebugMode) {
+      print("********************");
+      print("Categories received $categories");
+    }
+    var result = findChild(categories, null);
+    if (kDebugMode) {
+      print("Categories after parsed $result");
+      print("********************");
+    }
+    return result;
   }
 
   List<TransactionCategory> findChild(List<TransactionCategory> categories, TransactionCategory? parent) {
-    if (kDebugMode) {
-      print("********************");
-      print("Categories received $categories for parent $parent");
-    }
     List<TransactionCategory> child = [];
     for (int i = 0; i < categories.length; i++) {
       TransactionCategory category = categories[i];
@@ -81,22 +88,13 @@ class Util {
       }
     }
     child.sort((a, b) => a.positionIndex - b.positionIndex);
-    if (kDebugMode) {
-      print("Categories after remove $categories for parent $parent. Extracted child $child");
-    }
     if (parent != null) {
       parent.child.addAll(child);
     }
     if (child.isNotEmpty && categories.isNotEmpty) {
       for (var c in child) {
-        if (kDebugMode) {
-          print("Continue find child for parent $c");
-        }
         findChild(categories, c);
       }
-    }
-    if (kDebugMode) {
-      print("********************");
     }
     return child;
   }
@@ -138,17 +136,59 @@ class Util {
     return null;
   }
 
-  void refreshSystemAssetCategory(Function()? callback) {
+  void refreshAssetCategories(Function(List<AssetCategory> c)? callback) {
     AssetsDao().assetsCategories().then((categories) {
       if (kDebugMode) {
         print("Loaded categories $categories");
       }
       categories.sort((a, b) => a.positionIndex - b.positionIndex);
-      currentAppState.systemAssetCategories = categories;
+      currentAppState.assetCategories = categories;
       if (callback != null) {
-        callback();
+        callback(categories);
       }
     });
+  }
+
+  void refreshAssets(Function(List<Assets> a)? callback) {
+    AssetsDao().assets().then((assets) {
+      if (kDebugMode) {
+        print("Loaded assets $assets");
+      }
+      assets.sort((a, b) => a.positionIndex - b.positionIndex);
+      currentAppState.assets = assets;
+      if (callback != null) {
+        callback(assets);
+      }
+    });
+  }
+
+  void mappingAssetsAndCategories(List<Assets> assets, List<AssetCategory> assetCategories) {
+    int startTime = DateTime.now().millisecondsSinceEpoch;
+    if (kDebugMode) {
+      print("\n****\nStarted mapping assets with categories at [$startTime].\n****\n");
+    }
+    List<Assets> tmp = [];
+    tmp.addAll(assets);
+    for (var category in assetCategories) {
+      for (var i = 0; i < tmp.length; i++) {
+        var asset = tmp[i];
+        if (asset.categoryUid == category.id) {
+          category.assets.add(asset);
+          asset.category = category;
+          tmp.removeAt(i--);
+          if (kDebugMode) {
+            print("Asset ${asset.name} with category ${category?.name}");
+          }
+        }
+      }
+      if (kDebugMode) {
+        print("\nCategories ${category?.name} have ${category.assets.length} child!\n${category.assets}");
+      }
+    }
+    int endTime = DateTime.now().millisecondsSinceEpoch;
+    if (kDebugMode) {
+      print("\n****\nFinished mapping assets with categories at [$endTime].\n****\nTotal processed ${endTime - startTime}ms.");
+    }
   }
 
   void showErrorDialog(BuildContext context, String errorMessage, Function? callback) {
@@ -264,6 +304,21 @@ class Util {
     return false;
   }
 
+  bool removeInAccountTree(List<AssetCategory> categories, Assets toRemove) {
+    for (int i = 0; i < categories.length; i++) {
+      AssetCategory category = categories[i];
+      var assets = category.assets;
+      for (int j = 0; j < assets.length; j++) {
+        var asset = assets[j];
+        if (asset.id == toRemove.id) {
+          assets.remove(j);
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   void swapChildCategories(
       {required List<TransactionCategory> allCategories,
       required TransactionCategory origin,
@@ -284,6 +339,25 @@ class Util {
           cat.positionIndex = i + 1;
           db.update(tableNameTransactionCategory, {'position_index': cat.positionIndex},
               where: "uid = ?", whereArgs: [cat.id], conflictAlgorithm: ConflictAlgorithm.replace);
+        }
+        if (callback != null) callback();
+      });
+    }
+  }
+
+  void swapAssetNode({required AssetCategory parentCat, required Assets origin, required Assets target, Function? callback}) {
+    List<Assets> assets = parentCat.assets;
+    int oldIndex = assets.indexOf(origin);
+    int newIndex = assets.indexOf(target);
+    if (oldIndex != newIndex) {
+      DatabaseService().database.then((db) {
+        final item = assets.removeAt(oldIndex);
+        assets.insert(newIndex, item);
+        for (int i = min(oldIndex, newIndex); i <= max(oldIndex, newIndex); i++) {
+          var a = assets[i];
+          a.positionIndex = i + 1;
+          db.update(tableNameAssets, {'position_index': a.positionIndex},
+              where: "uid = ?", whereArgs: [a.id], conflictAlgorithm: ConflictAlgorithm.replace);
         }
         if (callback != null) callback();
       });

@@ -87,15 +87,10 @@ class _TransactionCategoryTreeState extends State<TransactionCategoryTree> {
                       Util().showErrorDialog(context, AppLocalizations.of(context)!.transactionCategoryDragToInvalidTarget, () {});
                     } else {
                       Util().swapChildCategories(
-                        allCategories: transactionCategories.categories,
-                        origin: origin,
-                        target: target,
-                        callback: () {
-                          // Make sure to rebuild your tree view to show the reordered nodes
-                          // in their new vicinity.
-                          treeController?.rebuild();
-                        },
-                      );
+                          allCategories: transactionCategories.categories,
+                          origin: origin,
+                          target: target,
+                          callback: () => treeController?.rebuild());
                     }
                   },
                   onWillAcceptWithDetails: (DragTargetDetails<TransactionCategory> details) {
@@ -174,7 +169,7 @@ class _TransactionCategoryTreeState extends State<TransactionCategoryTree> {
 
   void _categoriesRefreshed(List<TransactionCategory> cats) {
     if (kDebugMode) {
-      print("\nUpdating tree categories...\n$cats\n");
+      print("\nUpdating tree categories...\n${cats.length}\n");
     }
     setState(() {});
   }
@@ -253,6 +248,7 @@ class TransactionCategoryTile extends StatelessWidget {
           ),
           if (!category.system)
             IconButton(icon: Icon(Icons.delete, color: theme.colorScheme.error), onPressed: () => removeCall(context, category)),
+          const Icon(Icons.drag_handle),
         ],
       ),
     );
@@ -271,9 +267,19 @@ class TransactionCategoryTile extends StatelessWidget {
 
       // Show some feedback to the user under the dragging pointer,
       // this can be any widget.
-      feedback: IntrinsicWidth(
-        child: Material(elevation: 4, child: treeNodeTile),
+      feedback: Material(
+        elevation: 4.0,
+        child: SizedBox(
+          width: MediaQuery.of(context).size.width - 20,
+          child: ListTile(
+            leading: Icon(category.icon, color: theme.iconTheme.color), // Icon on the left
+            title: Text(tileText),
+          ),
+        ),
       ),
+
+      collapseOnDragStart: false,
+      expandOnDragEnd: true,
 
       child: InkWell(
         onTap: onTap,

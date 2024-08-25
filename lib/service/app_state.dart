@@ -2,6 +2,8 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:income_expense_budget_plan/model/asset_category.dart';
+import 'package:income_expense_budget_plan/model/assets.dart';
+import 'package:income_expense_budget_plan/model/currency.dart';
 import 'package:income_expense_budget_plan/model/setting.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/database_service.dart';
@@ -15,8 +17,9 @@ class AppState extends ChangeNotifier {
 
   int _currentHomePageIndex = 0;
   late SettingModel systemSettings;
-  List<AssetCategory> _systemAssetCategories = [];
-
+  List<AssetCategory> _assetCategories = [];
+  List<Assets> _assets = [];
+  List<Currency> _currencies = [];
   int get currentHomePageIndex => _currentHomePageIndex;
 
   set currentHomePageIndex(int currentHomePageIndex) {
@@ -24,10 +27,23 @@ class AppState extends ChangeNotifier {
     triggerNotify();
   }
 
-  List<AssetCategory> get systemAssetCategories => _systemAssetCategories;
+  List<AssetCategory> get assetCategories => _assetCategories;
 
-  set systemAssetCategories(List<AssetCategory> systemAssetCategories) {
-    _systemAssetCategories = systemAssetCategories;
+  set assetCategories(List<AssetCategory> systemAssetCategories) {
+    _assetCategories = systemAssetCategories;
+    triggerNotify();
+  }
+
+  List<Assets> get assets => _assets;
+
+  set assets(List<Assets> assets) {
+    _assets = assets;
+    triggerNotify();
+  }
+
+  List<Currency> get currencies => _currencies;
+  set currencies(List<Currency> currencies) {
+    _currencies = currencies;
     triggerNotify();
   }
 
@@ -37,10 +53,10 @@ class AppState extends ChangeNotifier {
     }
     if (oldIndex != newIndex) {
       DatabaseService().database.then((db) {
-        final item = systemAssetCategories.removeAt(oldIndex);
-        systemAssetCategories.insert(newIndex, item);
+        final item = assetCategories.removeAt(oldIndex);
+        assetCategories.insert(newIndex, item);
         for (int i = min(oldIndex, newIndex); i <= max(oldIndex, newIndex); i++) {
-          var cat = systemAssetCategories[i];
+          var cat = assetCategories[i];
           cat.positionIndex = i + 1;
           db.update(tableNameAssetsCategory, {'position_index': cat.positionIndex},
               where: "uid = ?", whereArgs: [cat.id], conflictAlgorithm: ConflictAlgorithm.replace);
