@@ -16,6 +16,9 @@ class DatabaseService {
   factory DatabaseService() => _databaseService;
   DatabaseService._internal();
 
+  static Completer<void>? _onCreateCompleter;
+  Future<void>? get onCreateComplete => _onCreateCompleter?.future;
+
   static Database? _database;
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -25,29 +28,32 @@ class DatabaseService {
   }
 
   Future<Database> _initDatabase() async {
-    // Initialize FFI
-    sqfliteFfiInit();
-
     databaseFactory = databaseFactoryFfi;
-
     final databasePath = await getDatabasesPath();
 
     // Set the path to the database. Note: Using the `join` function from the
     // `path` package is best practice to ensure the path is correctly
     // constructed for each platform.
     final path = join(databasePath, databaseNameMain);
+
+    // Initialize FFI
+    sqfliteFfiInit();
+
     if (kDebugMode) {
       print("Opening database $path...");
     }
+
     // Set the version. This executes the onCreate function and provides a
     // path to perform database upgrades and downgrades.
-    return openDatabase(path,
-        onCreate: _onCreate,
-        version: databaseVersion,
-        singleInstance: true,
-        onConfigure: (db) async => await db.execute('PRAGMA foreign_keys = ON'),
-        onOpen: _onOpen,
-        onUpgrade: _onUpgrade);
+    return openDatabase(
+      path,
+      onCreate: _onCreate,
+      version: databaseVersion,
+      singleInstance: true,
+      onConfigure: (db) async => await db.execute('PRAGMA foreign_keys = ON'),
+      onOpen: _onOpen,
+      onUpgrade: _onUpgrade,
+    );
   }
 
   Future<void> _executeSqlFile(Database db, String sqlFilePath) async {
@@ -67,7 +73,12 @@ class DatabaseService {
 
   // When the database is first created
   Future<void> _onCreate(Database db, int version) async {
-    _executeSqlFile(db, 'assets/db_init.sql');
+    // Initialize the completer
+    _onCreateCompleter = Completer<void>();
+
+    await _executeSqlFile(db, 'assets/db_init.sql');
+    // Complete the completer once the onCreate is done
+    _onCreateCompleter?.complete();
   }
 
   Future<void> _onOpen(Database db) async {

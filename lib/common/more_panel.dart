@@ -37,19 +37,20 @@ class _MorePanelState extends State<MorePanel> {
         ),
         ListTile(
           title: Text(AppLocalizations.of(context)!.menuAccountCategory),
-          onTap: () {
-            Util().navigateTo(context, const AssetsCategoriesPanel());
-          },
+          onTap: () => Util().navigateTo(context, const AssetsCategoriesPanel()),
           iconColor: colorScheme.primary,
         ),
         ListTile(
           title: Text(AppLocalizations.of(context)!.menuExpenseCategory),
           onTap: () {
             var txnType = TransactionType.expense;
+            int startTime = DateTime.now().millisecondsSinceEpoch;
             TransactionDao().transactionCategoryByType(txnType).then((List<TransactionCategory> loadCats) {
+              int loadEndTime = DateTime.now().millisecondsSinceEpoch;
               var categories = Util().buildTransactionCategoryTree(loadCats);
+              int parseEndTime = DateTime.now().millisecondsSinceEpoch;
               if (kDebugMode) {
-                print("Final list expense categories $categories");
+                print("\nLoad time: ${loadEndTime - startTime}, parse time: ${parseEndTime - loadEndTime}");
               }
               var model = TransactionCategoriesListenable(transactionType: txnType, categories: categories);
               Util().navigateTo(

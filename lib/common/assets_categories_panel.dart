@@ -6,7 +6,7 @@ import 'package:income_expense_budget_plan/dao/assets_dao.dart';
 import 'package:income_expense_budget_plan/model/asset_category.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/app_state.dart';
-import 'package:income_expense_budget_plan/service/category_util.dart';
+import 'package:income_expense_budget_plan/service/form_util.dart';
 import 'package:income_expense_budget_plan/service/database_service.dart';
 import 'package:income_expense_budget_plan/service/util.dart';
 import 'package:provider/provider.dart';
@@ -24,7 +24,7 @@ class _AssetsCategoriesPanelState extends State<AssetsCategoriesPanel> {
   @override
   void initState() {
     super.initState();
-    Util().refreshSystemAssetCategory(() => setState(() {}));
+    Util().refreshAssetCategories((_) => setState(() {}));
   }
 
   @override
@@ -45,13 +45,13 @@ class _AssetsCategoriesPanelState extends State<AssetsCategoriesPanel> {
         foregroundColor: theme.primaryColor,
         backgroundColor: theme.iconTheme.color,
         shape: const CircleBorder(),
-        onPressed: () => Util().navigateTo(context, AddAssetsCategoryPanel()),
+        onPressed: () => Util().navigateTo(context, const AddAssetsCategoryPanel()),
         child: const Icon(Icons.add),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       body: ReorderableListView(
         children: <Widget>[
-          for (AssetCategory category in appState.systemAssetCategories)
+          for (AssetCategory category in appState.assetCategories)
             ListTile(
               key: ValueKey(category),
               leading: Icon(category.icon, color: theme.iconTheme.color), // Icon on the left
@@ -81,13 +81,14 @@ class _AssetsCategoriesPanelState extends State<AssetsCategoriesPanel> {
         confirmLocalize: AppLocalizations.of(context)!.accountCategoryDeleteConfirm,
         successLocalize: AppLocalizations.of(context)!.accountCategoryDeleteSuccess,
         errorLocalize: AppLocalizations.of(context)!.accountCategoryDeleteError,
-        onSuccess: () => Util().refreshSystemAssetCategory(() => setState(() {})));
+        onSuccess: () => Util().refreshAssetCategories((_) => setState(() {})));
   }
 }
 
 class AddAssetsCategoryPanel extends StatefulWidget {
   final AssetCategory? editingCategory;
-  const AddAssetsCategoryPanel({super.key, this.editingCategory});
+  final Function(List<AssetCategory> assets, bool isAddNew)? editCallback;
+  const AddAssetsCategoryPanel({super.key, this.editingCategory, this.editCallback});
 
   @override
   State<AddAssetsCategoryPanel> createState() => _AddAssetsCategoryPanelState();
@@ -159,139 +160,138 @@ class _AddAssetsCategoryPanelState extends State<AddAssetsCategoryPanel> {
         key: _formKey,
         child: Padding(
           padding: const EdgeInsets.all(5.0),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  const SizedBox(width: 10),
-                  Text(accountCategoryActionSelectIconLabel),
-                  IconButton(
-                    onPressed: () {
-                      showIconPicker(context, iconPackModes: [IconPack.material, IconPack.cupertino]).then((IconData? iconData) {
-                        if (iconData != null) setState(() => _selectedIcon = iconData);
-                      });
-                    },
-                    icon: Icon(_selectedIcon),
-                    iconSize: 50,
-                    color: theme.iconTheme.color,
-                  )
-                ],
-              ),
-              Row(
-                children: [
-                  Flexible(
-                    child: TextFormField(
-                      obscureText: false,
-                      decoration:
-                          InputDecoration(border: const OutlineInputBorder(), labelText: AppLocalizations.of(context)!.accountCategoryName),
-                      controller: _categoryNameController,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return AppLocalizations.of(context)!.accountCategoryValidateNameEmpty;
-                        }
-                        if (!_isValidCategoryName) {
-                          return AppLocalizations.of(context)!.accountCategoryValidateNameExisted;
-                        }
-                        return null;
+          child: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Row(
+                  children: [
+                    const SizedBox(width: 10),
+                    Text(accountCategoryActionSelectIconLabel),
+                    IconButton(
+                      onPressed: () {
+                        showIconPicker(context, iconPackModes: [IconPack.material, IconPack.cupertino]).then((IconData? iconData) {
+                          if (iconData != null) setState(() => _selectedIcon = iconData);
+                        });
                       },
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () {
-                      // You can also use the controller to manipulate what is shown in the
-                      // text field. For example, the clear() method removes all the text
-                      // from the text field.
-                      _categoryNameController.clear();
-                    },
-                    icon: const Icon(Icons.clear),
-                    color: theme.colorScheme.error,
-                  ),
-                ],
-              ),
-              Row(
-                children: [
-                  Flexible(
-                    child: FormField<bool>(
-                      initialValue: _enableMultiLanguage,
-                      validator: (value) {
-                        return null;
-                      },
-                      builder: (FormFieldState<bool> state) {
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            CheckboxListTile(
-                              title: Text(AppLocalizations.of(context)!.accountCategoryTurnOnLocalizeNames),
-                              value: _enableMultiLanguage,
-                              onChanged: (value) {
-                                setState(() {
-                                  _enableMultiLanguage = value!;
-                                  state.didChange(value);
-                                });
-                              },
-                              controlAffinity: ListTileControlAffinity.leading,
-                            ),
-                            if (state.hasError)
-                              Padding(
-                                padding: const EdgeInsets.only(left: 10.0),
-                                child: Text(
-                                  state.errorText!,
-                                  style: const TextStyle(color: Colors.red, fontSize: 12),
-                                ),
-                              ),
-                          ],
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              if (_enableMultiLanguage)
-                for (var entry in _localizeNamesMap.entries)
-                  Column(children: [
-                    const SizedBox(height: 10),
-                    Row(children: [
-                      Flexible(
-                        child: TextFormField(
-                          obscureText: false,
-                          decoration: InputDecoration(
-                            border: const OutlineInputBorder(),
-                            labelText: '${AppLocalizations.of(context)!.accountCategoryName} (${localeMap[entry.key]})',
-                          ),
-                          controller: entry.value,
-                          validator: (value) {
-                            return null;
-                          },
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: () {
-                          entry.value.clear();
-                        },
-                        icon: const Icon(Icons.clear),
-                        color: theme.colorScheme.error,
-                      ),
-                    ]),
-                  ]),
-              const SizedBox(height: 20),
-              Row(
-                children: CategoryUtil().buildCategoryFormActions(
-                  context,
-                  () => _validateForm(context, () => Navigator.of(context).pop()),
-                  _isChecking,
-                  AppLocalizations.of(context)!.accountCategoryActionSave,
-                  () => _validateForm(context, () => _initEmptyForm()),
-                  accountCategoryActionSaveAddMoreLabel,
+                      icon: Icon(_selectedIcon),
+                      iconSize: 50,
+                      color: theme.iconTheme.color,
+                    )
+                  ],
                 ),
-              )
-            ],
+                Row(
+                  children: [
+                    Flexible(
+                      child: TextFormField(
+                        obscureText: false,
+                        decoration: InputDecoration(
+                            border: const OutlineInputBorder(), labelText: AppLocalizations.of(context)!.accountCategoryName),
+                        controller: _categoryNameController,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return AppLocalizations.of(context)!.accountCategoryValidateNameEmpty;
+                          }
+                          if (!_isValidCategoryName) {
+                            return AppLocalizations.of(context)!.accountCategoryValidateNameExisted;
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        // You can also use the controller to manipulate what is shown in the
+                        // text field. For example, the clear() method removes all the text
+                        // from the text field.
+                        _categoryNameController.clear();
+                      },
+                      icon: const Icon(Icons.clear),
+                      color: theme.colorScheme.error,
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Flexible(
+                      child: FormUtil().buildCheckboxFormField(context, theme,
+                          value: _enableMultiLanguage,
+                          title: AppLocalizations.of(context)!.accountCategoryTurnOnLocalizeNames, onChanged: (value) {
+                        setState(() {
+                          _enableMultiLanguage = value!;
+                          if (_enableMultiLanguage) {
+                            for (var entry in _localizeNamesMap.entries) {
+                              if (entry.value.text.isEmpty) {
+                                entry.value.text = _categoryNameController.text;
+                              }
+                            }
+                          }
+                        });
+                      }),
+                    ),
+                  ],
+                ),
+                if (_enableMultiLanguage)
+                  for (var entry in _localizeNamesMap.entries)
+                    Column(children: [
+                      const SizedBox(height: 10),
+                      Row(children: [
+                        Flexible(
+                          child: TextFormField(
+                            obscureText: false,
+                            decoration: InputDecoration(
+                              border: const OutlineInputBorder(),
+                              labelText: '${AppLocalizations.of(context)!.accountCategoryName} (${localeMap[entry.key]})',
+                            ),
+                            controller: entry.value,
+                            validator: (value) {
+                              return null;
+                            },
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            entry.value.clear();
+                          },
+                          icon: const Icon(Icons.clear),
+                          color: theme.colorScheme.error,
+                        ),
+                      ]),
+                    ]),
+                const SizedBox(height: 20),
+                Row(
+                  children: FormUtil().buildCategoryFormActions(
+                    context,
+                    () => _validateForm(context, (List<AssetCategory> categories, bool isAddNew) {
+                      if (widget.editCallback != null) {
+                        var callback = widget.editCallback!;
+                        if (kDebugMode) {
+                          print("\nCallback: $callback\n");
+                        }
+                        callback(categories, isAddNew);
+                      }
+                      Navigator.of(context).pop();
+                    }),
+                    _isChecking,
+                    AppLocalizations.of(context)!.accountCategoryActionSave,
+                    () => _validateForm(context, (List<AssetCategory> categories, bool isAddNew) {
+                      _initEmptyForm();
+                      if (widget.editCallback != null) {
+                        var callback = widget.editCallback!;
+                        callback(categories, isAddNew);
+                      }
+                    }),
+                    accountCategoryActionSaveAddMoreLabel,
+                  ),
+                )
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  void _validateForm(BuildContext context, Function() callback) async {
+  void _validateForm(BuildContext context, Function(List<AssetCategory> categories, bool isAddNew) callback) async {
     final appState = Provider.of<AppState>(context, listen: false);
     setState(() {
       _isChecking = true;
@@ -316,14 +316,15 @@ class _AddAssetsCategoryPanelState extends State<AddAssetsCategoryPanel> {
       }
       if (_editingCategory != null) {
         DatabaseService().database.then((db) {
-          _editingCategory!.icon = _selectedIcon;
-          _editingCategory!.name = _categoryNameController.text;
-          _editingCategory!.localizeNames = localizeMap;
+          _editingCategory?.icon = _selectedIcon;
+          _editingCategory?.name = _categoryNameController.text;
+          _editingCategory?.localizeNames = localizeMap;
+          _editingCategory?.lastUpdated = DateTime.now();
           db.update(tableNameAssetsCategory, _editingCategory!.toMap(),
               where: "uid = ?", whereArgs: [_editingCategory!.id], conflictAlgorithm: ConflictAlgorithm.replace);
           setState(() {
             appState.triggerNotify();
-            callback();
+            callback(appState.assetCategories, false);
           });
         });
       } else {
@@ -332,14 +333,14 @@ class _AddAssetsCategoryPanelState extends State<AddAssetsCategoryPanel> {
           icon: _selectedIcon,
           name: _categoryNameController.text,
           localizeNames: localizeMap,
-          index: appState.systemAssetCategories.length,
+          index: appState.assetCategories.length,
         );
         DatabaseService().database.then((db) {
           db.insert(tableNameAssetsCategory, assetCategory.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
           setState(() {
-            appState.systemAssetCategories.add(assetCategory);
+            appState.assetCategories.add(assetCategory);
             appState.triggerNotify();
-            callback();
+            callback(appState.assetCategories, true);
           });
         });
       }

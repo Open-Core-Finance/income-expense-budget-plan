@@ -24,7 +24,7 @@ class SettingDao {
       if (!localeMap.containsKey(systemLocaleStr)) {
         systemLocaleStr = defaultLocale;
       }
-      result = SettingModel(localeKey: systemLocaleStr, darkMode: -1);
+      result = SettingModel(localeKey: systemLocaleStr);
       databaseService.database.then((database) {
         database.insert(tableNameSettings, result.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
       });

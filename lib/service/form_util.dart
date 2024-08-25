@@ -1,0 +1,96 @@
+import 'package:currency_text_input_formatter/currency_text_input_formatter.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:income_expense_budget_plan/model/currency.dart';
+
+class FormUtil {
+  // Singleton pattern
+  static final FormUtil _util = FormUtil._internal();
+  factory FormUtil() => _util;
+  FormUtil._internal();
+
+  List<Widget> buildCategoryFormActions(BuildContext context, Function() formSubmit, bool isChecking, String categoryActionSaveLabel,
+      Function() formSubmitAndAddMore, String categoryActionSaveAddMoreLabel) {
+    return [
+      ElevatedButton(
+        onPressed: formSubmit,
+        style: ButtonStyle(
+          backgroundColor: WidgetStateProperty.all(Colors.lightBlueAccent),
+          padding: WidgetStateProperty.all(const EdgeInsets.symmetric(vertical: 15, horizontal: 30)),
+        ),
+        child: isChecking
+            ? const CircularProgressIndicator()
+            : Text(categoryActionSaveLabel, style: const TextStyle(fontSize: 14, color: Colors.white)),
+      ),
+      const SizedBox(width: 10),
+      ElevatedButton(
+        onPressed: formSubmitAndAddMore,
+        style: ButtonStyle(
+          backgroundColor: WidgetStateProperty.all(Colors.lightBlueAccent),
+          padding: WidgetStateProperty.all(const EdgeInsets.all(15)),
+        ),
+        child: isChecking
+            ? const CircularProgressIndicator()
+            : Text(
+                categoryActionSaveAddMoreLabel,
+                style: const TextStyle(fontSize: 14, color: Colors.white),
+              ),
+      ),
+    ];
+  }
+
+  String resolveAccountTypeLocalize(BuildContext context, String typeName) {
+    switch (typeName) {
+      case "cash":
+        return AppLocalizations.of(context)!.accountType_cash;
+      case "bankCasa":
+        return AppLocalizations.of(context)!.accountType_bankCasa;
+      case "loan":
+        return AppLocalizations.of(context)!.accountType_loan;
+      case "termDeposit":
+        return AppLocalizations.of(context)!.accountType_termDeposit;
+      case "eWallet":
+        return AppLocalizations.of(context)!.accountType_eWallet;
+      case "creditCard":
+        return AppLocalizations.of(context)!.accountType_creditCard;
+      default:
+        return typeName;
+    }
+  }
+
+  CurrencyTextInputFormatter buildFormatter(Currency selectedCurrency) {
+    return CurrencyTextInputFormatter.currency(
+        locale: selectedCurrency.language, symbol: selectedCurrency.symbol, decimalDigits: selectedCurrency.decimalPoint);
+  }
+
+  Widget buildCheckboxFormField(BuildContext context, ThemeData theme,
+      {required bool value, required String title, void Function(bool? value)? onChanged}) {
+    return FormField<bool>(
+      initialValue: value,
+      builder: (FormFieldState<bool> state) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CheckboxListTile(
+              title: Text(title),
+              value: value,
+              onChanged: (value) {
+                if (onChanged != null) onChanged(value);
+                state.didChange(value);
+              },
+              controlAffinity: ListTileControlAffinity.leading,
+            ),
+            if (state.hasError)
+              Padding(
+                padding: const EdgeInsets.only(left: 10.0),
+                child: Text(
+                  state.errorText!,
+                  style: const TextStyle(color: Colors.red, fontSize: 12),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+}

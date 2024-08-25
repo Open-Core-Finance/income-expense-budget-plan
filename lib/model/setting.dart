@@ -5,17 +5,24 @@ import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/database_service.dart';
 import 'package:sqflite/sqflite.dart';
 
+import 'currency.dart';
+
 class SettingModel extends ChangeNotifier {
   Locale? _locale;
 
   /// 0: light mode.
   /// 1: dart mode.
   /// -1: follow system.
-  int _darkMode = -1;
+  int _darkMode = 0;
 
-  SettingModel({required String localeKey, required int darkMode}) {
+  String? defaultCurrencyUid;
+  Currency? defaultCurrency;
+
+  SettingModel({required String localeKey, int? darkMode, this.defaultCurrencyUid}) {
     _locale = Locale(localeKey);
-    _darkMode = darkMode;
+    if (darkMode != null) {
+      _darkMode = darkMode;
+    }
   }
 
   Locale? get locale => _locale;
@@ -42,17 +49,21 @@ class SettingModel extends ChangeNotifier {
 
   // Convert a Assets into a Map. The keys must correspond to the names of the columns in the database.
   Map<String, Object?> toMap() {
-    return {'id': 1, 'locale': _locale?.languageCode ?? 'en', 'dark_mode': darkMode};
+    return {'id': 1, 'locale': _locale?.languageCode ?? 'en', 'dark_mode': darkMode, 'default_currency_uid': defaultCurrencyUid};
   }
 
   // Implement toString to make it easier to see information about
   // each Assets when using the print statement.
   @override
   String toString() {
-    return '{_locale: $_locale, darkMode: $darkMode}';
+    return '{"locale": "$_locale", "darkMode": "$darkMode", "defaultCurrencyUid": "$defaultCurrencyUid"}';
   }
 
-  factory SettingModel.fromMap(Map<String, dynamic> json) => SettingModel(localeKey: json['locale'], darkMode: json['dark_mode']);
+  factory SettingModel.fromMap(Map<String, dynamic> json) => SettingModel(
+        localeKey: json['locale'],
+        darkMode: json['dark_mode'],
+        defaultCurrencyUid: json['default_currency_uid'],
+      );
 
   String getDarkModeText(BuildContext context) {
     return SettingModel.parseDarkModeText(context, darkMode);
