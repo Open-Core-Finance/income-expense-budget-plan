@@ -16,11 +16,13 @@ class AppState extends ChangeNotifier {
   AppState._internal();
 
   int _currentHomePageIndex = 0;
-  late SettingModel systemSettings;
+  late SettingModel systemSetting;
   List<AssetCategory> _assetCategories = [];
-  List<Assets> _assets = [];
+  List<Asset> _assets = [];
   List<Currency> _currencies = [];
   int get currentHomePageIndex => _currentHomePageIndex;
+  bool isMobile = true;
+  bool isLandscape = false;
 
   set currentHomePageIndex(int currentHomePageIndex) {
     _currentHomePageIndex = currentHomePageIndex;
@@ -34,9 +36,9 @@ class AppState extends ChangeNotifier {
     triggerNotify();
   }
 
-  List<Assets> get assets => _assets;
+  List<Asset> get assets => _assets;
 
-  set assets(List<Assets> assets) {
+  set assets(List<Asset> assets) {
     _assets = assets;
     triggerNotify();
   }
@@ -58,7 +60,7 @@ class AppState extends ChangeNotifier {
         for (int i = min(oldIndex, newIndex); i <= max(oldIndex, newIndex); i++) {
           var cat = assetCategories[i];
           cat.positionIndex = i + 1;
-          db.update(tableNameAssetsCategory, {'position_index': cat.positionIndex},
+          db.update(tableNameAssetCategory, {'position_index': cat.positionIndex},
               where: "uid = ?", whereArgs: [cat.id], conflictAlgorithm: ConflictAlgorithm.replace);
         }
         triggerNotify();
@@ -68,7 +70,7 @@ class AppState extends ChangeNotifier {
 
   @override
   String toString() {
-    return "{currentHomePageIndex: $currentHomePageIndex, systemSettings: $systemSettings}";
+    return "{currentHomePageIndex: $currentHomePageIndex, systemSetting: $systemSetting}";
   }
 
   void triggerNotify() {

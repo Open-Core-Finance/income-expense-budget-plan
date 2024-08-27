@@ -29,7 +29,6 @@ class Currency extends GenericModel {
     this.decimalPoint = decimalPoint ?? 2;
   }
 
-  // Convert a Assets into a Map. The keys must correspond to the names of the columns in the database.
   @override
   Map<String, Object?> toMap() {
     return {
@@ -46,8 +45,6 @@ class Currency extends GenericModel {
     };
   }
 
-  // Implement toString to make it easier to see information about
-  // each Assets when using the print statement.
   @override
   String toString() {
     return '{"uid": "$id", "name": "$name", "iso": "$iso", "deleted": "$deleted", "symbol": "$symbol", "symbolPosition": "$symbolPosition",'

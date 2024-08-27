@@ -43,7 +43,6 @@ class TransactionCategory extends GenericModel<String> {
     }
   }
 
-  // Convert a Assets into a Map. The keys must correspond to the names of the columns in the database.
   @override
   Map<String, Object?> toMap() {
     return {
@@ -59,8 +58,6 @@ class TransactionCategory extends GenericModel<String> {
     };
   }
 
-  // Implement toString to make it easier to see information about
-  // each Assets when using the print statement.
   @override
   String toString() {
     return '{"${idFieldName()}": "$id", "name": "$name", "icon": ${Util().iconDataToJSONString(icon)},"parentUid": "$parentUid"${child.isNotEmpty ? ', '

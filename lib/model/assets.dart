@@ -6,7 +6,7 @@ import 'package:income_expense_budget_plan/service/util.dart';
 
 import 'asset_category.dart';
 
-abstract class Assets extends AssetTreeNode {
+abstract class Asset extends AssetTreeNode {
   String description;
   String currencyUid;
   Map<String, String> localizeDescriptions = {};
@@ -16,7 +16,7 @@ abstract class Assets extends AssetTreeNode {
   Currency? currency;
   AssetCategory? category;
 
-  Assets(
+  Asset(
       {required super.id,
       required super.icon,
       required super.name,
@@ -40,7 +40,7 @@ abstract class Assets extends AssetTreeNode {
     }
   }
 
-  // Convert a Assets into a Map. The keys must correspond to the names of the columns in the database.
+  // Convert a Asset into a Map. The keys must correspond to the names of the columns in the database.
   @override
   Map<String, Object?> toMap() {
     return {
@@ -58,7 +58,7 @@ abstract class Assets extends AssetTreeNode {
   }
 
   // Implement toString to make it easier to see information about
-  // each Assets when using the print statement.
+  // each Asset when using the print statement.
   @override
   String toString() {
     return '{${attributeString()}}';
@@ -79,7 +79,7 @@ abstract class Assets extends AssetTreeNode {
 
 enum AssetType { cash, bankCasa, loan, termDeposit, eWallet, creditCard }
 
-class CashAccount extends Assets {
+class CashAccount extends Asset {
   double availableAmount = 0;
   CashAccount({
     required super.id,
@@ -122,7 +122,7 @@ class CashAccount extends Assets {
       );
 }
 
-class BankCasaAccount extends Assets {
+class BankCasaAccount extends Asset {
   double availableAmount = 0;
   BankCasaAccount({
     required super.id,
@@ -165,7 +165,7 @@ class BankCasaAccount extends Assets {
       );
 }
 
-class LoanAccount extends Assets {
+class LoanAccount extends Asset {
   double loanAmount = 0;
   LoanAccount({
     required super.id,
@@ -208,7 +208,7 @@ class LoanAccount extends Assets {
       );
 }
 
-class TermDepositAccount extends Assets {
+class TermDepositAccount extends Asset {
   double depositAmount = 0;
   TermDepositAccount({
     required super.id,
@@ -251,7 +251,7 @@ class TermDepositAccount extends Assets {
       );
 }
 
-class EWallet extends Assets {
+class EWallet extends Asset {
   double availableAmount = 0;
   EWallet({
     required super.id,
@@ -294,7 +294,7 @@ class EWallet extends Assets {
       );
 }
 
-class CreditCard extends Assets {
+class CreditCard extends Asset {
   double availableAmount = 0;
   double creditLimit = 0;
   CreditCard(

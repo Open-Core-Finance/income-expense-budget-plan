@@ -1,24 +1,24 @@
-CREATE TABLE IF NOT EXISTS settings(id Integer PRIMARY KEY, locale TEXT, dark_mode Integer, default_currency_uid TEXT);
+CREATE TABLE IF NOT EXISTS setting(id Integer PRIMARY KEY, locale TEXT, dark_mode Integer, default_currency_uid TEXT);
 CREATE TABLE IF NOT EXISTS currency(uid TEXT PRIMARY KEY, name TEXT, iso TEXT, deleted Integer, symbol TEXT,
     symbol_position TEXT, main_currency Integer, show Integer, decimal_point Integer, language TEXT);
-CREATE TABLE IF NOT EXISTS assets_category(uid TEXT PRIMARY KEY, name TEXT, icon TEXT, system Integer, localize_names TEXT,
+CREATE TABLE IF NOT EXISTS asset_category(uid TEXT PRIMARY KEY, name TEXT, icon TEXT, system Integer, localize_names TEXT,
     position_index Integer DEFAULT 0 NOT NULL, last_updated Integer DEFAULT 0);
-CREATE TABLE IF NOT EXISTS assets(uid TEXT PRIMARY KEY, icon TEXT, name TEXT, description TEXT, available_amount REAL DEFAULT 0.0,
+CREATE TABLE IF NOT EXISTS asset(uid TEXT PRIMARY KEY, icon TEXT, name TEXT, description TEXT, available_amount REAL DEFAULT 0.0,
     loan_amount REAL DEFAULT 0.0, deposit_amount REAL DEFAULT 0.0, credit_limit REAL DEFAULT 0.0, currency_uid TEXT,
     asset_type TEXT, category_uid TEXT, localize_names TEXT, localize_descriptions TEXT, position_index Integer DEFAULT 0 NOT NULL,
-    last_updated Integer DEFAULT 0, FOREIGN KEY (category_uid) REFERENCES assets_category (uid), FOREIGN KEY (currency_uid) REFERENCES currency (uid) );
+    last_updated Integer DEFAULT 0, FOREIGN KEY (category_uid) REFERENCES asset_category (uid), FOREIGN KEY (currency_uid) REFERENCES currency (uid) );
 CREATE TABLE IF NOT EXISTS transaction_category(uid TEXT PRIMARY KEY, name TEXT, icon TEXT, parent_uid TEXT, transaction_type TEXT, system Integer, localize_names TEXT,
     position_index Integer Integer DEFAULT 0 NOT NULL, last_updated Integer DEFAULT 0);
 
-INSERT INTO assets_category(uid, name, icon, "system", localize_names, position_index, last_updated)
+INSERT INTO asset_category(uid, name, icon, "system", localize_names, position_index, last_updated)
 VALUES('20240814-1016-8412-a943-a2e9d6ba37c9', 'Bank accounts', '{"codePoint":63178,"fontFamily":"CupertinoIcons","fontPackage":"cupertino_icons","matchTextDirection":false}', 1, '{"en":"Bank accounts","vi":"Tài khoản ngân hàng"}', 3, 1724245880000);
-INSERT INTO assets_category(uid, name, icon, "system", localize_names, position_index, last_updated)
+INSERT INTO asset_category(uid, name, icon, "system", localize_names, position_index, last_updated)
 VALUES('20240814-1025-8e05-9011-a6fed676958f', 'Cards', '{"codePoint":57759,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}', 1, '{"en":"Cards","vi":"Thẻ"}', 4, 1724245880000);
-INSERT INTO assets_category(uid, name, icon, "system", localize_names, position_index, last_updated)
+INSERT INTO asset_category(uid, name, icon, "system", localize_names, position_index, last_updated)
 VALUES('20240814-1026-8e32-a113-ce2ffa4f9305', 'Loans', '{"codePoint":58361,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}', 1, '{"en":"Loans","vi":"Các khoản vay"}', 6, 1724245880000);
-INSERT INTO assets_category(uid, name, icon, "system", localize_names, position_index, last_updated)
+INSERT INTO asset_category(uid, name, icon, "system", localize_names, position_index, last_updated)
 VALUES('20240814-1027-8317-9580-ef12a94c7312', 'Others', '{"codePoint":57842,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}', 1, '{"en":"Others","vi":"Tài khoản khác"}', 7, 1724245880000);
-INSERT INTO assets_category(uid, name, icon, "system", localize_names, position_index, last_updated)
+INSERT INTO asset_category(uid, name, icon, "system", localize_names, position_index, last_updated)
 VALUES('20240823-0515-8322-8813-46af221b06bc', 'Accounts', '{"codePoint":62881,"fontFamily":"CupertinoIcons","fontPackage":"cupertino_icons","matchTextDirection":false}', 1, '{"en":"Accounts","vi":"Tài khoản"}', 1, 1724390122834);
 
 
@@ -135,12 +135,12 @@ INSERT INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_cur
 INSERT INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('33', 'Malaysian Ringgit', 'MYR', 0, 'RM', 'P', 0, 1, 2, 'ms-MY');
 INSERT INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('34', 'Romanian Leu', 'RON', 0, 'L', 'S', 0, 1, 2, 'ro-RO');
 
-INSERT INTO assets (uid, icon, name, description, available_amount, loan_amount, deposit_amount, credit_limit, currency_uid,
+INSERT INTO asset (uid, icon, name, description, available_amount, loan_amount, deposit_amount, credit_limit, currency_uid,
     asset_type, category_uid, localize_names, localize_descriptions, position_index, last_updated)
     VALUES('20240823-1529-8009-a864-e7b9299a07f6', '{"codePoint":58360,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}',
     'Cash', 'The amount of cash in your wallet', 0.0, 0.0, 0.0, 0.0, '3', 'cash', '20240823-0515-8322-8813-46af221b06bc',
     '{"en":"Cash","vi":"Tiền mặt"}', '{"en":"The amount of cash in your wallet","vi":"Số tiền mặt bạn đang có"}', 1, unixepoch() * 1000);
-INSERT INTO assets (uid, icon, name, description, available_amount, loan_amount, deposit_amount, credit_limit, currency_uid,
+INSERT INTO asset (uid, icon, name, description, available_amount, loan_amount, deposit_amount, credit_limit, currency_uid,
     asset_type, category_uid, localize_names, localize_descriptions, position_index, last_updated)
     VALUES('20240824-1557-8718-b097-5d9d1c51ff98', '{"codePoint":62998,"fontFamily":"CupertinoIcons","fontPackage":"cupertino_icons","matchTextDirection":false}',
     'My Credit Card', 'My first credit card', 0.0, 0.0, 0.0, 10000.0, '3', 'creditCard', '20240814-1025-8e05-9011-a6fed676958f',

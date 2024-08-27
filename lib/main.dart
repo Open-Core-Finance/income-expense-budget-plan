@@ -1,9 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:flutter_iconpicker/extensions/string_extensions.dart';
+import 'package:income_expense_budget_plan/app-layout/mobile-landscape/mobile_landscape_home.dart';
 import 'package:income_expense_budget_plan/dao/setting_dao.dart';
-import 'package:income_expense_budget_plan/large-screen/home.dart';
+import 'package:income_expense_budget_plan/app-layout/mobile-portrait/mobile_portrait_home.dart';
 import 'package:income_expense_budget_plan/model/setting.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/database_service.dart';
@@ -26,13 +26,13 @@ void main() async {
   }
 
   SettingDao().loadSettings().then((SettingModel settings) {
-    currentAppState.systemSettings = settings;
+    currentAppState.systemSetting = settings;
     DatabaseService().loadListModel(tableNameCurrency, Currency.fromMap).then((currencies) {
       currentAppState.currencies = currencies;
       for (var i = 0; i < currencies.length; i++) {
         var currency = currencies[i];
         if (currency.id == settings.defaultCurrencyUid) {
-          currentAppState.systemSettings.defaultCurrency = currency;
+          currentAppState.systemSetting.defaultCurrency = currency;
         }
       }
       if (kDebugMode) {
@@ -49,10 +49,24 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    var media = MediaQuery.of(context);
+    var screenSize = media.size;
+    currentAppState.isMobile = screenSize.width < appMinWidthDesktop;
+    currentAppState.isLandscape = currentAppState.isMobile && screenSize.width > screenSize.height;
+    Widget homePage;
+    if (currentAppState.isMobile) {
+      if (currentAppState.isLandscape) {
+        homePage = const HomePageMobileLandscape();
+      } else {
+        homePage = const HomePageMobilePortrait();
+      }
+    } else {
+      homePage = Container(color: Colors.red);
+    }
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => currentAppState),
-        ChangeNotifierProvider(create: (context) => currentAppState.systemSettings)
+        ChangeNotifierProvider(create: (context) => currentAppState.systemSetting)
       ],
       builder: (context, child) => Consumer<SettingModel>(
         builder: (context, setting, child) => MaterialApp(
@@ -71,7 +85,7 @@ class MyApp extends StatelessWidget {
               useMaterial3: true,
               brightness: setting.brightness,
               iconTheme: const IconThemeData(color: Colors.blue)),
-          home: const HomePage(),
+          home: homePage,
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: [for (MapEntry<String, String> localeConfig in localeMap.entries) Locale(localeConfig.key)],
           localeResolutionCallback: (locale, supportedLocales) {
