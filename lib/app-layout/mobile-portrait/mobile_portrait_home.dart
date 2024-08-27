@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_iconpicker/extensions/string_extensions.dart';
 import 'package:income_expense_budget_plan/common/account_panel.dart';
-import 'package:income_expense_budget_plan/common/main_navigation_bar.dart';
 import 'package:income_expense_budget_plan/common/more_panel.dart';
 import 'package:income_expense_budget_plan/model/currency.dart';
 import 'package:income_expense_budget_plan/model/setting.dart';
@@ -14,19 +13,15 @@ import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:sqflite/sqflite.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class HomePageMobilePortrait extends StatefulWidget {
+  const HomePageMobilePortrait({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<HomePageMobilePortrait> createState() => _HomePageMobilePortraitState();
 }
 
-class _HomePageState extends State<HomePage> {
-  late final MainNavigationBar navBar;
-
-  _HomePageState() {
-    navBar = const MainNavigationBar();
-  }
+class _HomePageMobilePortraitState extends State<HomePageMobilePortrait> {
+  _HomePageMobilePortraitState() {}
 
   refresh() {
     setState(() {});
@@ -43,6 +38,9 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    if (kDebugMode) {
+      print("Current screensize ${MediaQuery.of(context).size}");
+    }
     final ThemeData theme = Theme.of(context);
     return Consumer<AppState>(
       builder: (context, appState, child) => Consumer<SettingModel>(
@@ -80,7 +78,34 @@ class _HomePageState extends State<HomePage> {
           //   shape: const CircularNotchedRectangle(),
           //   child: Container(height: 50.0)
           // ),
-          bottomNavigationBar: navBar,
+          bottomNavigationBar: NavigationBar(
+            onDestinationSelected: (int index) {
+              setState(() {
+                currentAppState.currentHomePageIndex = index;
+              });
+            },
+            indicatorColor: Colors.amber,
+            selectedIndex: currentAppState.currentHomePageIndex,
+            destinations: <Widget>[
+              NavigationDestination(
+                icon: const Icon(Icons.history),
+                label: AppLocalizations.of(context)!.navHistory,
+              ),
+              NavigationDestination(
+                selectedIcon: const Icon(Icons.home),
+                icon: const Icon(Icons.account_box),
+                label: AppLocalizations.of(context)!.navAccount,
+              ),
+              NavigationDestination(
+                icon: const Icon(Icons.analytics),
+                label: AppLocalizations.of(context)!.navReport,
+              ),
+              NavigationDestination(
+                icon: const Icon(Icons.more),
+                label: AppLocalizations.of(context)!.navMore,
+              ),
+            ],
+          ),
           // floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         ),
       ),
@@ -88,7 +113,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _startDefaultCurrencyCheck() async {
-    String? currencyId = currentAppState.systemSettings.defaultCurrencyUid;
+    String? currencyId = currentAppState.systemSetting.defaultCurrencyUid;
     if (currencyId == null || currencyId.isBlank) {
       if (kDebugMode) {
         print("Default currency [$currencyId] and isBlank [${currencyId?.isBlank}]");
@@ -127,10 +152,10 @@ class _DefaultCurrencySelectionDialog extends State<DefaultCurrencySelectionDial
           child: Text(AppLocalizations.of(context)!.actionConfirm),
           onPressed: () {
             if (_selectedCurrency != null) {
-              currentAppState.systemSettings.defaultCurrencyUid = _selectedCurrency?.id;
-              currentAppState.systemSettings.defaultCurrency = _selectedCurrency;
+              currentAppState.systemSetting.defaultCurrencyUid = _selectedCurrency?.id;
+              currentAppState.systemSetting.defaultCurrency = _selectedCurrency;
               DatabaseService().database.then((db) {
-                db.update(tableNameSettings, currentAppState.systemSettings.toMap(),
+                db.update(tableNameSetting, currentAppState.systemSetting.toMap(),
                     where: "id = ?", whereArgs: ["1"], conflictAlgorithm: ConflictAlgorithm.replace);
               });
               Navigator.of(context).pop();

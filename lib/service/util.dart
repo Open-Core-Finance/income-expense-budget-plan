@@ -6,6 +6,7 @@ import 'package:income_expense_budget_plan/dao/assets_dao.dart';
 import 'package:income_expense_budget_plan/model/asset_category.dart';
 import 'package:income_expense_budget_plan/model/assets.dart';
 import 'package:income_expense_budget_plan/model/generic_model.dart';
+import 'package:income_expense_budget_plan/model/setting.dart';
 import 'package:income_expense_budget_plan/model/transaction_category.dart';
 import 'dart:convert';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -137,7 +138,7 @@ class Util {
   }
 
   void refreshAssetCategories(Function(List<AssetCategory> c)? callback) {
-    AssetsDao().assetsCategories().then((categories) {
+    AssetsDao().assetCategories().then((categories) {
       if (kDebugMode) {
         print("Loaded categories $categories");
       }
@@ -149,7 +150,7 @@ class Util {
     });
   }
 
-  void refreshAssets(Function(List<Assets> a)? callback) {
+  void refreshAssets(Function(List<Asset> a)? callback) {
     AssetsDao().assets().then((assets) {
       if (kDebugMode) {
         print("Loaded assets $assets");
@@ -162,12 +163,12 @@ class Util {
     });
   }
 
-  void mappingAssetsAndCategories(List<Assets> assets, List<AssetCategory> assetCategories) {
+  void mappingAssetsAndCategories(List<Asset> assets, List<AssetCategory> assetCategories) {
     int startTime = DateTime.now().millisecondsSinceEpoch;
     if (kDebugMode) {
       print("\n****\nStarted mapping assets with categories at [$startTime].\n****\n");
     }
-    List<Assets> tmp = [];
+    List<Asset> tmp = [];
     tmp.addAll(assets);
     for (var category in assetCategories) {
       for (var i = 0; i < tmp.length; i++) {
@@ -304,7 +305,7 @@ class Util {
     return false;
   }
 
-  bool removeInAccountTree(List<AssetCategory> categories, Assets toRemove) {
+  bool removeInAccountTree(List<AssetCategory> categories, Asset toRemove) {
     for (int i = 0; i < categories.length; i++) {
       AssetCategory category = categories[i];
       var assets = category.assets;
@@ -345,8 +346,8 @@ class Util {
     }
   }
 
-  void swapAssetNode({required AssetCategory parentCat, required Assets origin, required Assets target, Function? callback}) {
-    List<Assets> assets = parentCat.assets;
+  void swapAssetNode({required AssetCategory parentCat, required Asset origin, required Asset target, Function? callback}) {
+    List<Asset> assets = parentCat.assets;
     int oldIndex = assets.indexOf(origin);
     int newIndex = assets.indexOf(target);
     if (oldIndex != newIndex) {
@@ -356,11 +357,62 @@ class Util {
         for (int i = min(oldIndex, newIndex); i <= max(oldIndex, newIndex); i++) {
           var a = assets[i];
           a.positionIndex = i + 1;
-          db.update(tableNameAssets, {'position_index': a.positionIndex},
+          db.update(tableNameAsset, {'position_index': a.positionIndex},
               where: "uid = ?", whereArgs: [a.id], conflictAlgorithm: ConflictAlgorithm.replace);
         }
         if (callback != null) callback();
       });
     }
+  }
+
+  void chooseBrightnessMode(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Select dark mode'),
+          content: SingleChildScrollView(
+            child: Column(
+              children: <Widget>[
+                for (int mode in [-1, 0, 1])
+                  ListTile(
+                    title: Text(SettingModel.parseDarkModeText(context, mode)),
+                    onTap: () {
+                      currentAppState.systemSetting.darkMode = mode;
+                      Navigator.of(context).pop();
+                    },
+                  )
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void chooseLanguage(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Select Language'),
+          content: SingleChildScrollView(
+            child: Column(
+              children: <Widget>[
+                for (MapEntry<String, String> localeConfig in localeMap.entries)
+                  ListTile(
+                    title: Text(localeMap[localeConfig.key]!),
+                    onTap: () {
+                      currentAppState.systemSetting.locale = Locale(localeConfig.key);
+                      currentAppState.triggerNotify();
+                      Navigator.of(context).pop();
+                    },
+                  )
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 }

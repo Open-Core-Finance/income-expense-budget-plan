@@ -24,22 +24,24 @@ class _MorePanelState extends State<MorePanel> {
     final ColorScheme colorScheme = theme.colorScheme;
     return ListView(
       children: <Widget>[
-        ListTile(
-          title: const Text('Dark Mode'),
-          subtitle: Text(currentAppState.systemSettings.getDarkModeText(context)),
-          onTap: _chooseDarkMode,
-        ),
-        ListTile(
-          title: const Text('Language'),
-          subtitle: Text(currentAppState.systemSettings.currentLanguageText),
-          onTap: _chooseLanguage,
-          iconColor: colorScheme.primary,
-        ),
-        ListTile(
-          title: Text(AppLocalizations.of(context)!.menuAccountCategory),
-          onTap: () => Util().navigateTo(context, const AssetsCategoriesPanel()),
-          iconColor: colorScheme.primary,
-        ),
+        if (!currentAppState.isLandscape) ...[
+          ListTile(
+            title: Text(AppLocalizations.of(context)!.settingsDarkMode),
+            subtitle: Text(currentAppState.systemSetting.getDarkModeText(context)),
+            onTap: () => Util().chooseBrightnessMode(context),
+          ),
+          ListTile(
+            title: const Text('Language'),
+            subtitle: Text(currentAppState.systemSetting.currentLanguageText),
+            onTap: () => Util().chooseLanguage(context),
+            iconColor: colorScheme.primary,
+          ),
+          ListTile(
+            title: Text(AppLocalizations.of(context)!.menuAccountCategory),
+            onTap: () => Util().navigateTo(context, const AssetCategoriesPanel()),
+            iconColor: colorScheme.primary,
+          )
+        ],
         ListTile(
           title: Text(AppLocalizations.of(context)!.menuExpenseCategory),
           onTap: () {
@@ -94,57 +96,6 @@ class _MorePanelState extends State<MorePanel> {
           iconColor: colorScheme.primary,
         )
       ],
-    );
-  }
-
-  void _chooseLanguage() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Select Language'),
-          content: SingleChildScrollView(
-            child: Column(
-              children: <Widget>[
-                for (MapEntry<String, String> localeConfig in localeMap.entries)
-                  ListTile(
-                    title: Text(localeMap[localeConfig.key]!),
-                    onTap: () {
-                      currentAppState.systemSettings.locale = Locale(localeConfig.key);
-                      currentAppState.triggerNotify();
-                      Navigator.of(context).pop();
-                    },
-                  )
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  void _chooseDarkMode() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Select dark mode'),
-          content: SingleChildScrollView(
-            child: Column(
-              children: <Widget>[
-                for (int mode in [-1, 0, 1])
-                  ListTile(
-                    title: Text(SettingModel.parseDarkModeText(context, mode)),
-                    onTap: () {
-                      currentAppState.systemSettings.darkMode = mode;
-                      Navigator.of(context).pop();
-                    },
-                  )
-              ],
-            ),
-          ),
-        );
-      },
     );
   }
 }

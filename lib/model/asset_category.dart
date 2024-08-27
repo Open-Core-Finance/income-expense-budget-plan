@@ -15,7 +15,7 @@ class AssetCategory extends AssetTreeNode {
   bool system = false;
   int positionIndex = 0;
   late DateTime lastUpdated;
-  List<Assets> assets = [];
+  List<Asset> assets = [];
 
   AssetCategory(
       {required super.id,
@@ -36,7 +36,7 @@ class AssetCategory extends AssetTreeNode {
     }
   }
 
-  // Convert a Assets into a Map. The keys must correspond to the names of the columns in the database.
+  // Convert a Asset into a Map. The keys must correspond to the names of the columns in the database.
   @override
   Map<String, Object?> toMap() {
     return {
@@ -51,7 +51,7 @@ class AssetCategory extends AssetTreeNode {
   }
 
   // Implement toString to make it easier to see information about
-  // each Assets when using the print statement.
+  // each Asset when using the print statement.
   @override
   String toString() {
     return '{"${idFieldName()}": "$id", "name": "$name", "icon": ${Util().iconDataToJSONString(icon)},"system": $system, "localizeNames": ${jsonEncode(localizeNames)},'

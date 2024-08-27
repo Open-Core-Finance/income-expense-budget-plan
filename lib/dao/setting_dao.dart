@@ -10,9 +10,9 @@ class SettingDao {
   SettingDao();
 
   Future<SettingModel> loadSettings() async {
-    var listSettings = await databaseService.loadListModel(tableNameSettings, SettingModel.fromMap);
+    var listSettings = await databaseService.loadListModel(tableNameSetting, SettingModel.fromMap);
     if (kDebugMode) {
-      print("Loaded settings $listSettings");
+      print("Loaded setting $listSettings");
     }
     SettingModel result;
     if (listSettings.isEmpty) {
@@ -26,7 +26,7 @@ class SettingDao {
       }
       result = SettingModel(localeKey: systemLocaleStr);
       databaseService.database.then((database) {
-        database.insert(tableNameSettings, result.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+        database.insert(tableNameSetting, result.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
       });
     } else {
       result = listSettings.first;

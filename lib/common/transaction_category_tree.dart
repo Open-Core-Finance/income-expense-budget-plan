@@ -214,7 +214,7 @@ class TransactionCategoryTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    var textLocalizeLanguage = entry.node.localizeNames[currentAppState.systemSettings.locale?.languageCode];
+    var textLocalizeLanguage = entry.node.localizeNames[currentAppState.systemSetting.locale?.languageCode];
     var category = entry.node;
     String tileText;
     if (textLocalizeLanguage?.isNotEmpty == true) {

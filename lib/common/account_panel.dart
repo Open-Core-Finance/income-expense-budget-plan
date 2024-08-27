@@ -44,7 +44,7 @@ class _AccountPanelState extends State<AccountPanel> {
     for (var category in categories) {
       category.assets.removeRange(0, category.assets.length);
     }
-    Util().refreshAssets((List<Assets> assets) {
+    Util().refreshAssets((List<Asset> assets) {
       Util().mappingAssetsAndCategories(assets, categories);
       this.categories = [];
       this.categories.addAll(categories);
@@ -97,7 +97,7 @@ class _AccountPanelState extends State<AccountPanel> {
           },
           defaultExpansionState: true,
           parentProvider: (AssetTreeNode node) {
-            if (node is Assets) {
+            if (node is Asset) {
               return node.category;
             } else {
               return null;
@@ -125,14 +125,14 @@ class _AccountPanelState extends State<AccountPanel> {
                   var target = details.targetNode;
                   treeController!.setExpansionState(target, true);
                   if (target is AssetCategory) {
-                    var originAsset = (origin as Assets);
+                    var originAsset = (origin as Asset);
                     var originCat = originAsset.category;
                     if (originCat?.id != target.id) {
                       _switchAssetCat(originAsset, originCat!, target, () => setState(() {}));
                     }
                   } else {
-                    var originAsset = (origin as Assets);
-                    var targetAsset = (target as Assets);
+                    var originAsset = (origin as Asset);
+                    var targetAsset = (target as Asset);
                     var originCat = originAsset.category;
                     var targetCat = targetAsset.category;
                     if (originCat?.id != targetCat?.id) {
@@ -197,14 +197,14 @@ class _AccountPanelState extends State<AccountPanel> {
     );
   }
 
-  void _switchAssetCat(Assets originAsset, AssetCategory originCat, AssetCategory targetCategory, Function? callback) {
+  void _switchAssetCat(Asset originAsset, AssetCategory originCat, AssetCategory targetCategory, Function? callback) {
     originCat.assets.remove(originAsset);
     originAsset.category = targetCategory;
     originAsset.categoryUid = targetCategory.id!;
     originAsset.positionIndex = targetCategory.assets.length;
     targetCategory.assets.add(originAsset);
     DatabaseService().database.then((db) {
-      var f = db.update(tableNameAssets, originAsset.toMap(),
+      var f = db.update(tableNameAsset, originAsset.toMap(),
           where: "uid = ?", whereArgs: [originAsset.id], conflictAlgorithm: ConflictAlgorithm.replace);
       f.then((_) {
         if (callback != null) callback();
@@ -212,7 +212,7 @@ class _AccountPanelState extends State<AccountPanel> {
     });
   }
 
-  void _showRemoveDialog(BuildContext context, Assets category) {
+  void _showRemoveDialog(BuildContext context, Asset category) {
     Util().showRemoveDialogByField(context, category,
         tableName: tableNameTransactionCategory,
         titleLocalize: AppLocalizations.of(context)!.accountDeleteDialogTitle,
@@ -227,7 +227,7 @@ class _AccountPanelState extends State<AccountPanel> {
         });
   }
 
-  void _assetRefreshed(List<Assets> assets, bool isNew) {
+  void _assetRefreshed(List<Asset> assets, bool isNew) {
     _reloadAssets(currentAppState.assetCategories);
   }
 
@@ -240,9 +240,9 @@ class _AccountPanelState extends State<AccountPanel> {
 class AssetTreeNodeTile extends StatelessWidget {
   final TreeEntry<AssetTreeNode> entry;
   final VoidCallback onTap;
-  final Function(BuildContext context, Assets category) removeCall;
+  final Function(BuildContext context, Asset category) removeCall;
   final TreeDragAndDropDetails? details;
-  final Function(List<Assets> cats, bool isAddNew)? editCallBack;
+  final Function(List<Asset> cats, bool isAddNew)? editCallBack;
   final Function(List<AssetCategory> cats, bool isAddNew)? editCategoryCallBack;
 
   const AssetTreeNodeTile(
@@ -257,7 +257,7 @@ class AssetTreeNodeTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    var textLocalizeLanguage = entry.node.localizeNames[currentAppState.systemSettings.locale?.languageCode];
+    var textLocalizeLanguage = entry.node.localizeNames[currentAppState.systemSetting.locale?.languageCode];
     var category = entry.node;
     String tileText;
     if (textLocalizeLanguage?.isNotEmpty == true) {
@@ -286,22 +286,22 @@ class AssetTreeNodeTile extends StatelessWidget {
               IconButton(
                 icon: Icon(Icons.edit, color: theme.primaryColor),
                 onPressed: () {
-                  if (category is Assets) {
-                    Util().navigateTo(context, AddAccountForm(editingAssets: category, editCallback: editCallBack));
+                  if (category is Asset) {
+                    Util().navigateTo(context, AddAccountForm(editingAsset: category, editCallback: editCallBack));
                   } else {
                     Util().navigateTo(
                       context,
-                      AddAssetsCategoryPanel(editingCategory: category as AssetCategory, editCallback: editCategoryCallBack),
+                      AddAssetCategoryForm(editingCategory: category as AssetCategory, editCallback: editCategoryCallBack),
                     );
                   }
                 },
               ),
-              if (category is Assets) ...[
+              if (category is Asset) ...[
                 IconButton(icon: Icon(Icons.delete, color: theme.colorScheme.error), onPressed: () => removeCall(context, category)),
                 const Icon(Icons.drag_handle)
               ],
               if (category is AssetCategory)
-                IconButton(icon: const Icon(Icons.tune), onPressed: () => Util().navigateTo(context, const AssetsCategoriesPanel()))
+                IconButton(icon: const Icon(Icons.tune), onPressed: () => Util().navigateTo(context, const AssetCategoriesPanel()))
             ],
           ),
         ),
@@ -317,7 +317,7 @@ class AssetTreeNodeTile extends StatelessWidget {
       );
     }
 
-    if (entry.node is Assets) {
+    if (entry.node is Asset) {
       return TreeDraggable<AssetTreeNode>(
         node: entry.node,
 

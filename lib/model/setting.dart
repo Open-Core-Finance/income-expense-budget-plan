@@ -32,7 +32,7 @@ class SettingModel extends ChangeNotifier {
   set locale(Locale? locale) {
     _locale = locale;
     DatabaseService().database.then((Database db) {
-      db.insert(tableNameSettings, toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+      db.insert(tableNameSetting, toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
     });
     notifyListeners();
   }
@@ -40,20 +40,17 @@ class SettingModel extends ChangeNotifier {
   set darkMode(int darkMode) {
     _darkMode = darkMode;
     DatabaseService().database.then((Database db) {
-      db.insert(tableNameSettings, toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+      db.insert(tableNameSetting, toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
     });
     notifyListeners();
   }
 
   String get currentLanguageText => localeMap[_locale?.languageCode] ?? 'English';
 
-  // Convert a Assets into a Map. The keys must correspond to the names of the columns in the database.
   Map<String, Object?> toMap() {
     return {'id': 1, 'locale': _locale?.languageCode ?? 'en', 'dark_mode': darkMode, 'default_currency_uid': defaultCurrencyUid};
   }
 
-  // Implement toString to make it easier to see information about
-  // each Assets when using the print statement.
   @override
   String toString() {
     return '{"locale": "$_locale", "darkMode": "$darkMode", "defaultCurrencyUid": "$defaultCurrencyUid"}';

@@ -7,22 +7,22 @@ class AssetsDao {
   final DatabaseService databaseService = DatabaseService();
   AssetsDao();
 
-  Future<List<AssetCategory>> assetsCategories() async {
-    return databaseService.loadListModel(tableNameAssetsCategory, AssetCategory.fromMap);
+  Future<List<AssetCategory>> assetCategories() async {
+    return databaseService.loadListModel(tableNameAssetCategory, AssetCategory.fromMap);
   }
 
   Future<List<Map<String, dynamic>>> loadCategoryByNameAndIgnoreSpecificCategory(String name, String? uuidToIgnore) async {
     final db = await databaseService.database;
     List<Map<String, dynamic>> result = await db.query(
-      tableNameAssetsCategory,
+      tableNameAssetCategory,
       where: 'name = ?${uuidToIgnore != null ? ' and uid != ?' : ''}',
       whereArgs: uuidToIgnore != null ? [name, uuidToIgnore] : [name],
     );
     return result;
   }
 
-  Future<List<Assets>> assets() async {
-    return databaseService.loadListModel(tableNameAssets, (Map<String, Object?> record) {
+  Future<List<Asset>> assets() async {
+    return databaseService.loadListModel(tableNameAsset, (Map<String, Object?> record) {
       String assetType = record['asset_type']! as String;
       switch (assetType) {
         case "cash":
@@ -44,7 +44,7 @@ class AssetsDao {
   Future<List<Map<String, dynamic>>> loadAssetsByNameAndIgnoreSpecificCategory(String name, String? uuidToIgnore) async {
     final db = await databaseService.database;
     List<Map<String, dynamic>> result = await db.query(
-      tableNameAssets,
+      tableNameAsset,
       where: 'name = ?${uuidToIgnore != null ? ' and uid != ?' : ''}',
       whereArgs: uuidToIgnore != null ? [name, uuidToIgnore] : [name],
     );

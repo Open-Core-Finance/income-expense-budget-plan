@@ -13,14 +13,14 @@ import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/v8.dart';
 
-class AssetsCategoriesPanel extends StatefulWidget {
-  const AssetsCategoriesPanel({super.key});
+class AssetCategoriesPanel extends StatefulWidget {
+  const AssetCategoriesPanel({super.key});
 
   @override
-  State<AssetsCategoriesPanel> createState() => _AssetsCategoriesPanelState();
+  State<AssetCategoriesPanel> createState() => _AssetCategoriesPanelState();
 }
 
-class _AssetsCategoriesPanelState extends State<AssetsCategoriesPanel> {
+class _AssetCategoriesPanelState extends State<AssetCategoriesPanel> {
   @override
   void initState() {
     super.initState();
@@ -45,7 +45,7 @@ class _AssetsCategoriesPanelState extends State<AssetsCategoriesPanel> {
         foregroundColor: theme.primaryColor,
         backgroundColor: theme.iconTheme.color,
         shape: const CircleBorder(),
-        onPressed: () => Util().navigateTo(context, const AddAssetsCategoryPanel()),
+        onPressed: () => Util().navigateTo(context, const AddAssetCategoryForm()),
         child: const Icon(Icons.add),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -55,14 +55,14 @@ class _AssetsCategoriesPanelState extends State<AssetsCategoriesPanel> {
             ListTile(
               key: ValueKey(category),
               leading: Icon(category.icon, color: theme.iconTheme.color), // Icon on the left
-              title: Text(category.localizeNames[currentAppState.systemSettings.locale?.languageCode]?.isNotEmpty == true
-                  ? category.localizeNames[currentAppState.systemSettings.locale!.languageCode]!
+              title: Text(category.localizeNames[currentAppState.systemSetting.locale?.languageCode]?.isNotEmpty == true
+                  ? category.localizeNames[currentAppState.systemSetting.locale!.languageCode]!
                   : category.name), // Title of the item
               trailing: category.system
                   ? null
                   : IconButton(
                       icon: Icon(Icons.delete, color: theme.colorScheme.error), onPressed: () => _showRemoveDialog(context, category)),
-              onTap: () => Util().navigateTo(context, AddAssetsCategoryPanel(editingCategory: category)),
+              onTap: () => Util().navigateTo(context, AddAssetCategoryForm(editingCategory: category)),
             ),
         ],
         onReorder: (oldIndex, newIndex) => appState.reOrderAssetCategory(oldIndex, newIndex),
@@ -76,7 +76,7 @@ class _AssetsCategoriesPanelState extends State<AssetsCategoriesPanel> {
 
   void _showRemoveDialog(BuildContext context, AssetCategory category) {
     Util().showRemoveDialogByField(context, category,
-        tableName: tableNameAssetsCategory,
+        tableName: tableNameAssetCategory,
         titleLocalize: AppLocalizations.of(context)!.accountCategoryDeleteDialogTitle,
         confirmLocalize: AppLocalizations.of(context)!.accountCategoryDeleteConfirm,
         successLocalize: AppLocalizations.of(context)!.accountCategoryDeleteSuccess,
@@ -85,16 +85,16 @@ class _AssetsCategoriesPanelState extends State<AssetsCategoriesPanel> {
   }
 }
 
-class AddAssetsCategoryPanel extends StatefulWidget {
+class AddAssetCategoryForm extends StatefulWidget {
   final AssetCategory? editingCategory;
   final Function(List<AssetCategory> assets, bool isAddNew)? editCallback;
-  const AddAssetsCategoryPanel({super.key, this.editingCategory, this.editCallback});
+  const AddAssetCategoryForm({super.key, this.editingCategory, this.editCallback});
 
   @override
-  State<AddAssetsCategoryPanel> createState() => _AddAssetsCategoryPanelState();
+  State<AddAssetCategoryForm> createState() => _AddAssetCategoryFormState();
 }
 
-class _AddAssetsCategoryPanelState extends State<AddAssetsCategoryPanel> {
+class _AddAssetCategoryFormState extends State<AddAssetCategoryForm> {
   late bool _isChecking;
   late bool _isValidCategoryName;
   late IconData _selectedIcon;
@@ -320,7 +320,7 @@ class _AddAssetsCategoryPanelState extends State<AddAssetsCategoryPanel> {
           _editingCategory?.name = _categoryNameController.text;
           _editingCategory?.localizeNames = localizeMap;
           _editingCategory?.lastUpdated = DateTime.now();
-          db.update(tableNameAssetsCategory, _editingCategory!.toMap(),
+          db.update(tableNameAssetCategory, _editingCategory!.toMap(),
               where: "uid = ?", whereArgs: [_editingCategory!.id], conflictAlgorithm: ConflictAlgorithm.replace);
           setState(() {
             appState.triggerNotify();
@@ -336,7 +336,7 @@ class _AddAssetsCategoryPanelState extends State<AddAssetsCategoryPanel> {
           index: appState.assetCategories.length,
         );
         DatabaseService().database.then((db) {
-          db.insert(tableNameAssetsCategory, assetCategory.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+          db.insert(tableNameAssetCategory, assetCategory.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
           setState(() {
             appState.assetCategories.add(assetCategory);
             appState.triggerNotify();
