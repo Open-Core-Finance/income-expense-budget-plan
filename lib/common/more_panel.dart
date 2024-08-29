@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:income_expense_budget_plan/common/assets_categories_panel.dart';
 import 'package:income_expense_budget_plan/common/transaction_categories_panel.dart';
 import 'package:income_expense_budget_plan/dao/transaction_dao.dart';
-import 'package:income_expense_budget_plan/model/setting.dart';
 import 'package:income_expense_budget_plan/model/transaction_category.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/util.dart';

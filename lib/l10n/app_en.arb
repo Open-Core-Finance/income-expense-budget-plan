@@ -5,6 +5,7 @@
   "navAccount": "Account",
   "navMore": "More",
   "navAccountCategory": "Account\ncategory",
+  "navTransactionCategory": "Transaction category",
   "menuAccountCategory": "Account category",
   "menuIncomeCategory": "Income category",
   "menuExpenseCategory": "Expense category",

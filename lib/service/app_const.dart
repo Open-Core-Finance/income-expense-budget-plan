@@ -19,6 +19,8 @@ const int appMinHeight = 375;
 const int appMinPortraitHeight = 667;
 const int appMinWidthDesktop = 768;
 
+const tabSelectedColor = Color.fromARGB(255, 237, 202, 113);
+
 // Share data
 final platformBrightness = PlatformDispatcher.instance.platformBrightness;
 

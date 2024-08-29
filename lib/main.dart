@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:income_expense_budget_plan/app-layout/desktop/desktop_home.dart';
 import 'package:income_expense_budget_plan/app-layout/mobile-landscape/mobile_landscape_home.dart';
 import 'package:income_expense_budget_plan/dao/setting_dao.dart';
 import 'package:income_expense_budget_plan/app-layout/mobile-portrait/mobile_portrait_home.dart';
@@ -61,7 +62,7 @@ class MyApp extends StatelessWidget {
         homePage = const HomePageMobilePortrait();
       }
     } else {
-      homePage = Container(color: Colors.red);
+      homePage = const HomePageDesktop();
     }
     return MultiProvider(
       providers: [

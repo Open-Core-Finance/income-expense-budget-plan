@@ -14,13 +14,12 @@ import 'package:sqflite/sqflite.dart';
 import 'package:uuid/v8.dart';
 
 class TransactionCategoriesPanel extends StatefulWidget {
+  final bool disableBack;
+
   final String listPanelTitle;
   final String addPanelTitle;
-  const TransactionCategoriesPanel({
-    super.key,
-    required this.listPanelTitle,
-    required this.addPanelTitle,
-  });
+  const TransactionCategoriesPanel({super.key, required this.listPanelTitle, required this.addPanelTitle, bool? disableBack})
+      : disableBack = disableBack ?? false;
 
   @override
   State<TransactionCategoriesPanel> createState() => _TransactionCategoriesPanelState();
@@ -51,10 +50,12 @@ class _TransactionCategoriesPanelState extends State<TransactionCategoriesPanel>
     }
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: colorScheme.secondary),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+        leading: widget.disableBack
+            ? null
+            : IconButton(
+                icon: Icon(Icons.arrow_back, color: colorScheme.secondary),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
         title: Text(_listPanelTitle),
       ),
       body: body,
