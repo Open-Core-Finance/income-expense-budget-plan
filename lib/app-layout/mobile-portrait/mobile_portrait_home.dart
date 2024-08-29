@@ -1,17 +1,15 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_iconpicker/extensions/string_extensions.dart';
+import 'package:income_expense_budget_plan/app-layout/desktop/desktop_home.dart';
 import 'package:income_expense_budget_plan/common/account_panel.dart';
+import 'package:income_expense_budget_plan/common/default_currency_selection.dart';
 import 'package:income_expense_budget_plan/common/more_panel.dart';
-import 'package:income_expense_budget_plan/model/currency.dart';
 import 'package:income_expense_budget_plan/model/setting.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/app_state.dart';
-import 'package:income_expense_budget_plan/service/database_service.dart';
-import 'package:income_expense_budget_plan/service/util.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:sqflite/sqflite.dart';
 
 class HomePageMobilePortrait extends StatefulWidget {
   const HomePageMobilePortrait({super.key});
@@ -73,7 +71,7 @@ class _HomePageMobilePortraitState extends State<HomePageMobilePortrait> {
               ),
             ),
             const MorePanel()
-          ][appState.currentHomePageIndex],
+          ][appState.currentHomePageIndex % 4],
           // bottomNavigationBar: BottomAppBar(
           //   shape: const CircularNotchedRectangle(),
           //   child: Container(height: 50.0)
@@ -84,7 +82,7 @@ class _HomePageMobilePortraitState extends State<HomePageMobilePortrait> {
                 currentAppState.currentHomePageIndex = index;
               });
             },
-            indicatorColor: Colors.amber,
+            indicatorColor: tabSelectedColor,
             selectedIndex: currentAppState.currentHomePageIndex,
             destinations: <Widget>[
               NavigationDestination(
@@ -120,51 +118,5 @@ class _HomePageMobilePortraitState extends State<HomePageMobilePortrait> {
       }
       showDialog(context: context, builder: (BuildContext context) => const DefaultCurrencySelectionDialog());
     }
-  }
-}
-
-class DefaultCurrencySelectionDialog extends StatefulWidget {
-  const DefaultCurrencySelectionDialog({super.key});
-
-  @override
-  State<DefaultCurrencySelectionDialog> createState() => _DefaultCurrencySelectionDialog();
-}
-
-class _DefaultCurrencySelectionDialog extends State<DefaultCurrencySelectionDialog> {
-  Currency? _selectedCurrency;
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(AppLocalizations.of(context)!.currencyDialogTitleSelectDefault),
-      content: SingleChildScrollView(
-        child: ListBody(children: <Widget>[
-          for (var currency in currentAppState.currencies)
-            RadioListTile(
-              title: Text("${currency.name} (${currency.symbol})"),
-              value: currency,
-              groupValue: _selectedCurrency,
-              onChanged: (Currency? value) => setState(() => _selectedCurrency = value),
-            ),
-        ]),
-      ),
-      actions: <Widget>[
-        TextButton(
-          child: Text(AppLocalizations.of(context)!.actionConfirm),
-          onPressed: () {
-            if (_selectedCurrency != null) {
-              currentAppState.systemSetting.defaultCurrencyUid = _selectedCurrency?.id;
-              currentAppState.systemSetting.defaultCurrency = _selectedCurrency;
-              DatabaseService().database.then((db) {
-                db.update(tableNameSetting, currentAppState.systemSetting.toMap(),
-                    where: "id = ?", whereArgs: ["1"], conflictAlgorithm: ConflictAlgorithm.replace);
-              });
-              Navigator.of(context).pop();
-            } else {
-              Util().showErrorDialog(context, AppLocalizations.of(context)!.currencyDialogEmptySelectionError, null);
-            }
-          },
-        ),
-      ],
-    );
   }
 }

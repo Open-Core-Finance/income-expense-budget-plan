@@ -1,23 +1,17 @@
-import 'package:currency_text_input_formatter/currency_text_input_formatter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:flutter_iconpicker/flutter_iconpicker.dart';
 import 'package:income_expense_budget_plan/common/add_account_form.dart';
 import 'package:income_expense_budget_plan/common/assets_categories_panel.dart';
-import 'package:income_expense_budget_plan/dao/assets_dao.dart';
 import 'package:income_expense_budget_plan/model/asset_category.dart';
 import 'package:income_expense_budget_plan/model/assets.dart';
-import 'package:income_expense_budget_plan/model/currency.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/app_state.dart';
-import 'package:income_expense_budget_plan/service/form_util.dart';
 import 'package:income_expense_budget_plan/service/database_service.dart';
 import 'package:income_expense_budget_plan/service/util.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:uuid/v8.dart';
 
 class AccountPanel extends StatefulWidget {
   const AccountPanel({super.key});
@@ -106,83 +100,90 @@ class _AccountPanelState extends State<AccountPanel> {
         );
         return Scaffold(
           appBar: AppBar(title: Text(accountTitle)),
-          body: AnimatedTreeView<AssetTreeNode>(
-            treeController: treeController!,
-            nodeBuilder: (BuildContext context, TreeEntry<AssetTreeNode> entry) {
-              var nodeObj = entry.node;
-              // Provide a widget to display your tree nodes in the tree view.
-              //
-              // Can be any widget, just make sure to include a [TreeIndentation]
-              // within its widget subtree to properly indent your tree nodes.
-              return TreeDragTarget<AssetTreeNode>(
-                node: entry.node,
-                onNodeAccepted: (TreeDragAndDropDetails<AssetTreeNode> details) {
-                  if (kDebugMode) {
-                    print("Accepted $details");
-                  }
-                  var origin = details.draggedNode;
-                  treeController!.setExpansionState(origin, true);
-                  var target = details.targetNode;
-                  treeController!.setExpansionState(target, true);
-                  if (target is AssetCategory) {
-                    var originAsset = (origin as Asset);
-                    var originCat = originAsset.category;
-                    if (originCat?.id != target.id) {
-                      _switchAssetCat(originAsset, originCat!, target, () => setState(() {}));
-                    }
-                  } else {
-                    var originAsset = (origin as Asset);
-                    var targetAsset = (target as Asset);
-                    var originCat = originAsset.category;
-                    var targetCat = targetAsset.category;
-                    if (originCat?.id != targetCat?.id) {
-                      _switchAssetCat(originAsset, originCat!, targetCat!, () {
-                        Util()
-                            .swapAssetNode(parentCat: targetCat, origin: originAsset, target: targetAsset, callback: () => setState(() {}));
-                      });
-                    } else {
-                      Util()
-                          .swapAssetNode(parentCat: targetCat!, origin: originAsset, target: targetAsset, callback: () => setState(() {}));
-                    }
-                  }
-                },
-                onWillAcceptWithDetails: (DragTargetDetails<AssetTreeNode> details) {
-                  if (kDebugMode) {
-                    print("Details data [${details.data}] offset [${details.offset}]");
-                  }
-                  // Optionally make sure the target node is expanded so the dragging
-                  // node is visible in its new vicinity when the tree gets rebuilt.
-                  treeController!.setExpansionState(details.data, true);
+          body: Column(
+            children: [
+              Flexible(
+                child: AnimatedTreeView<AssetTreeNode>(
+                  treeController: treeController!,
+                  nodeBuilder: (BuildContext context, TreeEntry<AssetTreeNode> entry) {
+                    var nodeObj = entry.node;
+                    // Provide a widget to display your tree nodes in the tree view.
+                    //
+                    // Can be any widget, just make sure to include a [TreeIndentation]
+                    // within its widget subtree to properly indent your tree nodes.
+                    return TreeDragTarget<AssetTreeNode>(
+                      node: entry.node,
+                      onNodeAccepted: (TreeDragAndDropDetails<AssetTreeNode> details) {
+                        if (kDebugMode) {
+                          print("Accepted $details");
+                        }
+                        var origin = details.draggedNode;
+                        treeController!.setExpansionState(origin, true);
+                        var target = details.targetNode;
+                        treeController!.setExpansionState(target, true);
+                        if (target is AssetCategory) {
+                          var originAsset = (origin as Asset);
+                          var originCat = originAsset.category;
+                          if (originCat?.id != target.id) {
+                            _switchAssetCat(originAsset, originCat!, target, () => setState(() {}));
+                          }
+                        } else {
+                          var originAsset = (origin as Asset);
+                          var targetAsset = (target as Asset);
+                          var originCat = originAsset.category;
+                          var targetCat = targetAsset.category;
+                          if (originCat?.id != targetCat?.id) {
+                            _switchAssetCat(originAsset, originCat!, targetCat!, () {
+                              Util().swapAssetNode(
+                                  parentCat: targetCat, origin: originAsset, target: targetAsset, callback: () => setState(() {}));
+                            });
+                          } else {
+                            Util().swapAssetNode(
+                                parentCat: targetCat!, origin: originAsset, target: targetAsset, callback: () => setState(() {}));
+                          }
+                        }
+                      },
+                      onWillAcceptWithDetails: (DragTargetDetails<AssetTreeNode> details) {
+                        if (kDebugMode) {
+                          print("Details data [${details.data}] offset [${details.offset}]");
+                        }
+                        // Optionally make sure the target node is expanded so the dragging
+                        // node is visible in its new vicinity when the tree gets rebuilt.
+                        treeController!.setExpansionState(details.data, true);
 
-                  return true;
-                },
-                onLeave: (AssetTreeNode? data) {
-                  if (data != null) {
-                    treeController!.setExpansionState(data, true);
-                  }
-                },
-                builder: (BuildContext context, TreeDragAndDropDetails? details) => AssetTreeNodeTile(
-                  // Add a key to your tiles to avoid syncing descendant animations.
-                  key: ValueKey(nodeObj),
-                  // Your tree nodes are wrapped in TreeEntry instances when traversing the tree, these objects hold important details about its node
-                  // relative to the tree, like: expansion state, level, parent, etc.
-                  //
-                  // TreeEntries are short lived, each time TreeController.rebuild is called, a new TreeEntry is created for each node so its properties
-                  // are always up to date.
-                  entry: entry,
-                  // Add a callback to toggle the expansion state of this node.
-                  onTap: () {
-                    treeController!.toggleExpansion(nodeObj);
+                        return true;
+                      },
+                      onLeave: (AssetTreeNode? data) {
+                        if (data != null) {
+                          treeController!.setExpansionState(data, true);
+                        }
+                      },
+                      builder: (BuildContext context, TreeDragAndDropDetails? details) => AssetTreeNodeTile(
+                        // Add a key to your tiles to avoid syncing descendant animations.
+                        key: ValueKey(nodeObj),
+                        // Your tree nodes are wrapped in TreeEntry instances when traversing the tree, these objects hold important details about its node
+                        // relative to the tree, like: expansion state, level, parent, etc.
+                        //
+                        // TreeEntries are short lived, each time TreeController.rebuild is called, a new TreeEntry is created for each node so its properties
+                        // are always up to date.
+                        entry: entry,
+                        // Add a callback to toggle the expansion state of this node.
+                        onTap: () {
+                          treeController!.toggleExpansion(nodeObj);
+                        },
+                        removeCall: _showRemoveDialog,
+                        details: details,
+                        editCallBack: _assetRefreshed,
+                        editCategoryCallBack: _assetCategoriesRefreshed,
+                      ),
+                      toggleExpansionOnHover: true,
+                      canToggleExpansion: true,
+                    );
                   },
-                  removeCall: _showRemoveDialog,
-                  details: details,
-                  editCallBack: _assetRefreshed,
-                  editCategoryCallBack: _assetCategoriesRefreshed,
                 ),
-                toggleExpansionOnHover: true,
-                canToggleExpansion: true,
-              );
-            },
+              ),
+              const SizedBox(height: 45)
+            ],
           ),
           floatingActionButton: FloatingActionButton(
             foregroundColor: colorScheme.primary,

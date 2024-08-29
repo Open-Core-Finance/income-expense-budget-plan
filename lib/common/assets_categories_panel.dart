@@ -14,7 +14,8 @@ import 'package:sqflite/sqflite.dart';
 import 'package:uuid/v8.dart';
 
 class AssetCategoriesPanel extends StatefulWidget {
-  const AssetCategoriesPanel({super.key});
+  final bool disableBack;
+  const AssetCategoriesPanel({super.key, bool? disableBack}) : disableBack = disableBack ?? false;
 
   @override
   State<AssetCategoriesPanel> createState() => _AssetCategoriesPanelState();
@@ -35,10 +36,12 @@ class _AssetCategoriesPanelState extends State<AssetCategoriesPanel> {
     final ColorScheme colorScheme = theme.colorScheme;
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: colorScheme.secondary),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+        leading: widget.disableBack
+            ? null
+            : IconButton(
+                icon: Icon(Icons.arrow_back, color: colorScheme.secondary),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
         title: Text(accountCategoryLabel),
       ),
       floatingActionButton: FloatingActionButton(
@@ -49,27 +52,31 @@ class _AssetCategoriesPanelState extends State<AssetCategoriesPanel> {
         child: const Icon(Icons.add),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      body: ReorderableListView(
-        children: <Widget>[
-          for (AssetCategory category in appState.assetCategories)
-            ListTile(
-              key: ValueKey(category),
-              leading: Icon(category.icon, color: theme.iconTheme.color), // Icon on the left
-              title: Text(category.localizeNames[currentAppState.systemSetting.locale?.languageCode]?.isNotEmpty == true
-                  ? category.localizeNames[currentAppState.systemSetting.locale!.languageCode]!
-                  : category.name), // Title of the item
-              trailing: category.system
-                  ? null
-                  : IconButton(
-                      icon: Icon(Icons.delete, color: theme.colorScheme.error), onPressed: () => _showRemoveDialog(context, category)),
-              onTap: () => Util().navigateTo(context, AddAssetCategoryForm(editingCategory: category)),
+      body: Column(
+        children: [
+          Flexible(
+            child: ReorderableListView(
+              children: <Widget>[
+                for (AssetCategory category in appState.assetCategories)
+                  ListTile(
+                    key: ValueKey(category),
+                    leading: Icon(category.icon, color: theme.iconTheme.color), // Icon on the left
+                    title: Text(category.localizeNames[currentAppState.systemSetting.locale?.languageCode]?.isNotEmpty == true
+                        ? category.localizeNames[currentAppState.systemSetting.locale!.languageCode]!
+                        : category.name), // Title of the item
+                    trailing: category.system
+                        ? null
+                        : IconButton(
+                            icon: Icon(Icons.delete, color: theme.colorScheme.error),
+                            onPressed: () => _showRemoveDialog(context, category)),
+                    onTap: () => Util().navigateTo(context, AddAssetCategoryForm(editingCategory: category)),
+                  ),
+              ],
+              onReorder: (oldIndex, newIndex) => appState.reOrderAssetCategory(oldIndex, newIndex),
             ),
+          ),
+          const SizedBox(height: 45),
         ],
-        onReorder: (oldIndex, newIndex) => appState.reOrderAssetCategory(oldIndex, newIndex),
-      ),
-      bottomNavigationBar: SizedBox(
-        height: 40,
-        child: Container(color: theme.hoverColor),
       ),
     );
   }
