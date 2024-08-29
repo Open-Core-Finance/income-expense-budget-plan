@@ -57,28 +57,11 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
       print("Current screensize ${MediaQuery.of(context).size}");
     }
     final ThemeData theme = Theme.of(context);
-    var media = MediaQuery.of(context);
-    var screenSize = media.size;
-    Size sideButtonSize = const Size(155, 50);
 
-    var sideButtonShape = const RoundedRectangleBorder(borderRadius: BorderRadius.zero);
     return Consumer<AppState>(
       builder: (context, appState, child) => Consumer<SettingModel>(
         builder: (context, setting, child) => Scaffold(
-          appBar: AppBar(actions: [
-            ElevatedButton.icon(
-              onPressed: () => Util().chooseBrightnessMode(context),
-              icon: const Icon(Icons.brightness_6_outlined),
-              label: Text("${AppLocalizations.of(context)!.settingsDarkMode}\n${currentAppState.systemSetting.getDarkModeText(context)}"),
-              style: styleForIndex(theme, sideButtonSize, sideButtonShape),
-            ),
-            ElevatedButton.icon(
-              onPressed: () => Util().chooseLanguage(context),
-              icon: const Icon(Icons.flag),
-              label: Text("Language\n${currentAppState.systemSetting.currentLanguageText}"),
-              style: styleForIndex(theme, sideButtonSize, sideButtonShape),
-            ),
-          ]),
+          appBar: AppBar(actions: []),
           body: <Widget>[
             VerticalSplitView(
               key: const Key("1st_panel"),
@@ -154,6 +137,34 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
                 icon: const Icon(Icons.more),
                 label: AppLocalizations.of(context)!.navTransactionCategory,
               ),
+              MouseRegion(
+                cursor: SystemMouseCursors.click, // Changes the cursor to a pointer
+                child: GestureDetector(
+                  onTap: () => Util().chooseBrightnessMode(context),
+                  child: Container(
+                    color: Colors.transparent, // Ensure the area is clickable
+                    child: Column(children: [
+                      const SizedBox(height: 20),
+                      Icon(Icons.brightness_6_outlined, color: theme.textTheme.bodyMedium?.color),
+                      Text(currentAppState.systemSetting.getDarkModeText(context)),
+                    ]),
+                  ),
+                ),
+              ),
+              MouseRegion(
+                cursor: SystemMouseCursors.click, // Changes the cursor to a pointer
+                child: GestureDetector(
+                  onTap: () => Util().chooseLanguage(context),
+                  child: Container(
+                    color: Colors.transparent, // Ensure the area is clickable
+                    child: Column(children: [
+                      const SizedBox(height: 20),
+                      Icon(Icons.flag, color: theme.textTheme.bodyMedium?.color),
+                      Text(currentAppState.systemSetting.currentLanguageText),
+                    ]),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -171,12 +182,10 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
     }
   }
 
-  ButtonStyle styleForIndex(ThemeData theme, Size buttonSize, OutlinedBorder sideButtonShape) {
+  ButtonStyle buttonStyle(ThemeData theme, OutlinedBorder sideButtonShape) {
     return ElevatedButton.styleFrom(
       elevation: 0,
       shape: sideButtonShape,
-      minimumSize: buttonSize,
-      maximumSize: buttonSize,
       alignment: Alignment.centerLeft,
       backgroundColor: theme.cardColor,
     );
