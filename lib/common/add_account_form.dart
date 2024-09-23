@@ -39,6 +39,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
   late TextEditingController _loanAmountController;
   late TextEditingController _depositAmountController;
   late TextEditingController _creditLimitController;
+  late TextEditingController _paymentLimitController;
   late AssetCategory _selectedCategory;
   late Currency _selectedCurrency;
   late CurrencyTextInputFormatter _currencyTextInputFormatter;
@@ -79,27 +80,26 @@ class _AddAccountFormState extends State<AddAccountForm> {
       _loanAmountController = TextEditingController(text: '');
       _depositAmountController = TextEditingController(text: '');
       _creditLimitController = TextEditingController(text: '');
+      _paymentLimitController = TextEditingController(text: '');
+      _availableAmountController = TextEditingController(text: '${_editingAsset!.availableAmount}');
       if (_editingAsset is CashAccount) {
         _selectedAccountType = AssetType.cash.name;
-        _availableAmountController = TextEditingController(text: '${(_editingAsset! as CashAccount).availableAmount}');
       } else if (_editingAsset is BankCasaAccount) {
         _selectedAccountType = AssetType.bankCasa.name;
-        _availableAmountController = TextEditingController(text: '${(_editingAsset! as BankCasaAccount).availableAmount}');
       } else if (_editingAsset is EWallet) {
         _selectedAccountType = AssetType.eWallet.name;
-        _availableAmountController = TextEditingController(text: '${(_editingAsset! as EWallet).availableAmount}');
       } else if (_editingAsset is LoanAccount) {
         _selectedAccountType = AssetType.loan.name;
-        _availableAmountController = TextEditingController(text: '');
         _loanAmountController.text = '${(_editingAsset! as LoanAccount).loanAmount}';
       } else if (_editingAsset is TermDepositAccount) {
         _selectedAccountType = AssetType.termDeposit.name;
-        _availableAmountController = TextEditingController(text: '');
-        _depositAmountController.text = '${(_editingAsset! as TermDepositAccount).depositAmount}';
+        _depositAmountController.text = '${(_editingAsset! as TermDepositAccount).availableAmount}';
+      } else if (_editingAsset is PayLaterAccount) {
+        _selectedAccountType = AssetType.payLaterAccount.name;
+        _paymentLimitController.text = '${(_editingAsset! as PayLaterAccount).paymentLimit}';
       } else {
         // Credit card
         _selectedAccountType = AssetType.creditCard.name;
-        _availableAmountController = TextEditingController(text: '${(_editingAsset! as CreditCard).availableAmount}');
         _creditLimitController.text = '${(_editingAsset! as CreditCard).creditLimit}';
       }
       _selectedCurrency = currentAppState.currencies.firstWhere((currency) => currency.id == _editingAsset?.currencyUid);
@@ -109,6 +109,10 @@ class _AddAccountFormState extends State<AddAccountForm> {
     }
     _currencyTextInputFormatter = CurrencyTextInputFormatter.currency(
         locale: _selectedCurrency.language, symbol: _selectedCurrency.symbol, decimalDigits: _selectedCurrency.decimalPoint);
+    _creditLimitController.text = _currencyTextInputFormatter.formatDouble(double.tryParse(_creditLimitController.text) ?? 0);
+    _depositAmountController.text = _currencyTextInputFormatter.formatDouble(double.tryParse(_depositAmountController.text) ?? 0);
+    _loanAmountController.text = _currencyTextInputFormatter.formatDouble(double.tryParse(_loanAmountController.text) ?? 0);
+    _availableAmountController.text = _currencyTextInputFormatter.formatDouble(double.tryParse(_availableAmountController.text) ?? 0);
   }
 
   _initEmptyForm() {
@@ -130,6 +134,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
     _loanAmountController = TextEditingController(text: '');
     _depositAmountController = TextEditingController(text: '');
     _creditLimitController = TextEditingController(text: '');
+    _paymentLimitController = TextEditingController(text: '');
     _selectedCurrency = currentAppState.systemSetting.defaultCurrency!;
   }
 
@@ -142,7 +147,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
           icon: Icon(Icons.arrow_back_rounded, color: theme.colorScheme.error),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Text(AppLocalizations.of(context)!.titleAddAccountCategory),
+        title: Text(AppLocalizations.of(context)!.titleAddAccount),
       ),
       body: Form(
         child: Padding(
@@ -203,6 +208,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
 
   void _validateForm(BuildContext context, Function(List<Asset> assets, bool isAddNew) callback) async {
     final appState = Provider.of<AppState>(context, listen: false);
+    var formUtil = FormUtil();
     setState(() {
       _isChecking = true;
       _isValidAssetName = true;
@@ -228,10 +234,15 @@ class _AddAccountFormState extends State<AddAccountForm> {
       }
 
       var moneyFormat = _currencyTextInputFormatter.numberFormat;
-      var availableAmountNumber = moneyFormat.tryParse(_availableAmountController.text)?.toDouble();
-      var loanAmountNumber = moneyFormat.tryParse(_loanAmountController.text)?.toDouble();
-      var depositAmountNumber = moneyFormat.tryParse(_depositAmountController.text)?.toDouble();
-      var creditLimitNumber = moneyFormat.tryParse(_creditLimitController.text)?.toDouble();
+      if (kDebugMode) {
+        print("Money formater [$moneyFormat]");
+        print("Available amount plain [${_availableAmountController.text}] "
+            "parsed [${moneyFormat.tryParse(_availableAmountController.text)}]");
+      }
+      double? availableAmountNumber = formUtil.parseAmount(_availableAmountController.text, moneyFormat);
+      double? loanAmountNumber = formUtil.parseAmount(_loanAmountController.text, moneyFormat);
+      double? depositAmountNumber = formUtil.parseAmount(_depositAmountController.text, moneyFormat);
+      double? creditLimitNumber = formUtil.parseAmount(_creditLimitController.text, moneyFormat);
 
       if (_editingAsset != null) {
         DatabaseService().database.then((db) {
@@ -241,18 +252,10 @@ class _AddAccountFormState extends State<AddAccountForm> {
           _editingAsset?.localizeDescriptions = localizeDesc;
           _editingAsset?.description = _assetDescriptionController.text;
           _editingAsset?.categoryUid = _selectedCategory.id!;
-
-          if (_editingAsset is CashAccount) {
-            (_editingAsset! as CashAccount).availableAmount = availableAmountNumber!;
-          } else if (_editingAsset is BankCasaAccount) {
-            (_editingAsset! as BankCasaAccount).availableAmount = availableAmountNumber!;
-          } else if (_editingAsset is EWallet) {
-            (_editingAsset! as EWallet).availableAmount = availableAmountNumber!;
-          } else if (_editingAsset is LoanAccount) {
+          _editingAsset?.availableAmount = availableAmountNumber!;
+          if (_editingAsset is LoanAccount) {
             (_editingAsset! as LoanAccount).loanAmount = loanAmountNumber!;
-          } else if (_editingAsset is TermDepositAccount) {
-            (_editingAsset! as TermDepositAccount).depositAmount = depositAmountNumber!;
-          } else {
+          } else if (_editingAsset is CreditCard) {
             // Credit card
             (_editingAsset! as CreditCard).availableAmount = availableAmountNumber!;
             (_editingAsset! as CreditCard).creditLimit = creditLimitNumber!;
@@ -334,6 +337,20 @@ class _AddAccountFormState extends State<AddAccountForm> {
                 categoryUid: _selectedCategory.id!,
                 availableAmount: availableAmountNumber!);
             break;
+          case "payLaterAccount":
+            assets = PayLaterAccount(
+                id: const UuidV8().generate(),
+                icon: _selectedIcon,
+                name: _assetNameController.text,
+                localizeNames: localizeMap,
+                index: appState.assets.length,
+                localizeDescriptions: localizeDesc,
+                description: _assetDescriptionController.text,
+                currencyUid: _selectedCurrency.id,
+                categoryUid: _selectedCategory.id!,
+                availableAmount: availableAmountNumber!,
+                paymentLimit: creditLimitNumber!);
+            break;
           default:
             assets = CreditCard(
                 id: const UuidV8().generate(),
@@ -350,11 +367,11 @@ class _AddAccountFormState extends State<AddAccountForm> {
             break;
         }
         DatabaseService().database.then((db) {
-          db.insert(tableNameAsset, assets.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
-          setState(() {
-            appState.assets.add(assets);
-            appState.triggerNotify();
-            callback(appState.assets, true);
+          db.insert(tableNameAsset, assets.toMap(), conflictAlgorithm: ConflictAlgorithm.replace).then((_) {
+            setState(() {
+              appState.triggerNotify();
+              callback(appState.assets, true);
+            });
           });
         });
       }
@@ -438,10 +455,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
   }
 
   DropdownMenuItem<T> _buildDropdownMenuItem<T>(BuildContext context, T value, String text) {
-    return DropdownMenuItem<T>(
-        key: const Key("accountTypeDropdownItem"),
-        value: value,
-        child: Padding(padding: const EdgeInsets.fromLTRB(10, 0, 0, 0), child: Text(text)));
+    return DropdownMenuItem<T>(value: value, child: Padding(padding: const EdgeInsets.fromLTRB(10, 0, 0, 0), child: Text(text)));
   }
 
   List<Widget> _moneyInputField(bool show, String label, TextEditingController textEditingController, ThemeData theme,
@@ -491,26 +505,46 @@ class _AddAccountFormState extends State<AddAccountForm> {
       required T value,
       FormFieldValidator<String>? validator,
       Function(T? value)? onChange,
-      required List<DropdownMenuItem<T>> items}) {
+      required List<DropdownMenuItem<T>> items,
+      bool? enabled}) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
+    Widget? inputWidget;
+    if (enabled != false) {
+      inputWidget = DropdownButtonFormField<T>(
+          value: value,
+          icon: const Icon(Icons.arrow_downward),
+          elevation: 16,
+          style: TextStyle(color: colorScheme.primary),
+          onChanged: onChange,
+          items: items);
+    } else {
+      bool found = false;
+      for (var item in items) {
+        if (item.value == value) {
+          if (item.child is Padding) {
+            Widget? text = (item.child as Padding).child;
+            if (text is Text) {
+              found = true;
+              TextEditingController controller = TextEditingController(text: text.data);
+              inputWidget = TextFormField(controller: controller, enabled: false, style: TextStyle(color: theme.colorScheme.primary));
+            }
+          }
+          if (!found) {
+            inputWidget = item.child;
+            found = true;
+          }
+        }
+      }
+      if (!found) {
+        TextEditingController controller = TextEditingController(text: "");
+        inputWidget = TextFormField(controller: controller, enabled: false, style: TextStyle(color: theme.colorScheme.primary));
+      }
+    }
     return [
       const SizedBox(height: 10),
       Row(
-        children: [
-          const SizedBox(width: 10),
-          Text(label),
-          const SizedBox(width: 10),
-          Flexible(
-            child: DropdownButtonFormField<T>(
-                value: value,
-                icon: const Icon(Icons.arrow_downward),
-                elevation: 16,
-                style: TextStyle(color: colorScheme.primary),
-                onChanged: onChange,
-                items: items),
-          ),
-        ],
+        children: [const SizedBox(width: 10), Text(label), const SizedBox(width: 10), Flexible(child: inputWidget!)],
       )
     ];
   }
@@ -519,8 +553,9 @@ class _AddAccountFormState extends State<AddAccountForm> {
     List<Widget> result = [];
     result.addAll(_dropdownButtonFormField(
       context,
+      enabled: _editingAsset?.id == null,
       value: _selectedAccountType,
-      label: AppLocalizations.of(context)!.accountCategorySelect,
+      label: AppLocalizations.of(context)!.accountType,
       items: AssetType.values
           .map<DropdownMenuItem<String>>(
             (AssetType t) => _buildDropdownMenuItem(context, t.name, FormUtil().resolveAccountTypeLocalize(context, t.name)),
@@ -551,6 +586,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
           _depositAmountController.text = _currencyTextInputFormatter.formatString(_depositAmountController.text);
           _loanAmountController.text = _currencyTextInputFormatter.formatString(_loanAmountController.text);
           _creditLimitController.text = _currencyTextInputFormatter.formatString(_creditLimitController.text);
+          _paymentLimitController.text = _currencyTextInputFormatter.formatString(_paymentLimitController.text);
         },
       ),
     ));
@@ -580,6 +616,8 @@ class _AddAccountFormState extends State<AddAccountForm> {
         _depositAmountController, theme));
     result.addAll(_moneyInputField(AssetType.creditCard.name == _selectedAccountType, AppLocalizations.of(context)!.accountCreditLimit,
         _creditLimitController, theme));
+    result.addAll(_moneyInputField(AssetType.payLaterAccount.name == _selectedAccountType,
+        AppLocalizations.of(context)!.accountPaymentLimit, _paymentLimitController, theme));
     result.addAll(_buildLocalizedComponents(context, theme));
     return result;
   }

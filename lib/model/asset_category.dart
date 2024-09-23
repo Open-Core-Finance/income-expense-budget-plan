@@ -8,12 +8,12 @@ import 'assets.dart';
 
 abstract class AssetTreeNode extends NameLocalizedModel<String> {
   IconData? icon;
+  int positionIndex = 0;
   AssetTreeNode({required super.id, required super.name, super.localizeNames, required this.icon});
 }
 
 class AssetCategory extends AssetTreeNode {
   bool system = false;
-  int positionIndex = 0;
   late DateTime lastUpdated;
   List<Asset> assets = [];
 
@@ -63,7 +63,7 @@ class AssetCategory extends AssetTreeNode {
         icon: Util().iconDataFromJSONString(json['icon'] as String),
         name: json['name'],
         system: json['system'] == 1,
-        localizeNames: Util().fromLocalizeDbField(jsonDecode(json['localize_names'])),
+        localizeNames: Util().fromLocalizeDbField(Util().customJsonDecode(json['localize_names'])),
         index: json['position_index'],
         updatedDateTime: DateTime.fromMicrosecondsSinceEpoch(json['last_updated']),
       );

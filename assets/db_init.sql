@@ -1,24 +1,31 @@
-CREATE TABLE IF NOT EXISTS setting(id Integer PRIMARY KEY, locale TEXT, dark_mode Integer, default_currency_uid TEXT);
+CREATE TABLE IF NOT EXISTS setting(id Integer PRIMARY KEY, locale TEXT, dark_mode Integer, default_currency_uid TEXT,
+    last_transaction_account_uid TEXT);
 CREATE TABLE IF NOT EXISTS currency(uid TEXT PRIMARY KEY, name TEXT, iso TEXT, deleted Integer, symbol TEXT,
     symbol_position TEXT, main_currency Integer, show Integer, decimal_point Integer, language TEXT);
 CREATE TABLE IF NOT EXISTS asset_category(uid TEXT PRIMARY KEY, name TEXT, icon TEXT, system Integer, localize_names TEXT,
     position_index Integer DEFAULT 0 NOT NULL, last_updated Integer DEFAULT 0);
 CREATE TABLE IF NOT EXISTS asset(uid TEXT PRIMARY KEY, icon TEXT, name TEXT, description TEXT, available_amount REAL DEFAULT 0.0,
-    loan_amount REAL DEFAULT 0.0, deposit_amount REAL DEFAULT 0.0, credit_limit REAL DEFAULT 0.0, currency_uid TEXT,
+    loan_amount REAL DEFAULT 0.0, deposit_amount REAL DEFAULT 0.0, credit_limit REAL DEFAULT 0.0, payment_limit REAL DEFAULT 0.0, currency_uid TEXT,
     asset_type TEXT, category_uid TEXT, localize_names TEXT, localize_descriptions TEXT, position_index Integer DEFAULT 0 NOT NULL,
     last_updated Integer DEFAULT 0, FOREIGN KEY (category_uid) REFERENCES asset_category (uid), FOREIGN KEY (currency_uid) REFERENCES currency (uid) );
 CREATE TABLE IF NOT EXISTS transaction_category(uid TEXT PRIMARY KEY, name TEXT, icon TEXT, parent_uid TEXT, transaction_type TEXT, system Integer, localize_names TEXT,
     position_index Integer Integer DEFAULT 0 NOT NULL, last_updated Integer DEFAULT 0);
+CREATE TABLE IF NOT EXISTS transactions(id TEXT PRIMARY KEY, description TEXT, transaction_time Integer DEFAULT 0, transaction_category_uid TEXT, transaction_type TEXT,
+    with_fee REAL DEFAULT 0.0, fee_amount REAL DEFAULT 0.0, amount REAL DEFAULT 0.0, last_updated Integer DEFAULT 0, account_uid TEXT,
+    currency_uid TEXT, to_account_uid TEXT, my_split REAL default 0.0, remaining_amount REAL default 0.0, shared_bill_id TEXT,
+    FOREIGN KEY (transaction_category_uid) REFERENCES transaction_category (uid),
+    FOREIGN KEY (account_uid) REFERENCES asset (uid),
+    FOREIGN KEY (currency_uid) REFERENCES currency (uid));
 
-INSERT INTO asset_category(uid, name, icon, "system", localize_names, position_index, last_updated)
+INSERT OR IGNORE INTO asset_category(uid, name, icon, "system", localize_names, position_index, last_updated)
 VALUES('20240814-1016-8412-a943-a2e9d6ba37c9', 'Bank accounts', '{"codePoint":63178,"fontFamily":"CupertinoIcons","fontPackage":"cupertino_icons","matchTextDirection":false}', 1, '{"en":"Bank accounts","vi":"Tài khoản ngân hàng"}', 3, 1724245880000);
-INSERT INTO asset_category(uid, name, icon, "system", localize_names, position_index, last_updated)
+INSERT OR IGNORE INTO asset_category(uid, name, icon, "system", localize_names, position_index, last_updated)
 VALUES('20240814-1025-8e05-9011-a6fed676958f', 'Cards', '{"codePoint":57759,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}', 1, '{"en":"Cards","vi":"Thẻ"}', 4, 1724245880000);
-INSERT INTO asset_category(uid, name, icon, "system", localize_names, position_index, last_updated)
+INSERT OR IGNORE INTO asset_category(uid, name, icon, "system", localize_names, position_index, last_updated)
 VALUES('20240814-1026-8e32-a113-ce2ffa4f9305', 'Loans', '{"codePoint":58361,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}', 1, '{"en":"Loans","vi":"Các khoản vay"}', 6, 1724245880000);
-INSERT INTO asset_category(uid, name, icon, "system", localize_names, position_index, last_updated)
+INSERT OR IGNORE INTO asset_category(uid, name, icon, "system", localize_names, position_index, last_updated)
 VALUES('20240814-1027-8317-9580-ef12a94c7312', 'Others', '{"codePoint":57842,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}', 1, '{"en":"Others","vi":"Tài khoản khác"}', 7, 1724245880000);
-INSERT INTO asset_category(uid, name, icon, "system", localize_names, position_index, last_updated)
+INSERT OR IGNORE INTO asset_category(uid, name, icon, "system", localize_names, position_index, last_updated)
 VALUES('20240823-0515-8322-8813-46af221b06bc', 'Accounts', '{"codePoint":62881,"fontFamily":"CupertinoIcons","fontPackage":"cupertino_icons","matchTextDirection":false}', 1, '{"en":"Accounts","vi":"Tài khoản"}', 1, 1724390122834);
 
 
@@ -101,47 +108,54 @@ INSERT OR IGNORE INTO transaction_category (uid, name, icon, parent_uid, transac
 INSERT OR IGNORE INTO transaction_category (uid, name, icon, parent_uid, transaction_type, "system", localize_names, position_index, last_updated) VALUES('20240818-1144-8313-8806-7cb03d0b6db1', 'Internet', '{"codePoint":58406,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}', '20240818-0930-8e06-b551-b47065a0de2f', 'expense', 0, '{}', 4, unixepoch() * 1000);
 INSERT OR IGNORE INTO transaction_category (uid, name, icon, parent_uid, transaction_type, "system", localize_names, position_index, last_updated) VALUES('20240818-1144-8434-8901-1e143c0e7b9f', 'Water', '{"codePoint":984482,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}', '20240818-0930-8e06-b551-b47065a0de2f', 'expense', 0, '{"en":"Water","vi":"Nước"}', 5, unixepoch() * 1000);
 
-INSERT INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('1', 'Viet Nam Dong', 'VND', 0, '₫', 'S', 1, 1, 0, 'vi-VN');
-INSERT INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('3', 'United States Dollar', 'USD', 0, '$', 'P', 0, 1, 2, 'en-US');
-INSERT INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('4', 'Euro', 'EUR', 0, '€', 'P', 0, 1, 2, 'fr-FR');
-INSERT INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('5', 'Japanese Yen', 'JPY', 0, '¥', 'P', 0, 1, 0, 'ja-JP');
-INSERT INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('6', 'British Pound', 'GBP', 0, '£', 'P', 0, 1, 2, 'en-GB');
-INSERT INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('7', 'Australian Dollar', 'AUD', 0, '$', 'P', 0, 1, 2, 'en-AU');
-INSERT INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('8', 'Canadian Dollar', 'CAD', 0, '$', 'P', 0, 1, 2, 'en-CA');
-INSERT INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('9', 'Swiss Franc', 'CHF', 0, 'SFr', 'P', 0, 1, 2, 'de-CH');
-INSERT INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('10', 'Renminbi (Chinese Yuan)', 'CNY', 0, '¥', 'P', 0, 1, 2, 'zh-CN');
-INSERT INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('11', 'Hong Kong Dollar', 'HKD', 0, '$', 'P', 0, 1, 2, 'zh-HK');
-INSERT INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('12', 'New Zealand Dollar', 'NZD', 0, '$', 'P', 0, 1, 2, 'en-NZ');
-INSERT INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('13', 'Swedish Krona', 'SEK', 0, 'kr', 'P', 0, 1, 2, 'sv-SE');
-INSERT INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('14', 'South Korean Won', 'KRW', 0, '₩', 'P', 0, 1, 0, 'ko-KR');
-INSERT INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('15', 'Singapore Dollar', 'SGD', 0, '$', 'P', 0, 1, 2, 'zh-SG');
-INSERT INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('16', 'Norwegian Krone', 'NOK', 0, 'kr', 'P', 0, 1, 2, 'no-NO');
-INSERT INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('17', 'Mexican Peso', 'MXN', 0, '$', 'P', 0, 1, 2, 'es-MX');
-INSERT INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('18', 'Indian Rupee', 'INR', 0, '₹', 'P', 0, 1, 2, 'hi-IN');
-INSERT INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('19', 'Russian Ruble', 'RUB', 0, '₽', 'P', 0, 1, 2, 'ru-RU');
-INSERT INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('20', 'South African Rand', 'ZAR', 0, 'R', 'P', 0, 1, 2, 'en-ZA');
-INSERT INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('21', 'Turkish Lira', 'TRY', 0, '₺', 'P', 0, 1, 2, 'tr-TR');
-INSERT INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('22', 'Brazilian Real', 'BRL', 0, 'R$', 'P', 0, 1, 2, 'pt-BR');
-INSERT INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('23', 'Thai Baht', 'THB', 0, '฿', 'P', 0, 1, 2, 'th-TH');
-INSERT INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('24', 'Indonesian Rupiah', 'IDR', 0, 'Rp', 'P', 0, 1, 0, 'id-ID');
-INSERT INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('25', 'Hungarian Forint', 'HUF', 0, 'Ft', 'S', 0, 1, 0, 'hu-HU');
-INSERT INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('26', 'Czech Koruna', 'CZK', 0, 'Kč', 'S', 0, 1, 2, 'cs-CZ');
-INSERT INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('27', 'Israeli New Shekel', 'ILS', 0, '₪', 'S', 0, 1, 2, 'he-IL');
-INSERT INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('28', 'Chilean Peso', 'CLP', 0, '$', 'P', 0, 1, 2, 'es-CL');
-INSERT INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('29', 'Philippine Peso', 'PHP', 0, '₱', 'P', 0, 1, 2, 'fil-PH');
-INSERT INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('30', 'UAE Dirham', 'AED', 0, 'د.إ', 'P', 0, 1, 2, 'ar-AE');
-INSERT INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('31', 'Colombian Peso', 'COP', 0, '$', 'P', 0, 1, 2, 'es-CO');
-INSERT INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('32', 'Saudi Riyal', 'SAR', 0, '﷼', 'P', 0, 1, 2, 'ar-SA');
-INSERT INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('33', 'Malaysian Ringgit', 'MYR', 0, 'RM', 'P', 0, 1, 2, 'ms-MY');
-INSERT INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('34', 'Romanian Leu', 'RON', 0, 'L', 'S', 0, 1, 2, 'ro-RO');
+INSERT OR IGNORE INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('1', 'Viet Nam Dong', 'VND', 0, '₫', 'S', 1, 1, 0, 'vi-VN');
+INSERT OR IGNORE INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('3', 'United States Dollar', 'USD', 0, '$', 'P', 0, 1, 2, 'en-US');
+INSERT OR IGNORE INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('4', 'Euro', 'EUR', 0, '€', 'P', 0, 1, 2, 'fr-FR');
+INSERT OR IGNORE INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('5', 'Japanese Yen', 'JPY', 0, '¥', 'P', 0, 1, 0, 'ja-JP');
+INSERT OR IGNORE INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('6', 'British Pound', 'GBP', 0, '£', 'P', 0, 1, 2, 'en-GB');
+INSERT OR IGNORE INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('7', 'Australian Dollar', 'AUD', 0, '$', 'P', 0, 1, 2, 'en-AU');
+INSERT OR IGNORE INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('8', 'Canadian Dollar', 'CAD', 0, '$', 'P', 0, 1, 2, 'en-CA');
+INSERT OR IGNORE INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('9', 'Swiss Franc', 'CHF', 0, 'SFr', 'P', 0, 1, 2, 'de-CH');
+INSERT OR IGNORE INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('10', 'Renminbi (Chinese Yuan)', 'CNY', 0, '¥', 'P', 0, 1, 2, 'zh-CN');
+INSERT OR IGNORE INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('11', 'Hong Kong Dollar', 'HKD', 0, '$', 'P', 0, 1, 2, 'zh-HK');
+INSERT OR IGNORE INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('12', 'New Zealand Dollar', 'NZD', 0, '$', 'P', 0, 1, 2, 'en-NZ');
+INSERT OR IGNORE INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('13', 'Swedish Krona', 'SEK', 0, 'kr', 'P', 0, 1, 2, 'sv-SE');
+INSERT OR IGNORE INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('14', 'South Korean Won', 'KRW', 0, '₩', 'P', 0, 1, 0, 'ko-KR');
+INSERT OR IGNORE INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('15', 'Singapore Dollar', 'SGD', 0, '$', 'P', 0, 1, 2, 'zh-SG');
+INSERT OR IGNORE INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('16', 'Norwegian Krone', 'NOK', 0, 'kr', 'P', 0, 1, 2, 'no-NO');
+INSERT OR IGNORE INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('17', 'Mexican Peso', 'MXN', 0, '$', 'P', 0, 1, 2, 'es-MX');
+INSERT OR IGNORE INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('18', 'Indian Rupee', 'INR', 0, '₹', 'P', 0, 1, 2, 'hi-IN');
+INSERT OR IGNORE INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('19', 'Russian Ruble', 'RUB', 0, '₽', 'P', 0, 1, 2, 'ru-RU');
+INSERT OR IGNORE INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('20', 'South African Rand', 'ZAR', 0, 'R', 'P', 0, 1, 2, 'en-ZA');
+INSERT OR IGNORE INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('21', 'Turkish Lira', 'TRY', 0, '₺', 'P', 0, 1, 2, 'tr-TR');
+INSERT OR IGNORE INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('22', 'Brazilian Real', 'BRL', 0, 'R$', 'P', 0, 1, 2, 'pt-BR');
+INSERT OR IGNORE INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('23', 'Thai Baht', 'THB', 0, '฿', 'P', 0, 1, 2, 'th-TH');
+INSERT OR IGNORE INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('24', 'Indonesian Rupiah', 'IDR', 0, 'Rp', 'P', 0, 1, 0, 'id-ID');
+INSERT OR IGNORE INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('25', 'Hungarian Forint', 'HUF', 0, 'Ft', 'S', 0, 1, 0, 'hu-HU');
+INSERT OR IGNORE INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('26', 'Czech Koruna', 'CZK', 0, 'Kč', 'S', 0, 1, 2, 'cs-CZ');
+INSERT OR IGNORE INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('27', 'Israeli New Shekel', 'ILS', 0, '₪', 'S', 0, 1, 2, 'he-IL');
+INSERT OR IGNORE INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('28', 'Chilean Peso', 'CLP', 0, '$', 'P', 0, 1, 2, 'es-CL');
+INSERT OR IGNORE INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('29', 'Philippine Peso', 'PHP', 0, '₱', 'P', 0, 1, 2, 'fil-PH');
+INSERT OR IGNORE INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('30', 'UAE Dirham', 'AED', 0, 'د.إ', 'P', 0, 1, 2, 'ar-AE');
+INSERT OR IGNORE INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('31', 'Colombian Peso', 'COP', 0, '$', 'P', 0, 1, 2, 'es-CO');
+INSERT OR IGNORE INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('32', 'Saudi Riyal', 'SAR', 0, '﷼', 'P', 0, 1, 2, 'ar-SA');
+INSERT OR IGNORE INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('33', 'Malaysian Ringgit', 'MYR', 0, 'RM', 'P', 0, 1, 2, 'ms-MY');
+INSERT OR IGNORE INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('34', 'Romanian Leu', 'RON', 0, 'L', 'S', 0, 1, 2, 'ro-RO');
+INSERT OR IGNORE INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('35', 'Loyalty Point', 'Point', 0, '⭐', 'S', 0, 1, 0, 'en-US');
 
-INSERT INTO asset (uid, icon, name, description, available_amount, loan_amount, deposit_amount, credit_limit, currency_uid,
+INSERT OR IGNORE INTO asset (uid, icon, name, description, available_amount, loan_amount, deposit_amount, credit_limit, payment_limit, currency_uid,
     asset_type, category_uid, localize_names, localize_descriptions, position_index, last_updated)
     VALUES('20240823-1529-8009-a864-e7b9299a07f6', '{"codePoint":58360,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}',
-    'Cash', 'The amount of cash in your wallet', 0.0, 0.0, 0.0, 0.0, '3', 'cash', '20240823-0515-8322-8813-46af221b06bc',
+    'Cash', 'The amount of cash in your wallet', 0.0, 0.0, 0.0, 0.0, 0.0, '3', 'cash', '20240823-0515-8322-8813-46af221b06bc',
     '{"en":"Cash","vi":"Tiền mặt"}', '{"en":"The amount of cash in your wallet","vi":"Số tiền mặt bạn đang có"}', 1, unixepoch() * 1000);
-INSERT INTO asset (uid, icon, name, description, available_amount, loan_amount, deposit_amount, credit_limit, currency_uid,
+INSERT OR IGNORE INTO asset (uid, icon, name, description, available_amount, loan_amount, deposit_amount, credit_limit, payment_limit, currency_uid,
     asset_type, category_uid, localize_names, localize_descriptions, position_index, last_updated)
     VALUES('20240824-1557-8718-b097-5d9d1c51ff98', '{"codePoint":62998,"fontFamily":"CupertinoIcons","fontPackage":"cupertino_icons","matchTextDirection":false}',
-    'My Credit Card', 'My first credit card', 0.0, 0.0, 0.0, 10000.0, '3', 'creditCard', '20240814-1025-8e05-9011-a6fed676958f',
+    'My Credit Card', 'My first credit card', 0.0, 0.0, 0.0, 10000.0, 0.0, '3', 'creditCard', '20240814-1025-8e05-9011-a6fed676958f',
     '{"en":"My Credit Card","vi":"Thẻ tín dụng"}', '{"en":"My first credit card","vi":"Thẻ tín dụng đầu tiên của tôi"}', 2, unixepoch() * 1000);
+
+INSERT OR IGNORE INTO asset (uid, icon, name, description, available_amount, loan_amount, deposit_amount, credit_limit, payment_limit, currency_uid,
+    asset_type, category_uid, localize_names, localize_descriptions, position_index, last_updated)
+    VALUES('20240923-1658-8307-9686-bc5528febb04', '{"codePoint":57749,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}',
+    'Loyalty point', 'My Loyalty Points', 0.0, 0.0, 0.0, 0.0, 0.0, '35', 'cash', '20240814-1027-8317-9580-ef12a94c7312',
+    '{"en":"Loyalty point","vi":"Điểm thưởng"}', '{"en":"My Loyalty Points","vi":"Điểm thưởng của tôi"}', 3, unixepoch() * 1000);

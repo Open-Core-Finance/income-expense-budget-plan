@@ -49,6 +49,7 @@ class _AssetCategoriesPanelState extends State<AssetCategoriesPanel> {
         backgroundColor: theme.iconTheme.color,
         shape: const CircleBorder(),
         onPressed: () => Util().navigateTo(context, const AddAssetCategoryForm()),
+        heroTag: "Add-Account-Category-Button",
         child: const Icon(Icons.add),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -75,7 +76,7 @@ class _AssetCategoriesPanelState extends State<AssetCategoriesPanel> {
               onReorder: (oldIndex, newIndex) => appState.reOrderAssetCategory(oldIndex, newIndex),
             ),
           ),
-          const SizedBox(height: 45),
+          const SizedBox(height: 25),
         ],
       ),
     );

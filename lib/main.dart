@@ -26,6 +26,7 @@ void main() async {
     await createCompletion;
   }
 
+  currentAppState.reloadTransactionCategories();
   SettingDao().loadSettings().then((SettingModel settings) {
     currentAppState.systemSetting = settings;
     DatabaseService().loadListModel(tableNameCurrency, Currency.fromMap).then((currencies) {

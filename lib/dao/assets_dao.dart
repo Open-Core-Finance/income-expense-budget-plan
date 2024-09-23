@@ -35,6 +35,8 @@ class AssetsDao {
           return TermDepositAccount.fromMap(record);
         case "eWallet":
           return EWallet.fromMap(record);
+        case "payLaterAccount":
+          return PayLaterAccount.fromMap(record);
         default:
           return CreditCard.fromMap(record);
       }

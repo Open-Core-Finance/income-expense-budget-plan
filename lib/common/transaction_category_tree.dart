@@ -11,11 +11,9 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 class TransactionCategoryTree extends StatefulWidget {
   final Function(TransactionCategory item)? itemTap;
   final List<TransactionCategory> categories;
-  final String addPanelTitle;
   final TransactionType transactionType;
 
-  const TransactionCategoryTree(
-      {super.key, this.itemTap, required this.categories, required this.transactionType, required this.addPanelTitle});
+  const TransactionCategoryTree({required super.key, this.itemTap, required this.categories, required this.transactionType});
 
   @override
   State<TransactionCategoryTree> createState() => _TransactionCategoryTreeState();
@@ -39,13 +37,25 @@ class _TransactionCategoryTreeState extends State<TransactionCategoryTree> {
     super.dispose();
   }
 
+  String _retrieveAddPanelTitle(BuildContext context) {
+    AppLocalizations appLocalizations = AppLocalizations.of(context)!;
+    switch (widget.transactionType) {
+      case TransactionType.income:
+        return appLocalizations.titleAddIncomeCategory;
+      case TransactionType.expense:
+        return appLocalizations.titleAddExpenseCategory;
+      default:
+        return appLocalizations.titleAddTransactionCategory;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
     treeController?.dispose();
     return ChangeNotifierProvider(
-      create: (context) => TransactionCategoriesListenable(transactionType: widget.transactionType, categories: widget.categories),
+      create: (context) => TransactionCategoriesListenable(categoriesMap: {widget.transactionType: widget.categories}),
       builder: (BuildContext context, Widget? child) {
         treeController = TreeController<TransactionCategory>(
           // Provide the root nodes that will be used as a starting point when traversing your hierarchical data.
@@ -87,7 +97,7 @@ class _TransactionCategoryTreeState extends State<TransactionCategoryTree> {
                       Util().showErrorDialog(context, AppLocalizations.of(context)!.transactionCategoryDragToInvalidTarget, () {});
                     } else {
                       Util().swapChildCategories(
-                          allCategories: transactionCategories.categories,
+                          allCategories: transactionCategories.categoriesMap[widget.transactionType] ?? [],
                           origin: origin,
                           target: target,
                           callback: () => treeController?.rebuild());
@@ -124,11 +134,12 @@ class _TransactionCategoryTreeState extends State<TransactionCategoryTree> {
                       }
                       treeController!.toggleExpansion(nodeObj);
                     },
-                    addPanelTitle: widget.addPanelTitle,
+                    addPanelTitle: _retrieveAddPanelTitle(context),
                     removeCall: _showRemoveDialog,
                     transactionCategories: transactionCategories,
                     details: details,
                     editCallBack: _categoriesRefreshed,
+                    transactionType: widget.transactionType,
                   ),
                   toggleExpansionOnHover: true,
                   canToggleExpansion: true,
@@ -139,18 +150,19 @@ class _TransactionCategoryTreeState extends State<TransactionCategoryTree> {
               foregroundColor: colorScheme.primary,
               backgroundColor: theme.iconTheme.color,
               shape: const CircleBorder(),
+              heroTag: "${widget.key.toString()}-Add-transaction-categories-Button",
               onPressed: () => Util().navigateTo(
                 context,
                 ChangeNotifierProvider(
                   create: (context) => TransactionCategoriesListenable(
-                    transactionType: transactionCategories.transactionType,
-                    categories: transactionCategories.categories,
+                    categoriesMap: {widget.transactionType: transactionCategories.categoriesMap[widget.transactionType] ?? []},
                     customTriggerCallback: () => transactionCategories.triggerNotify(),
                   ),
                   builder: (context, child) => child!,
                   child: AddTransactionCategoryPanel(
-                    addPanelTitle: widget.addPanelTitle,
+                    addPanelTitle: _retrieveAddPanelTitle(context),
                     editCallback: (cats) => setState(() {}),
+                    transactionType: widget.transactionType,
                   ),
                 ),
               ),
@@ -199,6 +211,7 @@ class TransactionCategoryTile extends StatelessWidget {
   final TransactionCategoriesListenable transactionCategories;
   final TreeDragAndDropDetails? details;
   final Function(List<TransactionCategory> cats)? editCallBack;
+  final TransactionType transactionType;
 
   const TransactionCategoryTile({
     super.key,
@@ -209,6 +222,7 @@ class TransactionCategoryTile extends StatelessWidget {
     required this.transactionCategories,
     required this.details,
     this.editCallBack,
+    required this.transactionType,
   });
 
   @override
@@ -237,12 +251,12 @@ class TransactionCategoryTile extends StatelessWidget {
               context,
               ChangeNotifierProvider(
                 create: (context) => TransactionCategoriesListenable(
-                  transactionType: transactionCategories.transactionType,
-                  categories: transactionCategories.categories,
+                  categoriesMap: {transactionType: transactionCategories.categoriesMap[transactionType] ?? []},
                   customTriggerCallback: () => transactionCategories.triggerNotify(),
                 ),
                 builder: (context, child) => child!,
-                child: AddTransactionCategoryPanel(editingCategory: category, addPanelTitle: addPanelTitle, editCallback: editCallBack),
+                child: AddTransactionCategoryPanel(
+                    editingCategory: category, addPanelTitle: addPanelTitle, editCallback: editCallBack, transactionType: transactionType),
               ),
             ),
           ),

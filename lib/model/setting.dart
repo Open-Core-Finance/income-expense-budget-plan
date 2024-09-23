@@ -1,6 +1,5 @@
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
-import 'package:income_expense_budget_plan/model/asset_category.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/database_service.dart';
 import 'package:sqflite/sqflite.dart';
@@ -17,49 +16,60 @@ class SettingModel extends ChangeNotifier {
 
   String? defaultCurrencyUid;
   Currency? defaultCurrency;
+  String? _lastTransactionAccountUid;
 
-  SettingModel({required String localeKey, int? darkMode, this.defaultCurrencyUid}) {
+  SettingModel({required String localeKey, int? darkMode, this.defaultCurrencyUid, String? lastTransactionAccountUid}) {
     _locale = Locale(localeKey);
     if (darkMode != null) {
       _darkMode = darkMode;
     }
+    _lastTransactionAccountUid = lastTransactionAccountUid;
   }
 
   Locale? get locale => _locale;
 
   int get darkMode => _darkMode;
 
+  void saveUpdatedSetting({Function? callback}) {
+    DatabaseService().database.then((Database db) {
+      db.insert(tableNameSetting, toMap(), conflictAlgorithm: ConflictAlgorithm.replace).then((_) {
+        if (callback != null) callback();
+      });
+    });
+  }
+
   set locale(Locale? locale) {
     _locale = locale;
-    DatabaseService().database.then((Database db) {
-      db.insert(tableNameSetting, toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
-    });
-    notifyListeners();
+    saveUpdatedSetting(callback: notifyListeners);
   }
 
   set darkMode(int darkMode) {
     _darkMode = darkMode;
-    DatabaseService().database.then((Database db) {
-      db.insert(tableNameSetting, toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
-    });
-    notifyListeners();
+    saveUpdatedSetting(callback: notifyListeners);
   }
 
   String get currentLanguageText => localeMap[_locale?.languageCode] ?? 'English';
 
   Map<String, Object?> toMap() {
-    return {'id': 1, 'locale': _locale?.languageCode ?? 'en', 'dark_mode': darkMode, 'default_currency_uid': defaultCurrencyUid};
+    return {
+      'id': 1,
+      'locale': _locale?.languageCode ?? 'en',
+      'dark_mode': darkMode,
+      'default_currency_uid': defaultCurrencyUid,
+      'last_transaction_account_uid': _lastTransactionAccountUid
+    };
   }
 
   @override
   String toString() {
-    return '{"locale": "$_locale", "darkMode": "$darkMode", "defaultCurrencyUid": "$defaultCurrencyUid"}';
+    return '{"locale": "$_locale", "darkMode": "$darkMode", "defaultCurrencyUid": "$defaultCurrencyUid", "lastTransactionAccountUid":"$_lastTransactionAccountUid"}';
   }
 
   factory SettingModel.fromMap(Map<String, dynamic> json) => SettingModel(
         localeKey: json['locale'],
         darkMode: json['dark_mode'],
         defaultCurrencyUid: json['default_currency_uid'],
+        lastTransactionAccountUid: json['last_transaction_account_uid'],
       );
 
   String getDarkModeText(BuildContext context) {
@@ -98,5 +108,12 @@ class SettingModel extends ChangeNotifier {
       default:
         return platformBrightness == Brightness.dark;
     }
+  }
+
+  String? get lastTransactionAccountUid => _lastTransactionAccountUid;
+
+  set lastTransactionAccountUid(String? lastTransactionAccountUid) {
+    _lastTransactionAccountUid = lastTransactionAccountUid;
+    saveUpdatedSetting(callback: notifyListeners);
   }
 }

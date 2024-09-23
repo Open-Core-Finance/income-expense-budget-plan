@@ -1,11 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_iconpicker/extensions/string_extensions.dart';
-import 'package:income_expense_budget_plan/app-layout/desktop/desktop_home.dart';
 import 'package:income_expense_budget_plan/common/account_panel.dart';
 import 'package:income_expense_budget_plan/common/assets_categories_panel.dart';
 import 'package:income_expense_budget_plan/common/default_currency_selection.dart';
 import 'package:income_expense_budget_plan/common/more_panel.dart';
+import 'package:income_expense_budget_plan/common/report_panel.dart';
+import 'package:income_expense_budget_plan/common/transaction_panel.dart';
 import 'package:income_expense_budget_plan/model/setting.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/app_state.dart';
@@ -111,29 +112,9 @@ class _HomePageMobileLandscapeState extends State<HomePageMobileLandscape> {
             ),
             Flexible(
                 child: [
-              Card(
-                child: SizedBox.expand(
-                  child: Center(
-                    child: Text(
-                      'Home page',
-                      style: theme.textTheme.titleLarge,
-                    ),
-                  ),
-                ),
-              ),
+              const TransactionPanel(),
               const AccountPanel(),
-              Card(
-                //shadowColor: Colors.transparent,
-                margin: const EdgeInsets.all(8.0),
-                child: SizedBox.expand(
-                  child: Center(
-                    child: Text(
-                      'AAAA page',
-                      style: theme.textTheme.titleLarge,
-                    ),
-                  ),
-                ),
-              ),
+              const ReportPanel(),
               const AssetCategoriesPanel(),
               const Material(child: MorePanel())
             ][appState.currentHomePageIndex % 5]),

@@ -3,6 +3,8 @@ import 'package:income_expense_budget_plan/model/transaction_category.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/database_service.dart';
 
+import '../service/util.dart';
+
 class TransactionDao {
   final DatabaseService databaseService = DatabaseService();
   TransactionDao();
@@ -14,8 +16,10 @@ class TransactionDao {
       where: 'transaction_type = ?',
       whereArgs: [transactionType.name],
     );
-    // Convert the list of each dog's fields into a list of `Dog` objects.
-    return [for (Map<String, Object?> record in result) TransactionCategory.fromMap(record)];
+    List<TransactionCategory> resultObjectList = [for (Map<String, Object?> record in result) TransactionCategory.fromMap(record)];
+    resultObjectList = Util().buildTransactionCategoryTree(resultObjectList);
+    currentAppState.categoriesMap[transactionType] = resultObjectList;
+    return resultObjectList;
   }
 
   Future<List<Map<String, dynamic>>> loadCategoryByTransactionTypeAndNameAndIgnoreSpecificCategory(

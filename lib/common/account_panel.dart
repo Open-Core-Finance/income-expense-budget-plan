@@ -14,7 +14,8 @@ import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
 
 class AccountPanel extends StatefulWidget {
-  const AccountPanel({super.key});
+  final Function(Asset item)? accountTap;
+  const AccountPanel({super.key, this.accountTap});
 
   @override
   State<AccountPanel> createState() => _AccountPanelState();
@@ -22,36 +23,30 @@ class AccountPanel extends StatefulWidget {
 
 class _AccountPanelState extends State<AccountPanel> {
   TreeController<AssetTreeNode>? treeController;
-  List<AssetTreeNode> categories = [];
+  final Util util = Util();
 
   @override
   void initState() {
     super.initState();
-    if (currentAppState.assetCategories.isEmpty) {
-      Util().refreshAssetCategories(_reloadAssets);
+    var appState = currentAppState;
+    if (appState.assetCategories.isEmpty) {
+      util.refreshAssetCategories((cats) {
+        _reloadAssets();
+      });
     } else {
-      _reloadAssets(currentAppState.assetCategories);
+      _reloadAssets();
     }
   }
 
-  void _reloadAssets(List<AssetCategory> categories) {
-    for (var category in categories) {
-      category.assets.removeRange(0, category.assets.length);
+  void _reloadAssets() {
+    if (kDebugMode) {
+      print("Reload assets");
     }
-    Util().refreshAssets((List<Asset> assets) {
-      Util().mappingAssetsAndCategories(assets, categories);
-      this.categories = [];
-      this.categories.addAll(categories);
-      setState(() => this.categories.sort((a, b) {
-            var assets1 = (a as AssetCategory).assets;
-            var assets2 = (b as AssetCategory).assets;
-            var result = assets2.length - assets1.length;
-            if (result == 0) {
-              return a.positionIndex - b.positionIndex;
-            } else {
-              return result;
-            }
-          }));
+
+    util.refreshAssets((List<Asset> assets) {
+      if (kDebugMode) {
+        print("Assets loaded: $assets");
+      }
     });
   }
 
@@ -64,9 +59,31 @@ class _AccountPanelState extends State<AccountPanel> {
 
   @override
   Widget build(BuildContext context) {
+    var util = Util();
     final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
     final String accountTitle = AppLocalizations.of(context)!.titleAccount;
+    var appState = Provider.of<AppState>(context, listen: true);
+    List<Asset> assets = appState.assets.map((a) => a).toList(growable: true);
+    List<AssetTreeNode> categories = appState.assetCategories.map((c) {
+      c.assets.clear();
+      util.findCategoryChild(assets, c);
+      return (c as AssetTreeNode);
+    }).toList(growable: true);
+    categories.sort((a, b) {
+      int assets1Size = (a is AssetCategory) ? a.assets.length : 0;
+      int assets2Size = (b is AssetCategory) ? b.assets.length : 0;
+      int result;
+      if (assets1Size > 0) {
+        result = assets2Size > 0 ? 0 : -1;
+      } else {
+        result = assets2Size > 0 ? 1 : 0;
+      }
+      if (result != 0) {
+        return result;
+      } else {
+        return a.positionIndex - b.positionIndex;
+      }
+    });
     if (kDebugMode) {
       if (categories.isNotEmpty) {
         print("\nCategories: $categories\n Child: ${(categories[0] as AssetCategory).assets}\n");
@@ -75,126 +92,121 @@ class _AccountPanelState extends State<AccountPanel> {
       }
     }
     treeController?.dispose();
-    return Consumer<AppState>(
-      builder: (context, appState, child) {
-        treeController = TreeController<AssetTreeNode>(
-          // Provide the root nodes that will be used as a starting point when traversing your hierarchical data.
-          roots: categories,
-          // Provide a callback for the controller to get the children of a given node when traversing your hierarchical data.
-          // Avoid doing heavy computations in this method, it should behave like a getter.
-          childrenProvider: (AssetTreeNode category) {
-            if (category is AssetCategory) {
-              return category.assets;
-            } else {
-              return [];
-            }
-          },
-          defaultExpansionState: true,
-          parentProvider: (AssetTreeNode node) {
-            if (node is Asset) {
-              return node.category;
-            } else {
-              return null;
-            }
-          },
-        );
-        return Scaffold(
-          appBar: AppBar(title: Text(accountTitle)),
-          body: Column(
-            children: [
-              Flexible(
-                child: AnimatedTreeView<AssetTreeNode>(
-                  treeController: treeController!,
-                  nodeBuilder: (BuildContext context, TreeEntry<AssetTreeNode> entry) {
-                    var nodeObj = entry.node;
-                    // Provide a widget to display your tree nodes in the tree view.
-                    //
-                    // Can be any widget, just make sure to include a [TreeIndentation]
-                    // within its widget subtree to properly indent your tree nodes.
-                    return TreeDragTarget<AssetTreeNode>(
-                      node: entry.node,
-                      onNodeAccepted: (TreeDragAndDropDetails<AssetTreeNode> details) {
-                        if (kDebugMode) {
-                          print("Accepted $details");
-                        }
-                        var origin = details.draggedNode;
-                        treeController!.setExpansionState(origin, true);
-                        var target = details.targetNode;
-                        treeController!.setExpansionState(target, true);
-                        if (target is AssetCategory) {
-                          var originAsset = (origin as Asset);
-                          var originCat = originAsset.category;
-                          if (originCat?.id != target.id) {
-                            _switchAssetCat(originAsset, originCat!, target, () => setState(() {}));
-                          }
-                        } else {
-                          var originAsset = (origin as Asset);
-                          var targetAsset = (target as Asset);
-                          var originCat = originAsset.category;
-                          var targetCat = targetAsset.category;
-                          if (originCat?.id != targetCat?.id) {
-                            _switchAssetCat(originAsset, originCat!, targetCat!, () {
-                              Util().swapAssetNode(
-                                  parentCat: targetCat, origin: originAsset, target: targetAsset, callback: () => setState(() {}));
-                            });
-                          } else {
-                            Util().swapAssetNode(
-                                parentCat: targetCat!, origin: originAsset, target: targetAsset, callback: () => setState(() {}));
-                          }
-                        }
-                      },
-                      onWillAcceptWithDetails: (DragTargetDetails<AssetTreeNode> details) {
-                        if (kDebugMode) {
-                          print("Details data [${details.data}] offset [${details.offset}]");
-                        }
-                        // Optionally make sure the target node is expanded so the dragging
-                        // node is visible in its new vicinity when the tree gets rebuilt.
-                        treeController!.setExpansionState(details.data, true);
-
-                        return true;
-                      },
-                      onLeave: (AssetTreeNode? data) {
-                        if (data != null) {
-                          treeController!.setExpansionState(data, true);
-                        }
-                      },
-                      builder: (BuildContext context, TreeDragAndDropDetails? details) => AssetTreeNodeTile(
-                        // Add a key to your tiles to avoid syncing descendant animations.
-                        key: ValueKey(nodeObj),
-                        // Your tree nodes are wrapped in TreeEntry instances when traversing the tree, these objects hold important details about its node
-                        // relative to the tree, like: expansion state, level, parent, etc.
-                        //
-                        // TreeEntries are short lived, each time TreeController.rebuild is called, a new TreeEntry is created for each node so its properties
-                        // are always up to date.
-                        entry: entry,
-                        // Add a callback to toggle the expansion state of this node.
-                        onTap: () {
-                          treeController!.toggleExpansion(nodeObj);
-                        },
-                        removeCall: _showRemoveDialog,
-                        details: details,
-                        editCallBack: _assetRefreshed,
-                        editCategoryCallBack: _assetCategoriesRefreshed,
-                      ),
-                      toggleExpansionOnHover: true,
-                      canToggleExpansion: true,
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 45)
-            ],
-          ),
-          floatingActionButton: FloatingActionButton(
-            foregroundColor: colorScheme.primary,
-            backgroundColor: colorScheme.surface,
-            shape: const CircleBorder(),
-            onPressed: () => Util().navigateTo(context, const AddAccountForm()),
-            child: const Icon(Icons.add),
-          ),
-          floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        );
+    treeController = TreeController<AssetTreeNode>(
+      // Provide the root nodes that will be used as a starting point when traversing your hierarchical data.
+      roots: categories,
+      // Provide a callback for the controller to get the children of a given node when traversing your hierarchical data.
+      // Avoid doing heavy computations in this method, it should behave like a getter.
+      childrenProvider: (AssetTreeNode category) {
+        if (category is AssetCategory) {
+          return category.assets;
+        } else {
+          return [];
+        }
       },
+      defaultExpansionState: true,
+      parentProvider: (AssetTreeNode node) {
+        if (node is Asset) {
+          return node.category;
+        } else {
+          return null;
+        }
+      },
+    );
+    return Scaffold(
+      appBar: AppBar(title: Text(accountTitle)),
+      body: AnimatedTreeView<AssetTreeNode>(
+        treeController: treeController!,
+        nodeBuilder: (BuildContext context, TreeEntry<AssetTreeNode> entry) {
+          var nodeObj = entry.node;
+          // Provide a widget to display your tree nodes in the tree view.
+          //
+          // Can be any widget, just make sure to include a [TreeIndentation]
+          // within its widget subtree to properly indent your tree nodes.
+          return TreeDragTarget<AssetTreeNode>(
+            node: entry.node,
+            onNodeAccepted: (TreeDragAndDropDetails<AssetTreeNode> details) {
+              if (kDebugMode) {
+                print("Accepted $details");
+              }
+              var origin = details.draggedNode;
+              treeController!.setExpansionState(origin, true);
+              var target = details.targetNode;
+              treeController!.setExpansionState(target, true);
+              if (target is AssetCategory) {
+                var originAsset = (origin as Asset);
+                var originCat = originAsset.category;
+                if (originCat?.id != target.id) {
+                  _switchAssetCat(originAsset, originCat!, target, () => setState(() {}));
+                }
+              } else {
+                var originAsset = (origin as Asset);
+                var targetAsset = (target as Asset);
+                var originCat = originAsset.category;
+                var targetCat = targetAsset.category;
+                if (originCat?.id != targetCat?.id) {
+                  _switchAssetCat(originAsset, originCat!, targetCat!, () {
+                    util.swapAssetNode(parentCat: targetCat, origin: originAsset, target: targetAsset, callback: () => setState(() {}));
+                  });
+                } else {
+                  util.swapAssetNode(parentCat: targetCat!, origin: originAsset, target: targetAsset, callback: () => setState(() {}));
+                }
+              }
+            },
+            onWillAcceptWithDetails: (DragTargetDetails<AssetTreeNode> details) {
+              if (kDebugMode) {
+                print("Details data [${details.data}] offset [${details.offset}]");
+              }
+              // Optionally make sure the target node is expanded so the dragging
+              // node is visible in its new vicinity when the tree gets rebuilt.
+              treeController!.setExpansionState(details.data, true);
+
+              return true;
+            },
+            onLeave: (AssetTreeNode? data) {
+              if (data != null) {
+                treeController!.setExpansionState(data, true);
+              }
+            },
+            builder: (BuildContext context, TreeDragAndDropDetails? details) => AssetTreeNodeTile(
+              // Add a key to your tiles to avoid syncing descendant animations.
+              key: ValueKey(nodeObj),
+              // Your tree nodes are wrapped in TreeEntry instances when traversing the tree, these objects hold important details about its node
+              // relative to the tree, like: expansion state, level, parent, etc.
+              //
+              // TreeEntries are short lived, each time TreeController.rebuild is called, a new TreeEntry is created for each node so its properties
+              // are always up to date.
+              entry: entry,
+              // Add a callback to toggle the expansion state of this node.
+              onTap: () {
+                if (widget.accountTap != null && nodeObj is Asset) {
+                  widget.accountTap!(nodeObj);
+                }
+                treeController!.toggleExpansion(nodeObj);
+              },
+              removeCall: _showRemoveDialog,
+              details: details,
+              editCallBack: _assetRefreshed,
+              editCategoryCallBack: _assetCategoriesRefreshed,
+            ),
+            toggleExpansionOnHover: true,
+            canToggleExpansion: true,
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        foregroundColor: theme.primaryColor,
+        backgroundColor: theme.iconTheme.color,
+        shape: const CircleBorder(),
+        onPressed: () => util.navigateTo(
+            context,
+            AddAccountForm(
+              editCallback: _assetRefreshed,
+            )),
+        heroTag: "Add-Account-Button",
+        child: const Icon(Icons.add),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 
@@ -213,28 +225,23 @@ class _AccountPanelState extends State<AccountPanel> {
     });
   }
 
-  void _showRemoveDialog(BuildContext context, Asset category) {
-    Util().showRemoveDialogByField(context, category,
-        tableName: tableNameTransactionCategory,
+  void _showRemoveDialog(BuildContext context, Asset account) {
+    util.showRemoveDialogByField(context, account,
+        tableName: tableNameAsset,
         titleLocalize: AppLocalizations.of(context)!.accountDeleteDialogTitle,
         confirmLocalize: AppLocalizations.of(context)!.accountDeleteConfirm,
         successLocalize: AppLocalizations.of(context)!.accountDeleteSuccess,
         errorLocalize: AppLocalizations.of(context)!.accountDeleteError,
-        onSuccess: () => setState(() => Util().removeInAccountTree(currentAppState.assetCategories, category)),
-        onError: (e, over) {
-          if (kDebugMode) {
-            print("Error $e and $over");
-          }
-        });
+        onSuccess: _reloadAssets, onError: (e, over) {
+      if (kDebugMode) {
+        print("Error $e and $over");
+      }
+    });
   }
 
-  void _assetRefreshed(List<Asset> assets, bool isNew) {
-    _reloadAssets(currentAppState.assetCategories);
-  }
+  void _assetRefreshed(List<Asset> assets, bool isNew) => _reloadAssets();
 
-  void _assetCategoriesRefreshed(List<AssetCategory> cats, bool isNew) {
-    _reloadAssets(cats);
-  }
+  void _assetCategoriesRefreshed(List<AssetCategory> cats, bool isNew) => _reloadAssets();
 }
 
 // Create a widget to display the data held by your tree nodes.
@@ -258,14 +265,10 @@ class AssetTreeNodeTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    var textLocalizeLanguage = entry.node.localizeNames[currentAppState.systemSetting.locale?.languageCode];
+    final appState = Provider.of<AppState>(context);
+    final Util util = Util();
     var category = entry.node;
-    String tileText;
-    if (textLocalizeLanguage?.isNotEmpty == true) {
-      tileText = textLocalizeLanguage!;
-    } else {
-      tileText = category.name;
-    }
+    String tileText = category.getTitleText(appState.systemSetting);
     Widget? subTitle;
     if (category is AssetCategory && category.assets.isEmpty) subTitle = Text(AppLocalizations.of(context)!.accountCategoryEmpty);
     Widget treeNodeTile = InkWell(
@@ -288,12 +291,10 @@ class AssetTreeNodeTile extends StatelessWidget {
                 icon: Icon(Icons.edit, color: theme.primaryColor),
                 onPressed: () {
                   if (category is Asset) {
-                    Util().navigateTo(context, AddAccountForm(editingAsset: category, editCallback: editCallBack));
+                    util.navigateTo(context, AddAccountForm(editingAsset: category, editCallback: editCallBack));
                   } else {
-                    Util().navigateTo(
-                      context,
-                      AddAssetCategoryForm(editingCategory: category as AssetCategory, editCallback: editCategoryCallBack),
-                    );
+                    util.navigateTo(
+                        context, AddAssetCategoryForm(editingCategory: category as AssetCategory, editCallback: editCategoryCallBack));
                   }
                 },
               ),
@@ -302,7 +303,7 @@ class AssetTreeNodeTile extends StatelessWidget {
                 const Icon(Icons.drag_handle)
               ],
               if (category is AssetCategory)
-                IconButton(icon: const Icon(Icons.tune), onPressed: () => Util().navigateTo(context, const AssetCategoriesPanel()))
+                IconButton(icon: const Icon(Icons.tune), onPressed: () => util.navigateTo(context, const AssetCategoriesPanel()))
             ],
           ),
         ),

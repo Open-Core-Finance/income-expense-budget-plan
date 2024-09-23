@@ -54,7 +54,7 @@ class Util {
 
   IconData iconDataFromJSONString(String jsonString) {
     if (jsonString.isNotEmpty) {
-      Map<String, dynamic> map = jsonDecode(jsonString);
+      Map<String, dynamic> map = customJsonDecode(jsonString);
       return IconData(
         map['codePoint'],
         fontFamily: map['fontFamily'],
@@ -171,24 +171,28 @@ class Util {
     List<Asset> tmp = [];
     tmp.addAll(assets);
     for (var category in assetCategories) {
-      for (var i = 0; i < tmp.length; i++) {
-        var asset = tmp[i];
-        if (asset.categoryUid == category.id) {
-          category.assets.add(asset);
-          asset.category = category;
-          tmp.removeAt(i--);
-          if (kDebugMode) {
-            print("Asset ${asset.name} with category ${category?.name}");
-          }
-        }
-      }
-      if (kDebugMode) {
-        print("\nCategories ${category?.name} have ${category.assets.length} child!\n${category.assets}");
-      }
+      findCategoryChild(tmp, category);
     }
     int endTime = DateTime.now().millisecondsSinceEpoch;
     if (kDebugMode) {
       print("\n****\nFinished mapping assets with categories at [$endTime].\n****\nTotal processed ${endTime - startTime}ms.");
+    }
+  }
+
+  void findCategoryChild(List<Asset> assets, AssetCategory category) {
+    for (var i = 0; i < assets.length; i++) {
+      var asset = assets[i];
+      if (asset.categoryUid == category.id) {
+        category.assets.add(asset);
+        asset.category = category;
+        assets.removeAt(i--);
+        if (kDebugMode) {
+          print("Asset ${asset.name} with category ${category.name}");
+        }
+      }
+    }
+    if (kDebugMode) {
+      print("\nCategories ${category.name} have ${category.assets.length} child!\n${category.assets}");
     }
   }
 
@@ -414,5 +418,26 @@ class Util {
         );
       },
     );
+  }
+
+  int timeOfDayToMinutes(TimeOfDay time) {
+    return time.hour * 60 + time.minute;
+  }
+
+  TimeOfDay minutesToTimeOfDay(int minutes) {
+    final hour = minutes ~/ 60;
+    final minute = minutes % 60;
+    return TimeOfDay(hour: hour, minute: minute);
+  }
+
+  Map<String, dynamic> customJsonDecode(String? json) {
+    if (json != null) {
+      if (json.isNotEmpty) {
+        return jsonDecode(json);
+      } else {
+        return {};
+      }
+    }
+    return {};
   }
 }
