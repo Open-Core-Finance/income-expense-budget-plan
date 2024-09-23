@@ -4,25 +4,23 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:income_expense_budget_plan/dao/transaction_dao.dart';
-import 'package:income_expense_budget_plan/model/generic_model.dart';
+import 'package:income_expense_budget_plan/model/name_localized_model.dart';
 import 'package:income_expense_budget_plan/service/util.dart';
 
-class TransactionCategory extends GenericModel<String> {
+class TransactionCategory extends NameLocalizedModel<String> {
   IconData? icon;
-  String name;
   String? parentUid;
   TransactionCategory? parent;
   List<TransactionCategory> child = [];
   TransactionType transactionType;
   bool system = false;
-  Map<String, String> localizeNames = {};
   int positionIndex = 0;
   late DateTime lastUpdated;
 
   TransactionCategory(
       {required super.id,
       required this.icon,
-      required this.name,
+      required super.name,
       this.parentUid,
       required this.transactionType,
       bool? system,
@@ -72,7 +70,7 @@ class TransactionCategory extends GenericModel<String> {
         parentUid: (json['parent_uid'] as String).isNotEmpty ? json['parent_uid'] : null,
         transactionType: TransactionType.values.firstWhere((txnType) => txnType.toString().split('.').last == json['transaction_type']),
         system: json['system'] == 1,
-        localizeNames: Util().fromLocalizeDbField(jsonDecode(json['localize_names'])),
+        localizeNames: Util().fromLocalizeDbField(Util().customJsonDecode(json['localize_names'])),
         index: json['position_index'],
         updatedDateTime: DateTime.fromMicrosecondsSinceEpoch(json['last_updated']),
       );
@@ -84,15 +82,19 @@ class TransactionCategory extends GenericModel<String> {
   String idFieldName() => "uid";
 }
 
-enum TransactionType { income, expense, transfer, lend, borrowing, adjustment, groupPrePaid, groupPaidMemberReturn }
+enum TransactionType { income, expense, transfer, lend, borrowing, adjustment, shareBill, shareBillReturn }
 
 class TransactionCategoriesListenable extends ChangeNotifier {
-  final TransactionType transactionType;
-  final List<TransactionCategory> categories;
+  final Map<TransactionType, List<TransactionCategory>> categoriesMap;
   Function()? customTriggerCallback;
-  TransactionCategoriesListenable({required this.transactionType, required this.categories, this.customTriggerCallback});
+  TransactionCategoriesListenable({required this.categoriesMap, this.customTriggerCallback});
 
   void addItem(TransactionCategory transactionCategory) {
+    List<TransactionCategory>? categories = categoriesMap[transactionCategory.transactionType];
+    if (categories == null) {
+      categories = [];
+      categoriesMap[transactionCategory.transactionType] = categories;
+    }
     if (transactionCategory.parentUid == null) {
       if (!categories.contains(transactionCategory)) {
         categories.add(transactionCategory);
@@ -105,9 +107,15 @@ class TransactionCategoriesListenable extends ChangeNotifier {
 
   void refreshItem(TransactionCategory transactionCategory, String? oldParentUid, String? newParentUid,
       Function(List<TransactionCategory> newCats)? callback) {
-    TransactionDao().transactionCategoryByType(transactionType).then((List<TransactionCategory> loadCats) {
-      categories.removeRange(0, categories.length);
-      categories.addAll(Util().buildTransactionCategoryTree(loadCats));
+    TransactionDao().transactionCategoryByType(transactionCategory.transactionType).then((List<TransactionCategory> loadCats) {
+      List<TransactionCategory>? categories = categoriesMap[transactionCategory.transactionType];
+      if (categories == null) {
+        categories = [];
+        categoriesMap[transactionCategory.transactionType] = categories;
+      } else {
+        categories.removeRange(0, categories.length);
+      }
+      categories.addAll(loadCats);
       if (kDebugMode) {
         print("Final refreshed categories $categories");
       }
@@ -134,7 +142,7 @@ class TransactionCategoriesListenable extends ChangeNotifier {
 
   @override
   String toString() {
-    return '{"transactionType": "$transactionType", "categories": $categories}';
+    return '{"categoriesMap": $categoriesMap}';
   }
 
   void triggerNotify() {

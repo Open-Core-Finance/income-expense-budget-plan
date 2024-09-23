@@ -5,6 +5,8 @@ import 'package:income_expense_budget_plan/app-layout/desktop/desktop_home.dart'
 import 'package:income_expense_budget_plan/common/account_panel.dart';
 import 'package:income_expense_budget_plan/common/default_currency_selection.dart';
 import 'package:income_expense_budget_plan/common/more_panel.dart';
+import 'package:income_expense_budget_plan/common/report_panel.dart';
+import 'package:income_expense_budget_plan/common/transaction_panel.dart';
 import 'package:income_expense_budget_plan/model/setting.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/app_state.dart';
@@ -37,39 +39,16 @@ class _HomePageMobilePortraitState extends State<HomePageMobilePortrait> {
   @override
   Widget build(BuildContext context) {
     if (kDebugMode) {
-      print("Current screensize ${MediaQuery.of(context).size}");
+      print("Current screen size ${MediaQuery.of(context).size}");
     }
     final ThemeData theme = Theme.of(context);
     return Consumer<AppState>(
       builder: (context, appState, child) => Consumer<SettingModel>(
         builder: (context, setting, child) => Scaffold(
           body: <Widget>[
-            /// Home page
-            Card(
-              shadowColor: Colors.transparent,
-              margin: const EdgeInsets.all(8.0),
-              child: SizedBox.expand(
-                child: Center(
-                  child: Text(
-                    'Home page',
-                    style: theme.textTheme.titleLarge,
-                  ),
-                ),
-              ),
-            ),
+            const TransactionPanel(),
             const AccountPanel(),
-            Card(
-              shadowColor: Colors.transparent,
-              margin: const EdgeInsets.all(8.0),
-              child: SizedBox.expand(
-                child: Center(
-                  child: Text(
-                    'AAAA page',
-                    style: theme.textTheme.titleLarge,
-                  ),
-                ),
-              ),
-            ),
+            const ReportPanel(),
             const MorePanel()
           ][appState.currentHomePageIndex % 4],
           // bottomNavigationBar: BottomAppBar(

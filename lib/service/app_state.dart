@@ -5,6 +5,7 @@ import 'package:income_expense_budget_plan/model/asset_category.dart';
 import 'package:income_expense_budget_plan/model/assets.dart';
 import 'package:income_expense_budget_plan/model/currency.dart';
 import 'package:income_expense_budget_plan/model/setting.dart';
+import 'package:income_expense_budget_plan/model/transaction_category.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/database_service.dart';
 import 'package:sqflite/sqflite.dart';
@@ -20,6 +21,7 @@ class AppState extends ChangeNotifier {
   List<AssetCategory> _assetCategories = [];
   List<Asset> _assets = [];
   List<Currency> _currencies = [];
+  Map<TransactionType, List<TransactionCategory>> categoriesMap = Map.fromIterable(TransactionType.values, value: (transactionType) => []);
   int get currentHomePageIndex => _currentHomePageIndex;
   bool isMobile = true;
   bool isLandscape = false;
@@ -75,5 +77,53 @@ class AppState extends ChangeNotifier {
 
   void triggerNotify() {
     notifyListeners();
+    if (kDebugMode) {
+      print("App state updated");
+    }
+  }
+
+  void reloadTransactionCategories() async {
+    DatabaseService().loadListModel(tableNameTransactionCategory, TransactionCategory.fromMap).then((cats) {
+      categoriesMap = Map.fromIterable(TransactionType.values, value: (transactionType) => []);
+      for (var cat in cats) {
+        categoriesMap[cat.transactionType]!.add(cat);
+      }
+      if (kDebugMode) {
+        print("categoriesMap: $categoriesMap");
+      }
+    });
+  }
+
+  Asset? retrieveLastSelectedAsset() {
+    try {
+      return assets.firstWhere((account) => account.id == systemSetting.lastTransactionAccountUid);
+    } catch (ex) {
+      return null;
+    }
+  }
+
+  void updateLastSelectedAsset(Asset asset) async {
+    systemSetting.lastTransactionAccountUid = asset.id;
+  }
+
+  TransactionCategory? retrieveCategory(String categoryId) {
+    for (var entry in categoriesMap.entries) {
+      var cats = entry.value;
+      for (var cat in cats) {
+        if (cat.id == categoryId) {
+          return cat;
+        }
+      }
+    }
+    return null;
+  }
+
+  Asset? retrieveAccount(String accountId) {
+    for (var account in assets) {
+      if (account.id == accountId) {
+        return account;
+      }
+    }
+    return null;
   }
 }

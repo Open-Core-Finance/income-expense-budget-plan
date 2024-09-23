@@ -2,6 +2,7 @@ import 'package:currency_text_input_formatter/currency_text_input_formatter.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:income_expense_budget_plan/model/currency.dart';
+import 'package:intl/intl.dart';
 
 class FormUtil {
   // Singleton pattern
@@ -53,6 +54,8 @@ class FormUtil {
         return AppLocalizations.of(context)!.accountType_eWallet;
       case "creditCard":
         return AppLocalizations.of(context)!.accountType_creditCard;
+      case "payLaterAccount":
+        return AppLocalizations.of(context)!.accountType_payLaterAccount;
       default:
         return typeName;
     }
@@ -92,5 +95,17 @@ class FormUtil {
         );
       },
     );
+  }
+
+  double? parseAmount(String amountText, NumberFormat moneyFormat) {
+    amountText = amountText.trim();
+    String symbol = moneyFormat.currencySymbol;
+    while (amountText.startsWith(symbol)) {
+      amountText = amountText.substring(symbol.length).trim();
+    }
+    while (amountText.endsWith(symbol)) {
+      amountText = amountText.substring(0, amountText.length - symbol.length);
+    }
+    return moneyFormat.tryParse(amountText)?.toDouble();
   }
 }

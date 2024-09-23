@@ -15,10 +15,9 @@ import 'package:uuid/v8.dart';
 
 class TransactionCategoriesPanel extends StatefulWidget {
   final bool disableBack;
-
+  final Function(TransactionCategory item)? itemTap;
   final String listPanelTitle;
-  final String addPanelTitle;
-  const TransactionCategoriesPanel({super.key, required this.listPanelTitle, required this.addPanelTitle, bool? disableBack})
+  const TransactionCategoriesPanel({super.key, required this.listPanelTitle, bool? disableBack, this.itemTap})
       : disableBack = disableBack ?? false;
 
   @override
@@ -26,49 +25,92 @@ class TransactionCategoriesPanel extends StatefulWidget {
 }
 
 class _TransactionCategoriesPanelState extends State<TransactionCategoriesPanel> {
-  late String _addPanelTitle;
-  late String _listPanelTitle;
-
-  @override
-  void initState() {
-    super.initState();
-    _addPanelTitle = widget.addPanelTitle;
-    _listPanelTitle = widget.listPanelTitle;
-  }
-
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
+    String listPanelTitle = widget.listPanelTitle;
     TransactionCategoriesListenable transactionCategories = Provider.of<TransactionCategoriesListenable>(context);
-    var body = TransactionCategoryTree(
-        categories: transactionCategories.categories,
-        transactionType: transactionCategories.transactionType,
-        addPanelTitle: _addPanelTitle);
-    if (kDebugMode) {
-      print("Body $body with categories ${transactionCategories.categories.length}\n");
+
+    Widget? appBarLeading;
+    if (widget.disableBack != true) {
+      appBarLeading = IconButton(icon: Icon(Icons.arrow_back, color: colorScheme.secondary), onPressed: () => Navigator.of(context).pop());
     }
-    return Scaffold(
-      appBar: AppBar(
-        leading: widget.disableBack
-            ? null
-            : IconButton(
-                icon: Icon(Icons.arrow_back, color: colorScheme.secondary),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-        title: Text(_listPanelTitle),
-      ),
-      body: body,
-    );
+
+    PreferredSizeWidget? appBarBottom;
+    Widget body;
+    if (transactionCategories.categoriesMap.length >= 2) {
+      AppLocalizations apLocalizations = AppLocalizations.of(context)!;
+      String expenseTitle = apLocalizations.menuExpenseCategory;
+      String incomeTitle = apLocalizations.menuIncomeCategory;
+      appBarBottom = TabBar(
+        tabs: [
+          Tab(icon: const Icon(incomeIconData), text: incomeTitle),
+          Tab(icon: const Icon(expenseIconData), text: expenseTitle),
+          //Tab(icon: const Icon(genericCategoryIconData), text: apLocalizations.transactionCategory),
+        ],
+      );
+      body = TabBarView(
+        children: [
+          TransactionCategoryTree(
+            key: Key("Categories-panel-${widget.key.toString()}-income"),
+            categories: transactionCategories.categoriesMap[TransactionType.income] ?? [],
+            transactionType: TransactionType.income,
+            itemTap: widget.itemTap,
+          ),
+          TransactionCategoryTree(
+            key: Key("Categories-panel-${widget.key.toString()}-expense"),
+            categories: transactionCategories.categoriesMap[TransactionType.expense] ?? [],
+            transactionType: TransactionType.expense,
+            itemTap: widget.itemTap,
+          ),
+        ],
+      );
+
+      if (kDebugMode) {
+        print("Body $body with categories ${transactionCategories.categoriesMap}\n");
+      }
+
+      return DefaultTabController(
+        length: 2, // Number of tabs
+        child: Scaffold(
+          appBar: AppBar(
+            leading: appBarLeading,
+            title: Text(listPanelTitle),
+            bottom: appBarBottom,
+          ),
+          body: body,
+        ),
+      );
+    } else {
+      var categoriesEntry = transactionCategories.categoriesMap.entries.first;
+      body = TransactionCategoryTree(
+        key: Key("Categories-panel-${widget.key.toString()}"),
+        categories: categoriesEntry.value,
+        transactionType: categoriesEntry.key,
+        itemTap: widget.itemTap,
+      );
+
+      if (kDebugMode) {
+        print("Body $body with categories ${transactionCategories.categoriesMap}\n");
+      }
+
+      return Scaffold(
+        appBar: AppBar(leading: appBarLeading, title: Text(listPanelTitle)),
+        body: body,
+      );
+    }
   }
 }
 
 class AddTransactionCategoryPanel extends StatefulWidget {
-  final String addPanelTitle;
   final TransactionCategory? editingCategory;
   final Function(List<TransactionCategory> cats)? editCallback;
+  final String addPanelTitle;
+  final TransactionType transactionType;
 
-  const AddTransactionCategoryPanel({super.key, required this.addPanelTitle, this.editingCategory, this.editCallback});
+  const AddTransactionCategoryPanel(
+      {super.key, this.editingCategory, this.editCallback, required this.addPanelTitle, required this.transactionType});
 
   @override
   State<AddTransactionCategoryPanel> createState() => _AddTransactionCategoryPanelState();
@@ -90,7 +132,6 @@ class _AddTransactionCategoryPanelState extends State<AddTransactionCategoryPane
   late bool _enableMultiLanguage;
   TransactionCategory? _editingCategory;
   late Map<String, TextEditingController> _localizeNamesMap;
-
   late String _addPanelTitle;
 
   @override
@@ -328,7 +369,7 @@ class _AddTransactionCategoryPanelState extends State<AddTransactionCategoryPane
       _isValidCategoryName = true;
     });
     var future = TransactionDao().loadCategoryByTransactionTypeAndNameAndIgnoreSpecificCategory(
-        transactionCategoriesListenable.transactionType, _categoryNameController.text, _editingCategory?.id);
+        widget.transactionType, _categoryNameController.text, _editingCategory?.id);
     future.then((List<Map<String, dynamic>> data) {
       setState(() {
         _isChecking = false;
@@ -364,9 +405,9 @@ class _AddTransactionCategoryPanelState extends State<AddTransactionCategoryPane
           updateFuture.then((_) => transactionCategoriesListenable.refreshItem(_editingCategory!, olParentUid, newParentUid, callback));
         });
       } else {
-        List<TransactionCategory> sibling = Util().findSiblingCategories(
-                transactionCategoriesListenable.categories, transactionCategoriesListenable.transactionType, _selectedParentCategory?.id) ??
-            [];
+        var categories = transactionCategoriesListenable.categoriesMap[widget.transactionType] ?? [];
+        List<TransactionCategory> sibling =
+            Util().findSiblingCategories(categories, widget.transactionType, _selectedParentCategory?.id) ?? [];
         TransactionCategory transactionCategory = TransactionCategory(
             id: const UuidV8().generate(),
             icon: _selectedIcon,
@@ -374,12 +415,12 @@ class _AddTransactionCategoryPanelState extends State<AddTransactionCategoryPane
             parentUid: _selectedParentCategory?.id,
             localizeNames: localizeMap,
             index: sibling.length,
-            transactionType: transactionCategoriesListenable.transactionType);
+            transactionType: widget.transactionType);
         DatabaseService().database.then((db) {
           db.insert(tableNameTransactionCategory, transactionCategory.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
           setState(() {
             transactionCategoriesListenable.addItem(transactionCategory);
-            callback(transactionCategoriesListenable.categories);
+            callback(categories);
           });
         });
       }
@@ -397,15 +438,14 @@ class _AddTransactionCategoryPanelState extends State<AddTransactionCategoryPane
       context: context,
       builder: (BuildContext context) => AlertDialog(
         title: Text(AppLocalizations.of(context)!.transactionCategoryParent),
-        scrollable: true,
         content: SizedBox(
           width: maxWidth,
           height: maxHeight,
           child: ChangeNotifierProvider(
-            create: (context) => TransactionCategoriesListenable(
-                transactionType: transactionCategoriesListenable.transactionType, categories: transactionCategoriesListenable.categories),
+            create: (context) => TransactionCategoriesListenable(categoriesMap: transactionCategoriesListenable.categoriesMap),
             builder: (BuildContext context, Widget? child) => TransactionCategoryTree(
-              categories: transactionCategoriesListenable.categories,
+              key: Key("transaction-categories-dialog-${widget.key.toString()}"),
+              categories: transactionCategoriesListenable.categoriesMap[widget.transactionType] ?? [],
               itemTap: (TransactionCategory item) {
                 _selectedParentCategory = item;
                 if (kDebugMode) {
@@ -414,8 +454,7 @@ class _AddTransactionCategoryPanelState extends State<AddTransactionCategoryPane
                 Navigator.of(context).pop();
                 setState(() {});
               },
-              addPanelTitle: _addPanelTitle,
-              transactionType: transactionCategoriesListenable.transactionType,
+              transactionType: widget.transactionType,
             ),
           ),
         ),

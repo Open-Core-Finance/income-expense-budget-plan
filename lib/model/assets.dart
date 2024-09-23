@@ -1,7 +1,5 @@
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
-import 'package:income_expense_budget_plan/model/currency.dart';
 import 'package:income_expense_budget_plan/service/util.dart';
 
 import 'asset_category.dart';
@@ -10,11 +8,10 @@ abstract class Asset extends AssetTreeNode {
   String description;
   String currencyUid;
   Map<String, String> localizeDescriptions = {};
-  int positionIndex = 0;
   late DateTime lastUpdated;
   String categoryUid;
-  Currency? currency;
   AssetCategory? category;
+  double availableAmount = 0;
 
   Asset(
       {required super.id,
@@ -26,7 +23,8 @@ abstract class Asset extends AssetTreeNode {
       DateTime? updatedDateTime,
       int? index,
       required this.currencyUid,
-      required this.categoryUid}) {
+      required this.categoryUid,
+      required this.availableAmount}) {
     if (localizeDescriptions != null) {
       this.localizeDescriptions = localizeDescriptions;
     }
@@ -53,7 +51,8 @@ abstract class Asset extends AssetTreeNode {
       'localize_descriptions': jsonEncode(localizeDescriptions),
       'position_index': positionIndex,
       'last_updated': lastUpdated.millisecondsSinceEpoch,
-      'category_uid': categoryUid
+      'category_uid': categoryUid,
+      'available_amount': availableAmount,
     };
   }
 
@@ -67,7 +66,7 @@ abstract class Asset extends AssetTreeNode {
   String attributeString() {
     return '"${idFieldName()}": "$id", "name": "$name", "icon": ${Util().iconDataToJSONString(icon)},"description": "$description", '
         '"positionIndex": $positionIndex, "lastUpdated": "${lastUpdated.toIso8601String()}", "currencyUid": "$currencyUid", '
-        '"categoryUid": "$categoryUid","localizeNames": ${jsonEncode(localizeNames)}, "localizeDescriptions": ${jsonEncode(localizeDescriptions)}';
+        '"categoryUid": "$categoryUid","localizeNames": ${jsonEncode(localizeNames)}, "localizeDescriptions": ${jsonEncode(localizeDescriptions)},"availableAmount": "$availableAmount"';
   }
 
   @override
@@ -77,10 +76,9 @@ abstract class Asset extends AssetTreeNode {
   String idFieldName() => "uid";
 }
 
-enum AssetType { cash, bankCasa, loan, termDeposit, eWallet, creditCard }
+enum AssetType { cash, bankCasa, loan, termDeposit, eWallet, creditCard, payLaterAccount }
 
 class CashAccount extends Asset {
-  double availableAmount = 0;
   CashAccount({
     required super.id,
     required super.icon,
@@ -92,19 +90,14 @@ class CashAccount extends Asset {
     super.index,
     required super.currencyUid,
     required super.categoryUid,
-    required this.availableAmount,
+    required super.availableAmount,
   });
 
   @override
   Map<String, Object?> toMap() {
     var result = super.toMap();
-    result.addAll({'available_amount': availableAmount, 'asset_type': AssetType.cash.name});
+    result.addAll({'asset_type': AssetType.cash.name});
     return result;
-  }
-
-  @override
-  String attributeString() {
-    return '${super.attributeString()},"availableAmount": "$availableAmount"';
   }
 
   factory CashAccount.fromMap(Map<String, dynamic> json) => CashAccount(
@@ -113,8 +106,8 @@ class CashAccount extends Asset {
         name: json['name'],
         description: json['description'],
         currencyUid: json['currency_uid'],
-        localizeNames: Util().fromLocalizeDbField(jsonDecode(json['localize_names'])),
-        localizeDescriptions: Util().fromLocalizeDbField(jsonDecode(json['localize_descriptions'])),
+        localizeNames: Util().fromLocalizeDbField(Util().customJsonDecode(json['localize_names'])),
+        localizeDescriptions: Util().fromLocalizeDbField(Util().customJsonDecode(json['localize_descriptions'])),
         index: json['position_index'],
         updatedDateTime: DateTime.fromMicrosecondsSinceEpoch(json['last_updated']),
         availableAmount: json['available_amount'],
@@ -123,7 +116,6 @@ class CashAccount extends Asset {
 }
 
 class BankCasaAccount extends Asset {
-  double availableAmount = 0;
   BankCasaAccount({
     required super.id,
     required super.icon,
@@ -135,19 +127,14 @@ class BankCasaAccount extends Asset {
     super.index,
     required super.currencyUid,
     required super.categoryUid,
-    required this.availableAmount,
+    required super.availableAmount,
   });
 
   @override
   Map<String, Object?> toMap() {
     var result = super.toMap();
-    result.addAll({'available_amount': availableAmount, 'asset_type': AssetType.bankCasa.name});
+    result.addAll({'asset_type': AssetType.bankCasa.name});
     return result;
-  }
-
-  @override
-  String attributeString() {
-    return '${super.attributeString()},"availableAmount": "$availableAmount"';
   }
 
   factory BankCasaAccount.fromMap(Map<String, dynamic> json) => BankCasaAccount(
@@ -156,8 +143,8 @@ class BankCasaAccount extends Asset {
         name: json['name'],
         description: json['description'],
         currencyUid: json['currency_uid'],
-        localizeNames: Util().fromLocalizeDbField(jsonDecode(json['localize_names'])),
-        localizeDescriptions: Util().fromLocalizeDbField(jsonDecode(json['localize_descriptions'])),
+        localizeNames: Util().fromLocalizeDbField(Util().customJsonDecode(json['localize_names'])),
+        localizeDescriptions: Util().fromLocalizeDbField(Util().customJsonDecode(json['localize_descriptions'])),
         index: json['position_index'],
         updatedDateTime: DateTime.fromMicrosecondsSinceEpoch(json['last_updated']),
         availableAmount: json['available_amount'],
@@ -179,7 +166,7 @@ class LoanAccount extends Asset {
     required super.currencyUid,
     required super.categoryUid,
     required this.loanAmount,
-  });
+  }) : super(availableAmount: 0);
 
   @override
   Map<String, Object?> toMap() {
@@ -199,8 +186,8 @@ class LoanAccount extends Asset {
         name: json['name'],
         description: json['description'],
         currencyUid: json['currency_uid'],
-        localizeNames: Util().fromLocalizeDbField(jsonDecode(json['localize_names'])),
-        localizeDescriptions: Util().fromLocalizeDbField(jsonDecode(json['localize_descriptions'])),
+        localizeNames: Util().fromLocalizeDbField(Util().customJsonDecode(json['localize_names'])),
+        localizeDescriptions: Util().fromLocalizeDbField(Util().customJsonDecode(json['localize_descriptions'])),
         index: json['position_index'],
         updatedDateTime: DateTime.fromMicrosecondsSinceEpoch(json['last_updated']),
         loanAmount: json['loan_amount'],
@@ -209,7 +196,6 @@ class LoanAccount extends Asset {
 }
 
 class TermDepositAccount extends Asset {
-  double depositAmount = 0;
   TermDepositAccount({
     required super.id,
     required super.icon,
@@ -221,19 +207,19 @@ class TermDepositAccount extends Asset {
     super.index,
     required super.currencyUid,
     required super.categoryUid,
-    required this.depositAmount,
-  });
+    required double depositAmount,
+  }) : super(availableAmount: depositAmount);
 
   @override
   Map<String, Object?> toMap() {
     var result = super.toMap();
-    result.addAll({'deposit_amount': depositAmount, 'asset_type': AssetType.termDeposit.name});
+    result.addAll({'deposit_amount': availableAmount, 'asset_type': AssetType.termDeposit.name});
     return result;
   }
 
   @override
   String attributeString() {
-    return '${super.attributeString()},"depositAmount": "$depositAmount"';
+    return '${super.attributeString()},"depositAmount": "$availableAmount"';
   }
 
   factory TermDepositAccount.fromMap(Map<String, dynamic> json) => TermDepositAccount(
@@ -242,8 +228,8 @@ class TermDepositAccount extends Asset {
         name: json['name'],
         description: json['description'],
         currencyUid: json['currency_uid'],
-        localizeNames: Util().fromLocalizeDbField(jsonDecode(json['localize_names'])),
-        localizeDescriptions: Util().fromLocalizeDbField(jsonDecode(json['localize_descriptions'])),
+        localizeNames: Util().fromLocalizeDbField(Util().customJsonDecode(json['localize_names'])),
+        localizeDescriptions: Util().fromLocalizeDbField(Util().customJsonDecode(json['localize_descriptions'])),
         index: json['position_index'],
         updatedDateTime: DateTime.fromMicrosecondsSinceEpoch(json['last_updated']),
         depositAmount: json['deposit_amount'],
@@ -252,7 +238,6 @@ class TermDepositAccount extends Asset {
 }
 
 class EWallet extends Asset {
-  double availableAmount = 0;
   EWallet({
     required super.id,
     required super.icon,
@@ -264,19 +249,14 @@ class EWallet extends Asset {
     super.index,
     required super.currencyUid,
     required super.categoryUid,
-    required this.availableAmount,
+    required super.availableAmount,
   });
 
   @override
   Map<String, Object?> toMap() {
     var result = super.toMap();
-    result.addAll({'available_amount': availableAmount, 'asset_type': AssetType.eWallet.name});
+    result.addAll({'asset_type': AssetType.eWallet.name});
     return result;
-  }
-
-  @override
-  String attributeString() {
-    return '${super.attributeString()},"availableAmount": "$availableAmount"';
   }
 
   factory EWallet.fromMap(Map<String, dynamic> json) => EWallet(
@@ -285,8 +265,8 @@ class EWallet extends Asset {
         name: json['name'],
         description: json['description'],
         currencyUid: json['currency_uid'],
-        localizeNames: Util().fromLocalizeDbField(jsonDecode(json['localize_names'])),
-        localizeDescriptions: Util().fromLocalizeDbField(jsonDecode(json['localize_descriptions'])),
+        localizeNames: Util().fromLocalizeDbField(Util().customJsonDecode(json['localize_names'])),
+        localizeDescriptions: Util().fromLocalizeDbField(Util().customJsonDecode(json['localize_descriptions'])),
         index: json['position_index'],
         updatedDateTime: DateTime.fromMicrosecondsSinceEpoch(json['last_updated']),
         availableAmount: json['available_amount'],
@@ -295,7 +275,6 @@ class EWallet extends Asset {
 }
 
 class CreditCard extends Asset {
-  double availableAmount = 0;
   double creditLimit = 0;
   CreditCard(
       {required super.id,
@@ -308,19 +287,19 @@ class CreditCard extends Asset {
       super.index,
       required super.currencyUid,
       required super.categoryUid,
-      required this.availableAmount,
+      required super.availableAmount,
       required this.creditLimit});
 
   @override
   Map<String, Object?> toMap() {
     var result = super.toMap();
-    result.addAll({'available_amount': availableAmount, 'credit_limit': creditLimit, 'asset_type': AssetType.creditCard.name});
+    result.addAll({'credit_limit': creditLimit, 'asset_type': AssetType.creditCard.name});
     return result;
   }
 
   @override
   String attributeString() {
-    return '${super.attributeString()},"availableAmount": "$availableAmount", "creditLimit": "$creditLimit"';
+    return '${super.attributeString()}, "creditLimit": "$creditLimit"';
   }
 
   factory CreditCard.fromMap(Map<String, dynamic> json) => CreditCard(
@@ -329,12 +308,56 @@ class CreditCard extends Asset {
         name: json['name'],
         description: json['description'],
         currencyUid: json['currency_uid'],
-        localizeNames: Util().fromLocalizeDbField(jsonDecode(json['localize_names'])),
-        localizeDescriptions: Util().fromLocalizeDbField(jsonDecode(json['localize_descriptions'])),
+        localizeNames: Util().fromLocalizeDbField(Util().customJsonDecode(json['localize_names'])),
+        localizeDescriptions: Util().fromLocalizeDbField(Util().customJsonDecode(json['localize_descriptions'])),
         index: json['position_index'],
         updatedDateTime: DateTime.fromMicrosecondsSinceEpoch(json['last_updated']),
         availableAmount: json['available_amount'],
         creditLimit: json['credit_limit'],
+        categoryUid: json['category_uid'],
+      );
+}
+
+class PayLaterAccount extends Asset {
+  double paymentLimit = 0;
+  PayLaterAccount(
+      {required super.id,
+      required super.icon,
+      required super.name,
+      required super.description,
+      super.localizeNames,
+      super.localizeDescriptions,
+      super.updatedDateTime,
+      super.index,
+      required super.currencyUid,
+      required super.categoryUid,
+      required super.availableAmount,
+      required this.paymentLimit});
+
+  @override
+  Map<String, Object?> toMap() {
+    var result = super.toMap();
+    result.addAll({'payment_limit': paymentLimit, 'asset_type': AssetType.creditCard.name});
+    return result;
+  }
+
+  @override
+  String attributeString() {
+    return '${super.attributeString()}, "paymentLimit": "$paymentLimit"';
+  }
+
+  factory PayLaterAccount.fromMap(Map<String, dynamic> json) => PayLaterAccount(
+        id: json['uid'],
+        icon: Util().iconDataFromJSONString(json['icon'] as String),
+        name: json['name'],
+        description: json['description'],
+        currencyUid: json['currency_uid'],
+        localizeNames: Util().fromLocalizeDbField(Util().customJsonDecode(json['localize_names'])),
+        localizeDescriptions: Util().fromLocalizeDbField(Util().customJsonDecode(json['localize_descriptions'])),
+        index: json['position_index'],
+        updatedDateTime: DateTime.fromMicrosecondsSinceEpoch(json['last_updated']),
+        availableAmount: json['available_amount'],
+        paymentLimit: json['payment_limit'],
         categoryUid: json['category_uid'],
       );
 }

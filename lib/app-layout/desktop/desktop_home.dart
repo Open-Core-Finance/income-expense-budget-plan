@@ -4,7 +4,9 @@ import 'package:flutter_iconpicker/extensions/string_extensions.dart';
 import 'package:income_expense_budget_plan/common/account_panel.dart';
 import 'package:income_expense_budget_plan/common/assets_categories_panel.dart';
 import 'package:income_expense_budget_plan/common/default_currency_selection.dart';
+import 'package:income_expense_budget_plan/common/report_panel.dart';
 import 'package:income_expense_budget_plan/common/transaction_categories_panel.dart';
+import 'package:income_expense_budget_plan/common/transaction_panel.dart';
 import 'package:income_expense_budget_plan/dao/transaction_dao.dart';
 import 'package:income_expense_budget_plan/model/setting.dart';
 import 'package:income_expense_budget_plan/model/transaction_category.dart';
@@ -41,77 +43,46 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
       _startDefaultCurrencyCheck();
     });
 
-    var txnType = TransactionType.income;
-    TransactionDao()
-        .transactionCategoryByType(txnType)
-        .then((List<TransactionCategory> loadCats) => setState(() => incomeCategories = Util().buildTransactionCategoryTree(loadCats)));
-    txnType = TransactionType.expense;
-    TransactionDao()
-        .transactionCategoryByType(txnType)
-        .then((List<TransactionCategory> loadCats) => setState(() => expenseCategories = Util().buildTransactionCategoryTree(loadCats)));
+    TransactionDao().transactionCategoryByType(TransactionType.income).then((loadCats) => setState(() => incomeCategories = loadCats));
+    TransactionDao().transactionCategoryByType(TransactionType.expense).then((loadCats) => setState(() => expenseCategories = loadCats));
   }
 
   @override
   Widget build(BuildContext context) {
     if (kDebugMode) {
-      print("Current screensize ${MediaQuery.of(context).size}");
+      print("Current screen size ${MediaQuery.of(context).size}");
     }
     final ThemeData theme = Theme.of(context);
 
     return Consumer<AppState>(
-      builder: (context, appState, child) => Consumer<SettingModel>(
-        builder: (context, setting, child) => Scaffold(
-          appBar: AppBar(actions: []),
+      builder: (context, appState, child) => Consumer<SettingModel>(builder: (context, setting, child) {
+        String expenseTitle = AppLocalizations.of(context)!.menuExpenseCategory;
+        String incomeTitle = AppLocalizations.of(context)!.menuIncomeCategory;
+        if (kDebugMode) {
+          print("Expense category title [$expenseTitle]\nIncome category title [$incomeTitle]");
+        }
+        return Scaffold(
           body: <Widget>[
-            VerticalSplitView(
-              key: const Key("1st_panel"),
-              left: Card(
-                shadowColor: Colors.transparent,
-                margin: const EdgeInsets.all(8.0),
-                child: SizedBox.expand(
-                  child: Center(
-                    child: Text(
-                      'Home page',
-                      style: theme.textTheme.titleLarge,
-                    ),
-                  ),
-                ),
-              ),
-              right: Card(
-                shadowColor: Colors.transparent,
-                margin: const EdgeInsets.all(8.0),
-                child: SizedBox.expand(
-                  child: Center(
-                    child: Text(
-                      'AAAA page',
-                      style: theme.textTheme.titleLarge,
-                    ),
-                  ),
-                ),
-              ),
+            const VerticalSplitView(
+              key: Key("1st_panel"),
+              left: TransactionPanel(),
+              right: ReportPanel(),
             ),
             const VerticalSplitView(
                 key: Key("2nd_panel"), left: AccountPanel(), right: AssetCategoriesPanel(disableBack: true), ratio: 0.6),
             VerticalSplitView(
               key: const Key("3rd_panel"),
               left: ChangeNotifierProvider(
-                create: (context) =>
-                    TransactionCategoriesListenable(transactionType: TransactionType.expense, categories: expenseCategories),
+                create: (context) => TransactionCategoriesListenable(categoriesMap: {TransactionType.expense: expenseCategories}),
                 builder: (context, child) => child!,
                 child: TransactionCategoriesPanel(
-                  listPanelTitle: AppLocalizations.of(context)!.menuExpenseCategory,
-                  addPanelTitle: AppLocalizations.of(context)!.titleAddExpenseCategory,
-                  disableBack: true,
-                ),
+                    listPanelTitle: expenseTitle, disableBack: true, key: const Key("desktop-expense-category-panel")),
               ),
               right: ChangeNotifierProvider(
-                create: (context) => TransactionCategoriesListenable(transactionType: TransactionType.income, categories: incomeCategories),
+                create: (context) => TransactionCategoriesListenable(categoriesMap: {TransactionType.income: incomeCategories}),
                 builder: (context, child) => child!,
                 child: TransactionCategoriesPanel(
-                  listPanelTitle: AppLocalizations.of(context)!.menuIncomeCategory,
-                  addPanelTitle: AppLocalizations.of(context)!.titleAddIncomeCategory,
-                  disableBack: true,
-                ),
+                    listPanelTitle: incomeTitle, disableBack: true, key: const Key("desktop-income-category-panel")),
               ),
             )
           ][appState.currentHomePageIndex % 3],
@@ -167,8 +138,8 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
               ),
             ],
           ),
-        ),
-      ),
+        );
+      }),
     );
   }
 

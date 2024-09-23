@@ -48,21 +48,18 @@ class _MorePanelState extends State<MorePanel> {
             int startTime = DateTime.now().millisecondsSinceEpoch;
             TransactionDao().transactionCategoryByType(txnType).then((List<TransactionCategory> loadCats) {
               int loadEndTime = DateTime.now().millisecondsSinceEpoch;
-              var categories = Util().buildTransactionCategoryTree(loadCats);
+              var categories = loadCats;
               int parseEndTime = DateTime.now().millisecondsSinceEpoch;
               if (kDebugMode) {
                 print("\nLoad time: ${loadEndTime - startTime}, parse time: ${parseEndTime - loadEndTime}");
               }
-              var model = TransactionCategoriesListenable(transactionType: txnType, categories: categories);
+              var model = TransactionCategoriesListenable(categoriesMap: {txnType: categories});
               Util().navigateTo(
                 context,
                 ChangeNotifierProvider(
                   create: (context) => model,
                   builder: (context, child) => child!,
-                  child: TransactionCategoriesPanel(
-                    listPanelTitle: AppLocalizations.of(context)!.menuExpenseCategory,
-                    addPanelTitle: AppLocalizations.of(context)!.titleAddExpenseCategory,
-                  ),
+                  child: TransactionCategoriesPanel(listPanelTitle: AppLocalizations.of(context)!.menuExpenseCategory),
                 ),
               );
             });
@@ -74,20 +71,17 @@ class _MorePanelState extends State<MorePanel> {
           onTap: () {
             var txnType = TransactionType.income;
             TransactionDao().transactionCategoryByType(txnType).then((List<TransactionCategory> loadCats) {
-              var categories = Util().buildTransactionCategoryTree(loadCats);
+              var categories = loadCats;
               if (kDebugMode) {
                 print("Final list income categories $categories");
               }
-              var model = TransactionCategoriesListenable(transactionType: txnType, categories: categories);
+              var model = TransactionCategoriesListenable(categoriesMap: {txnType: categories});
               Util().navigateTo(
                 context,
                 ChangeNotifierProvider(
                   create: (context) => model,
                   builder: (context, child) => child!,
-                  child: TransactionCategoriesPanel(
-                    listPanelTitle: AppLocalizations.of(context)!.menuIncomeCategory,
-                    addPanelTitle: AppLocalizations.of(context)!.titleAddIncomeCategory,
-                  ),
+                  child: TransactionCategoriesPanel(listPanelTitle: AppLocalizations.of(context)!.menuIncomeCategory),
                 ),
               );
             });
