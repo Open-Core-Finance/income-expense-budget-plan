@@ -71,6 +71,27 @@ class DatabaseService {
     }
   }
 
+  Future<void> _executeTriggersSqlFile(Database db, String sqlFilePath) async {
+    var sqlContent = await rootBundle.loadString(sqlFilePath);
+    List<String> triggerStatements = sqlContent.split('END;');
+    // Execute each statement
+    for (String statement in triggerStatements) {
+      if (statement.trim().isNotEmpty) {
+        try {
+          var execution = db.execute("$statement\nEND;");
+          if (kDebugMode) {
+            print("SQL $statement...");
+          }
+          await execution;
+        } catch (e) {
+          if (kDebugMode) {
+            print("SQL $statement trigger fail! $e");
+          }
+        }
+      }
+    }
+  }
+
   // When the database is first created
   Future<void> _onCreate(Database db, int version) async {
     // Initialize the completer
@@ -79,6 +100,8 @@ class DatabaseService {
     await _executeSqlFile(db, 'assets/db_init.sql');
     // Complete the completer once the onCreate is done
     _onCreateCompleter?.complete();
+
+    _executeTriggersSqlFile(db, 'assets/db_create_triggers.sql');
   }
 
   Future<void> _onOpen(Database db) async {

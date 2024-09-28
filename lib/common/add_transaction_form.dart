@@ -2,22 +2,17 @@ import 'package:currency_text_input_formatter/currency_text_input_formatter.dart
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:flutter_iconpicker/flutter_iconpicker.dart';
 import 'package:income_expense_budget_plan/common/account_panel.dart';
 import 'package:income_expense_budget_plan/common/date_time_form_field.dart';
 import 'package:income_expense_budget_plan/common/transaction_categories_panel.dart';
-import 'package:income_expense_budget_plan/common/transaction_category_tree.dart';
-import 'package:income_expense_budget_plan/dao/assets_dao.dart';
-import 'package:income_expense_budget_plan/model/asset_category.dart';
 import 'package:income_expense_budget_plan/model/assets.dart';
 import 'package:income_expense_budget_plan/model/currency.dart';
 import 'package:income_expense_budget_plan/model/name_localized_model.dart';
 import 'package:income_expense_budget_plan/model/transaction.dart';
 import 'package:income_expense_budget_plan/model/transaction_category.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
-import 'package:income_expense_budget_plan/service/app_state.dart';
-import 'package:income_expense_budget_plan/service/form_util.dart';
 import 'package:income_expense_budget_plan/service/database_service.dart';
+import 'package:income_expense_budget_plan/service/form_util.dart';
 import 'package:income_expense_budget_plan/service/util.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
@@ -25,7 +20,7 @@ import 'package:uuid/v8.dart';
 
 class AddTransactionForm extends StatefulWidget {
   final Transactions? editingTransaction;
-  final Function(List<AssetCategory> assets, bool isAddNew)? editCallback;
+  final Function(Transactions transaction, Transactions? deletedTran)? editCallback;
   const AddTransactionForm({super.key, this.editingTransaction, this.editCallback});
 
   @override
@@ -35,11 +30,13 @@ class AddTransactionForm extends StatefulWidget {
 class _AddTransactionFormState extends State<AddTransactionForm> {
   late bool _isChecking;
   bool _formValidatedPassed = false;
+  bool _isValidFeeAmount = false;
   bool _isValidAmount = false;
   late TextEditingController _transactionDescriptionController;
   late TextEditingController _transactionAmountController;
   late TextEditingController _transactionMySplitAmountController;
   late TextEditingController _transactionReturnSharedBillIdController;
+  late TextEditingController _transactionFeeController;
   Transactions? _editingTransaction;
   Transactions? _selectedBillToReturn;
   TransactionType _selectedTransactionType = TransactionType.expense;
@@ -54,7 +51,6 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
   late TimeOfDay _selectedTxnTime;
 
   late bool _haveFee;
-  late double _feeAmount;
 
   // Create a global key that uniquely identifies the Form widget
   // and allows validation of the form.
@@ -67,19 +63,22 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
   void initState() {
     super.initState();
     if (widget.editingTransaction != null) {
-      _editingTransaction = widget.editingTransaction;
-      _transactionDescriptionController = TextEditingController(text: _editingTransaction!.description);
-      _transactionAmountController = TextEditingController(text: '${_editingTransaction!.amount}');
+      var transaction = widget.editingTransaction!;
+      _editingTransaction = transaction;
+      _transactionDescriptionController = TextEditingController(text: transaction.description);
+      _transactionAmountController = TextEditingController(text: '${transaction.amount}');
+      _transactionFeeController = TextEditingController(text: '${transaction.feeAmount}');
 
       _isChecking = false;
-      _selectedCategory = _editingTransaction!.transactionCategory;
-      _selectedAccount = _editingTransaction!.account;
-      _selectedTxnDate = _editingTransaction!.transactionDate;
-      _selectedTxnTime = _editingTransaction!.transactionTime;
+      _selectedCategory = transaction.transactionCategory;
+      _selectedAccount = transaction.account;
+      _selectedTxnDate = transaction.transactionDate;
+      _selectedTxnTime = transaction.transactionTime;
       _selectedToAccount = null;
 
       _transactionMySplitAmountController = TextEditingController(text: '');
       _transactionReturnSharedBillIdController = TextEditingController(text: '');
+
       if (_editingTransaction is TransferTransaction) {
         _selectedAccount = (_editingTransaction as TransferTransaction).toAccount;
       } else if (_editingTransaction is ShareBillTransaction) {
@@ -89,6 +88,7 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
         // TODO fill in bill to return
         _transactionReturnSharedBillIdController.text = _selectedBillToReturn != null ? _selectedBillToReturn!.description : '';
       }
+      _haveFee = transaction.withFee;
     } else {
       _initEmptyForm();
     }
@@ -115,6 +115,8 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
     _transactionMySplitAmountController = TextEditingController(text: '');
     _selectedBillToReturn = null;
     _transactionReturnSharedBillIdController = TextEditingController(text: '');
+    _haveFee = false;
+    _transactionFeeController = TextEditingController(text: '');
   }
 
   @override
@@ -136,7 +138,7 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_rounded, color: theme.colorScheme.error),
+          icon: Icon(Icons.arrow_back_rounded, color: colorScheme.error),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Center(
@@ -183,6 +185,9 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
                   ..._moneyInputField(true, amountLabel, _transactionAmountController, theme, validator: (String? value) {
                     if (kDebugMode) {
                       print("Value: $value");
+                    }
+                    if (_isValidAmount != true) {
+                      return AppLocalizations.of(context)!.transactionInvalidAmount;
                     }
                     return null;
                   }),
@@ -334,38 +339,78 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
                     ],
                   ),
                 ],
-                const SizedBox(height: 20),
+                const SizedBox(height: 10),
                 Row(
-                  children: FormUtil().buildCategoryFormActions(
-                    context,
-                    () => _validateForm(context, (List<AssetCategory> categories, bool isAddNew) {
-                      if (widget.editCallback != null) {
-                        var callback = widget.editCallback!;
-                        if (kDebugMode) {
-                          print("\nCallback: $callback\n");
+                  children: [
+                    Flexible(
+                      child: FormUtil().buildCheckboxFormField(
+                        context,
+                        theme,
+                        value: _haveFee,
+                        title: AppLocalizations.of(context)!.transactionHaveFee,
+                        onChanged: (bool? value) => setState(() {
+                          _haveFee = value!;
+                        }),
+                      ),
+                    ),
+                  ],
+                ),
+                if (_haveFee == true) ...[
+                  const SizedBox(height: 10),
+                  ..._moneyInputField(true, appLocalizations.transactionFee, _transactionFeeController, theme, validator: (String? value) {
+                    if (_isValidFeeAmount != true) {
+                      return AppLocalizations.of(context)!.transactionInvalidFee;
+                    }
+                    return null;
+                  }),
+                ],
+                if (_canSubmit()) ...[
+                  const SizedBox(height: 20),
+                  Row(
+                    children: FormUtil().buildCategoryFormActions(
+                      context,
+                      () => _validateForm(context, (Transactions transaction, Transactions? deletedTran) {
+                        if (widget.editCallback != null) {
+                          var callback = widget.editCallback!;
+                          if (kDebugMode) {
+                            print("\nCallback: $callback\n");
+                          }
+                          callback(transaction, deletedTran);
                         }
-                        callback(categories, isAddNew);
-                      }
-                      Navigator.of(context).pop();
-                    }),
-                    _isChecking,
-                    appLocalizations.accountCategoryActionSave,
-                    () => _validateForm(context, (List<AssetCategory> categories, bool isAddNew) {
-                      _initEmptyForm();
-                      if (widget.editCallback != null) {
-                        var callback = widget.editCallback!;
-                        callback(categories, isAddNew);
-                      }
-                    }),
-                    accountCategoryActionSaveAddMoreLabel,
-                  ),
-                )
+                        Navigator.of(context).pop();
+                      }),
+                      _isChecking,
+                      appLocalizations.accountCategoryActionSave,
+                      () => _validateForm(context, (Transactions transaction, Transactions? deletedTran) {
+                        _initEmptyForm();
+                        if (widget.editCallback != null) {
+                          var callback = widget.editCallback!;
+                          callback(transaction, deletedTran);
+                        }
+                      }),
+                      accountCategoryActionSaveAddMoreLabel,
+                    ),
+                  )
+                ],
               ],
             ),
           ),
         ),
       ),
     );
+  }
+
+  bool _canSubmit() {
+    if (_selectedTransactionType == TransactionType.adjustment) {
+      return _selectedAccount != null;
+    } else {
+      bool result = _selectedAccount != null && _selectedCategory != null;
+      if (_selectedTransactionType == TransactionType.transfer) {
+        result = result && _selectedToAccount != null;
+      }
+      return result;
+    }
+    return true;
   }
 
   Widget transactionAccountLabel(BuildContext context, TransactionType type) {
@@ -388,29 +433,29 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
     return Text(label);
   }
 
-  void _validateForm(BuildContext context, Function(List<AssetCategory> categories, bool isAddNew) callback) async {
+  void _validateForm(BuildContext context, Function(Transactions transaction, Transactions? deletedTran) callback) async {
     setState(() {
       _isChecking = true;
-      _isValidAmount = true;
+      _isValidFeeAmount = true;
       _formValidatedPassed = true;
+      _isValidAmount = true;
     });
     var moneyFormat = _currencyTextInputFormatter.numberFormat;
     var formUtil = FormUtil();
-    var amountTxt = formUtil.parseAmount(_transactionAmountController.text, moneyFormat);
-    if (amountTxt == null || amountTxt < 0) {
+    var amount = formUtil.parseAmount(_transactionAmountController.text, moneyFormat);
+    var feeAmount = formUtil.parseAmount(_transactionFeeController.text, moneyFormat) ?? 0.0;
+    if (_haveFee) {
+      if (feeAmount <= 0) {
+        _isValidFeeAmount = false;
+      }
+    }
+    if (amount == null || amount <= 0) {
       _isValidAmount = false;
     }
-    // var future = AssetsDao().loadCategoryByNameAndIgnoreSpecificCategory(_categoryNameController.text, _editingCategory?.id);
-    // future.then((List<Map<String, dynamic>> data) {
-    //   setState(() {
-    //     _isChecking = false;
-    //     _isValidCategoryName = data.isEmpty;
-    //   });
-    // });
-    //
-    // await future;
+    _formValidatedPassed = _isValidFeeAmount && _isValidAmount;
     if (!_formValidatedPassed) {
       _formKey.currentState?.validate();
+      _isChecking = false;
     } else {
       String tableName = tableNameTransaction;
       DatabaseService().database.then((db) {
@@ -418,29 +463,26 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
           db.delete(tableName, where: '${_editingTransaction!.idFieldName()} = ?', whereArgs: [_editingTransaction!.id]).then(
               (deletedCount) {
             if (deletedCount > 0) {
-              _proceedSave(db, tableName, amountTxt!);
+              _proceedSave(db, tableName, amount!, feeAmount, _editingTransaction!, callback);
             } else {
               String errorMessage = AppLocalizations.of(context)!.transactionUpdateError;
               Util().showErrorDialog(context, errorMessage, null);
             }
           });
         } else {
-          _proceedSave(db, tableName, amountTxt!);
+          _proceedSave(db, tableName, amount!, feeAmount, null, callback);
         }
       });
     }
   }
 
-  void _proceedSave(Database db, String tableName, double availableAmount) {
-    Transactions transaction = _createTransaction(availableAmount);
-    db.insert(tableName, transaction.toMap(), conflictAlgorithm: ConflictAlgorithm.replace).then((_) {
-      setState(() {
-        // TODO trigger update.
-      });
-    });
+  void _proceedSave(Database db, String tableName, double availableAmount, double feeAmount, Transactions? deletedTran,
+      Function(Transactions transaction, Transactions? deletedTran) callback) {
+    final Transactions transaction = _createTransaction(availableAmount, feeAmount);
+    db.insert(tableName, transaction.toMap(), conflictAlgorithm: ConflictAlgorithm.replace).then((_) => callback(transaction, deletedTran));
   }
 
-  Transactions _createTransaction(double amountTxt) {
+  Transactions _createTransaction(double amount, double feeAmount) {
     var moneyFormat = _currencyTextInputFormatter.numberFormat;
     switch (_selectedTransactionType) {
       case TransactionType.income:
@@ -451,8 +493,8 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
             transactionCategory: _selectedCategory,
             description: _transactionDescriptionController.text,
             withFee: _haveFee,
-            feeAmount: _feeAmount,
-            amount: amountTxt,
+            feeAmount: feeAmount,
+            amount: amount,
             account: _selectedAccount!,
             currencyUid: _selectedCurrency.id,
             updatedDateTime: DateTime.now());
@@ -464,8 +506,8 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
             transactionCategory: _selectedCategory,
             description: _transactionDescriptionController.text,
             withFee: _haveFee,
-            feeAmount: _feeAmount,
-            amount: amountTxt,
+            feeAmount: feeAmount,
+            amount: amount,
             account: _selectedAccount!,
             currencyUid: _selectedCurrency.id,
             updatedDateTime: DateTime.now());
@@ -477,8 +519,8 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
             transactionCategory: _selectedCategory,
             description: _transactionDescriptionController.text,
             withFee: _haveFee,
-            feeAmount: _feeAmount,
-            amount: amountTxt,
+            feeAmount: feeAmount,
+            amount: amount,
             account: _selectedAccount!,
             currencyUid: _selectedCurrency.id,
             toAccount: _selectedToAccount!,
@@ -491,8 +533,8 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
             transactionCategory: _selectedCategory,
             description: _transactionDescriptionController.text,
             withFee: _haveFee,
-            feeAmount: _feeAmount,
-            amount: amountTxt,
+            feeAmount: feeAmount,
+            amount: amount,
             account: _selectedAccount!,
             currencyUid: _selectedCurrency.id,
             updatedDateTime: DateTime.now());
@@ -504,8 +546,8 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
             transactionCategory: _selectedCategory,
             description: _transactionDescriptionController.text,
             withFee: _haveFee,
-            feeAmount: _feeAmount,
-            amount: amountTxt,
+            feeAmount: feeAmount,
+            amount: amount,
             account: _selectedAccount!,
             currencyUid: _selectedCurrency.id,
             updatedDateTime: DateTime.now());
@@ -517,8 +559,8 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
             transactionCategory: _selectedCategory,
             description: _transactionDescriptionController.text,
             withFee: _haveFee,
-            feeAmount: _feeAmount,
-            amount: amountTxt,
+            feeAmount: feeAmount,
+            amount: amount,
             account: _selectedAccount!,
             currencyUid: _selectedCurrency.id,
             updatedDateTime: DateTime.now());
@@ -531,8 +573,8 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
             transactionCategory: _selectedCategory,
             description: _transactionDescriptionController.text,
             withFee: _haveFee,
-            feeAmount: _feeAmount,
-            amount: amountTxt,
+            feeAmount: feeAmount,
+            amount: amount,
             account: _selectedAccount!,
             currencyUid: _selectedCurrency.id,
             mySplit: mySplit,
@@ -545,8 +587,8 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
             transactionCategory: _selectedCategory,
             description: _transactionDescriptionController.text,
             withFee: _haveFee,
-            feeAmount: _feeAmount,
-            amount: amountTxt,
+            feeAmount: feeAmount,
+            amount: amount,
             account: _selectedAccount!,
             currencyUid: _selectedCurrency.id,
             updatedDateTime: DateTime.now());

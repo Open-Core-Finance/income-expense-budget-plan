@@ -58,10 +58,9 @@
   "accountName": "Tên tài khoản",
   "accountTurnOnLocalizeNames":  "Bật hổ trợ đa ngôn ngữ",
   "accountType": "Loại tài khoản",
-  "accountType_cash": "Tiền mặt",
+  "accountType_generic": "Tài khoản thông thường",
   "accountType_bankCasa": "Ngân hàng",
   "accountType_loan": "Vay",
-  "accountType_termDeposit": "Tiết kiệm",
   "accountType_eWallet": "Ví điện tử",
   "accountType_creditCard": "Thẻ tín dụng",
   "accountType_payLaterAccount": "Tài khoản trả sau",
@@ -114,5 +113,9 @@
   "sharedBillMySplit": "Phần của bản thân",
   "adjustmentNewAmount": "Giá trị mới",
   "adjustmentCurrentAmount": "Giá trị hiện tại",
-  "sharedBillReturnForBill": "Tiền trả cho hoá đơn"
+  "sharedBillReturnForBill": "Tiền trả cho hoá đơn",
+  "transactionHaveFee": "Có phí",
+  "transactionFee": "Phí",
+  "transactionInvalidFee": "Phí phải lớn hơn 0",
+  "transactionInvalidAmount": "Giá trị phải lớn hơn 0"
 }

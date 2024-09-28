@@ -58,10 +58,9 @@
   "accountName": "Account name",
   "accountTurnOnLocalizeNames":  "Turn on multi-language support",
   "accountType": "Account type",
-  "accountType_cash": "Cash",
-  "accountType_bankCasa": "Bank CASA",
+  "accountType_generic": "Generic Account",
+  "accountType_bankCasa": "Bank Account",
   "accountType_loan": "Loan",
-  "accountType_termDeposit": "Term Deposit",
   "accountType_eWallet": "E-Wallet",
   "accountType_creditCard": "Credit Card",
   "accountType_payLaterAccount": "Pay Later Account",
@@ -114,5 +113,9 @@
   "sharedBillMySplit": "My split",
   "adjustmentNewAmount": "New amount",
   "adjustmentCurrentAmount": "Current amount",
-  "sharedBillReturnForBill": "Return for bill"
+  "sharedBillReturnForBill": "Return for bill",
+  "transactionHaveFee": "Have fee",
+  "transactionFee": "Fee",
+  "transactionInvalidFee": "Fee must be larger than 0",
+  "transactionInvalidAmount": "Value must be larger than 0"
 }

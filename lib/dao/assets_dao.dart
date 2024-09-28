@@ -25,14 +25,12 @@ class AssetsDao {
     return databaseService.loadListModel(tableNameAsset, (Map<String, Object?> record) {
       String assetType = record['asset_type']! as String;
       switch (assetType) {
-        case "cash":
-          return CashAccount.fromMap(record);
+        case "genericAccount":
+          return GenericAccount.fromMap(record);
         case "bankCasa":
           return BankCasaAccount.fromMap(record);
         case "loan":
           return LoanAccount.fromMap(record);
-        case "termDeposit":
-          return TermDepositAccount.fromMap(record);
         case "eWallet":
           return EWallet.fromMap(record);
         case "payLaterAccount":

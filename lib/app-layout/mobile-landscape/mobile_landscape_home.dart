@@ -56,42 +56,42 @@ class _HomePageMobileLandscapeState extends State<HomePageMobileLandscape> {
               children: [
                 ElevatedButton.icon(
                   onPressed: () => setState(() => appState.currentHomePageIndex = 0),
-                  icon: const Icon(Icons.history),
+                  icon: Icon(Icons.history, color: theme.primaryColor),
                   label: Text(AppLocalizations.of(context)!.navHistory),
                   style: styleForIndex(theme, 0, sideButtonSize, sideButtonShape),
                 ),
                 const Divider(height: 0.5),
                 ElevatedButton.icon(
                   onPressed: () => setState(() => appState.currentHomePageIndex = 1),
-                  icon: const Icon(Icons.account_box),
+                  icon: Icon(Icons.account_box, color: theme.primaryColor),
                   label: Text(AppLocalizations.of(context)!.navAccount),
                   style: styleForIndex(theme, 1, sideButtonSize, sideButtonShape),
                 ),
                 const Divider(height: 0.5),
                 ElevatedButton.icon(
                   onPressed: () => setState(() => appState.currentHomePageIndex = 2),
-                  icon: const Icon(Icons.analytics),
+                  icon: Icon(Icons.analytics, color: theme.primaryColor),
                   label: Text(AppLocalizations.of(context)!.navReport),
                   style: styleForIndex(theme, 2, sideButtonSize, sideButtonShape),
                 ),
                 const Divider(height: 0.5),
                 ElevatedButton.icon(
                   onPressed: () => setState(() => appState.currentHomePageIndex = 3),
-                  icon: const Icon(Icons.manage_accounts),
+                  icon: Icon(Icons.manage_accounts, color: theme.primaryColor),
                   label: Text(AppLocalizations.of(context)!.navAccountCategory),
                   style: styleForIndex(theme, 3, sideButtonSize, sideButtonShape),
                 ),
                 const Divider(height: 0.5),
                 ElevatedButton.icon(
                   onPressed: () => setState(() => appState.currentHomePageIndex = 4),
-                  icon: const Icon(Icons.more),
+                  icon: Icon(Icons.more, color: theme.primaryColor),
                   label: Text(AppLocalizations.of(context)!.navMore),
                   style: styleForIndex(theme, 4, sideButtonSize, sideButtonShape),
                 ),
                 const Divider(height: 0.5),
                 ElevatedButton.icon(
                   onPressed: () => Util().chooseBrightnessMode(context),
-                  icon: const Icon(Icons.brightness_6_outlined),
+                  icon: Icon(Icons.brightness_6_outlined, color: theme.primaryColor),
                   label:
                       Text("${AppLocalizations.of(context)!.settingsDarkMode}\n${currentAppState.systemSetting.getDarkModeText(context)}"),
                   style: styleForIndex(theme, -1, sideButtonSize, sideButtonShape),
@@ -99,7 +99,7 @@ class _HomePageMobileLandscapeState extends State<HomePageMobileLandscape> {
                 const Divider(height: 0.5),
                 ElevatedButton.icon(
                   onPressed: () => Util().chooseLanguage(context),
-                  icon: const Icon(Icons.flag),
+                  icon: Icon(Icons.flag, color: theme.primaryColor),
                   label: Text("Language\n${currentAppState.systemSetting.currentLanguageText}"),
                   style: styleForIndex(theme, -1, sideButtonSize, sideButtonShape),
                 ),

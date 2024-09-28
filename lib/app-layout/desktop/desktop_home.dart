@@ -12,7 +12,9 @@ import 'package:income_expense_budget_plan/model/setting.dart';
 import 'package:income_expense_budget_plan/model/transaction_category.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/app_state.dart';
+import 'package:income_expense_budget_plan/service/form_util.dart';
 import 'package:income_expense_budget_plan/service/util.dart';
+import 'package:income_expense_budget_plan/service/year_month_filter_data.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -28,8 +30,7 @@ class HomePageDesktop extends StatefulWidget {
 class _HomePageDesktopState extends State<HomePageDesktop> {
   List<TransactionCategory> incomeCategories = [];
   List<TransactionCategory> expenseCategories = [];
-
-  _HomePageDesktopState();
+  late YearMonthFilterData yearMonthFilterData;
 
   refresh() {
     setState(() {});
@@ -45,6 +46,8 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
 
     TransactionDao().transactionCategoryByType(TransactionType.income).then((loadCats) => setState(() => incomeCategories = loadCats));
     TransactionDao().transactionCategoryByType(TransactionType.expense).then((loadCats) => setState(() => expenseCategories = loadCats));
+
+    yearMonthFilterData = YearMonthFilterData();
   }
 
   @override
@@ -61,12 +64,21 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
         if (kDebugMode) {
           print("Expense category title [$expenseTitle]\nIncome category title [$incomeTitle]");
         }
+        AppBar? appBar;
+        if (appState.currentHomePageIndex == 0) {
+          appBar = FormUtil().buildYearMonthFilteredAppBar(context, null, yearMonthFilterData, () => setState(() {}));
+        }
         return Scaffold(
+          appBar: appBar,
           body: <Widget>[
-            const VerticalSplitView(
-              key: Key("1st_panel"),
-              left: TransactionPanel(),
-              right: ReportPanel(),
+            ChangeNotifierProvider(
+              create: (context) => yearMonthFilterData,
+              builder: (context, child) => child!,
+              child: VerticalSplitView(
+                key: const Key("1st_panel"),
+                left: const TransactionPanel(),
+                right: ReportPanel(yearMonthFilterData: yearMonthFilterData),
+              ),
             ),
             const VerticalSplitView(
                 key: Key("2nd_panel"), left: AccountPanel(), right: AssetCategoriesPanel(disableBack: true), ratio: 0.6),
@@ -96,16 +108,16 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
             selectedIndex: currentAppState.currentHomePageIndex,
             destinations: <Widget>[
               NavigationDestination(
-                icon: const Icon(Icons.history),
+                icon: Icon(Icons.history, color: theme.primaryColor),
                 label: AppLocalizations.of(context)!.navHistory,
               ),
               NavigationDestination(
-                selectedIcon: const Icon(Icons.home),
-                icon: const Icon(Icons.account_box),
+                selectedIcon: Icon(Icons.home, color: theme.primaryColor),
+                icon: Icon(Icons.account_box, color: theme.primaryColor),
                 label: AppLocalizations.of(context)!.navAccount,
               ),
               NavigationDestination(
-                icon: const Icon(Icons.more),
+                icon: Icon(Icons.more, color: theme.primaryColor),
                 label: AppLocalizations.of(context)!.navTransactionCategory,
               ),
               MouseRegion(
@@ -116,7 +128,7 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
                     color: Colors.transparent, // Ensure the area is clickable
                     child: Column(children: [
                       const SizedBox(height: 20),
-                      Icon(Icons.brightness_6_outlined, color: theme.textTheme.bodyMedium?.color),
+                      Icon(Icons.brightness_6_outlined, color: theme.primaryColor),
                       Text(currentAppState.systemSetting.getDarkModeText(context)),
                     ]),
                   ),
@@ -130,7 +142,7 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
                     color: Colors.transparent, // Ensure the area is clickable
                     child: Column(children: [
                       const SizedBox(height: 20),
-                      Icon(Icons.flag, color: theme.textTheme.bodyMedium?.color),
+                      Icon(Icons.flag, color: theme.primaryColor),
                       Text(currentAppState.systemSetting.currentLanguageText),
                     ]),
                   ),
