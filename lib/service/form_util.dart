@@ -2,6 +2,7 @@ import 'package:currency_text_input_formatter/currency_text_input_formatter.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:income_expense_budget_plan/model/currency.dart';
+import 'package:income_expense_budget_plan/service/year_month_filter_data.dart';
 import 'package:intl/intl.dart';
 
 class FormUtil {
@@ -42,14 +43,12 @@ class FormUtil {
 
   String resolveAccountTypeLocalize(BuildContext context, String typeName) {
     switch (typeName) {
-      case "cash":
-        return AppLocalizations.of(context)!.accountType_cash;
+      case "genericAccount":
+        return AppLocalizations.of(context)!.accountType_generic;
       case "bankCasa":
         return AppLocalizations.of(context)!.accountType_bankCasa;
       case "loan":
         return AppLocalizations.of(context)!.accountType_loan;
-      case "termDeposit":
-        return AppLocalizations.of(context)!.accountType_termDeposit;
       case "eWallet":
         return AppLocalizations.of(context)!.accountType_eWallet;
       case "creditCard":
@@ -107,5 +106,39 @@ class FormUtil {
       amountText = amountText.substring(0, amountText.length - symbol.length);
     }
     return moneyFormat.tryParse(amountText)?.toDouble();
+  }
+
+  AppBar? buildYearMonthFilteredAppBar(
+      BuildContext context, YearMonthFilterData? mainFilter, YearMonthFilterData? localFilter, Function? stateChangeCallback) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme colorScheme = theme.colorScheme;
+
+    AppBar? appBar;
+    YearMonthFilterData filterData;
+    if (mainFilter == null) {
+      if (localFilter != null) {
+        YearMonthFilterData filterData = localFilter;
+        appBar = AppBar(
+          leading: IconButton(
+            icon: Icon(Icons.navigate_before, color: colorScheme.primary),
+            onPressed: () {
+              filterData.previousMonth();
+              if (stateChangeCallback != null) stateChangeCallback();
+            },
+          ),
+          actions: [
+            IconButton(
+              icon: Icon(Icons.navigate_next, color: colorScheme.primary),
+              onPressed: () {
+                filterData.nextMonth();
+                if (stateChangeCallback != null) stateChangeCallback();
+              },
+            ),
+          ],
+          title: Center(child: Text("${filterData.getMonthAsNumberString()}/${filterData.year}")),
+        );
+      }
+    }
+    return appBar;
   }
 }

@@ -37,7 +37,6 @@ class _AddAccountFormState extends State<AddAccountForm> {
   late String _selectedAccountType;
   late TextEditingController _availableAmountController;
   late TextEditingController _loanAmountController;
-  late TextEditingController _depositAmountController;
   late TextEditingController _creditLimitController;
   late TextEditingController _paymentLimitController;
   late AssetCategory _selectedCategory;
@@ -78,12 +77,11 @@ class _AddAccountFormState extends State<AddAccountForm> {
       }
       _assetDescriptionController = TextEditingController(text: _editingAsset!.description);
       _loanAmountController = TextEditingController(text: '');
-      _depositAmountController = TextEditingController(text: '');
       _creditLimitController = TextEditingController(text: '');
       _paymentLimitController = TextEditingController(text: '');
       _availableAmountController = TextEditingController(text: '${_editingAsset!.availableAmount}');
-      if (_editingAsset is CashAccount) {
-        _selectedAccountType = AssetType.cash.name;
+      if (_editingAsset is GenericAccount) {
+        _selectedAccountType = AssetType.genericAccount.name;
       } else if (_editingAsset is BankCasaAccount) {
         _selectedAccountType = AssetType.bankCasa.name;
       } else if (_editingAsset is EWallet) {
@@ -91,9 +89,6 @@ class _AddAccountFormState extends State<AddAccountForm> {
       } else if (_editingAsset is LoanAccount) {
         _selectedAccountType = AssetType.loan.name;
         _loanAmountController.text = '${(_editingAsset! as LoanAccount).loanAmount}';
-      } else if (_editingAsset is TermDepositAccount) {
-        _selectedAccountType = AssetType.termDeposit.name;
-        _depositAmountController.text = '${(_editingAsset! as TermDepositAccount).availableAmount}';
       } else if (_editingAsset is PayLaterAccount) {
         _selectedAccountType = AssetType.payLaterAccount.name;
         _paymentLimitController.text = '${(_editingAsset! as PayLaterAccount).paymentLimit}';
@@ -110,7 +105,6 @@ class _AddAccountFormState extends State<AddAccountForm> {
     _currencyTextInputFormatter = CurrencyTextInputFormatter.currency(
         locale: _selectedCurrency.language, symbol: _selectedCurrency.symbol, decimalDigits: _selectedCurrency.decimalPoint);
     _creditLimitController.text = _currencyTextInputFormatter.formatDouble(double.tryParse(_creditLimitController.text) ?? 0);
-    _depositAmountController.text = _currencyTextInputFormatter.formatDouble(double.tryParse(_depositAmountController.text) ?? 0);
     _loanAmountController.text = _currencyTextInputFormatter.formatDouble(double.tryParse(_loanAmountController.text) ?? 0);
     _availableAmountController.text = _currencyTextInputFormatter.formatDouble(double.tryParse(_availableAmountController.text) ?? 0);
   }
@@ -130,9 +124,8 @@ class _AddAccountFormState extends State<AddAccountForm> {
       _localizeDescriptionMap[key] = TextEditingController(text: '');
     });
     _availableAmountController = TextEditingController(text: '');
-    _selectedAccountType = AssetType.cash.name;
+    _selectedAccountType = AssetType.genericAccount.name;
     _loanAmountController = TextEditingController(text: '');
-    _depositAmountController = TextEditingController(text: '');
     _creditLimitController = TextEditingController(text: '');
     _paymentLimitController = TextEditingController(text: '');
     _selectedCurrency = currentAppState.systemSetting.defaultCurrency!;
@@ -241,7 +234,6 @@ class _AddAccountFormState extends State<AddAccountForm> {
       }
       double? availableAmountNumber = formUtil.parseAmount(_availableAmountController.text, moneyFormat);
       double? loanAmountNumber = formUtil.parseAmount(_loanAmountController.text, moneyFormat);
-      double? depositAmountNumber = formUtil.parseAmount(_depositAmountController.text, moneyFormat);
       double? creditLimitNumber = formUtil.parseAmount(_creditLimitController.text, moneyFormat);
 
       if (_editingAsset != null) {
@@ -272,8 +264,8 @@ class _AddAccountFormState extends State<AddAccountForm> {
       } else {
         Asset assets;
         switch (_selectedAccountType) {
-          case "cash":
-            assets = CashAccount(
+          case "genericAccount":
+            assets = GenericAccount(
                 id: const UuidV8().generate(),
                 icon: _selectedIcon,
                 name: _assetNameController.text,
@@ -310,19 +302,6 @@ class _AddAccountFormState extends State<AddAccountForm> {
                 currencyUid: _selectedCurrency.id,
                 categoryUid: _selectedCategory.id!,
                 loanAmount: loanAmountNumber!);
-            break;
-          case "termDeposit":
-            assets = TermDepositAccount(
-                id: const UuidV8().generate(),
-                icon: _selectedIcon,
-                name: _assetNameController.text,
-                localizeNames: localizeMap,
-                index: appState.assets.length,
-                localizeDescriptions: localizeDesc,
-                description: _assetDescriptionController.text,
-                currencyUid: _selectedCurrency.id,
-                categoryUid: _selectedCategory.id!,
-                depositAmount: depositAmountNumber!);
             break;
           case "eWallet":
             assets = EWallet(
@@ -583,7 +562,6 @@ class _AddAccountFormState extends State<AddAccountForm> {
           _currencyTextInputFormatter = CurrencyTextInputFormatter.currency(
               locale: _selectedCurrency.language, symbol: _selectedCurrency.symbol, decimalDigits: _selectedCurrency.decimalPoint);
           _availableAmountController.text = _currencyTextInputFormatter.formatString(_availableAmountController.text);
-          _depositAmountController.text = _currencyTextInputFormatter.formatString(_depositAmountController.text);
           _loanAmountController.text = _currencyTextInputFormatter.formatString(_loanAmountController.text);
           _creditLimitController.text = _currencyTextInputFormatter.formatString(_creditLimitController.text);
           _paymentLimitController.text = _currencyTextInputFormatter.formatString(_paymentLimitController.text);
@@ -605,15 +583,14 @@ class _AddAccountFormState extends State<AddAccountForm> {
         _textFormField(context, theme, AppLocalizations.of(context)!.accountName, _assetNameController, validator: assetsNameValidator));
     result.addAll(_textFormField(context, theme, AppLocalizations.of(context)!.accountDescription, _assetDescriptionController));
     result.addAll(_moneyInputField(
-      [AssetType.cash.name, AssetType.bankCasa.name, AssetType.eWallet.name, AssetType.creditCard.name].contains(_selectedAccountType),
+      [AssetType.genericAccount.name, AssetType.bankCasa.name, AssetType.eWallet.name, AssetType.creditCard.name]
+          .contains(_selectedAccountType),
       AppLocalizations.of(context)!.accountAvailableAmount,
       _availableAmountController,
       theme,
     ));
     result.addAll(_moneyInputField(
         AssetType.loan.name == _selectedAccountType, AppLocalizations.of(context)!.accountLoanAmount, _loanAmountController, theme));
-    result.addAll(_moneyInputField(AssetType.termDeposit.name == _selectedAccountType, AppLocalizations.of(context)!.accountDepositAmount,
-        _depositAmountController, theme));
     result.addAll(_moneyInputField(AssetType.creditCard.name == _selectedAccountType, AppLocalizations.of(context)!.accountCreditLimit,
         _creditLimitController, theme));
     result.addAll(_moneyInputField(AssetType.payLaterAccount.name == _selectedAccountType,

@@ -76,10 +76,10 @@ abstract class Asset extends AssetTreeNode {
   String idFieldName() => "uid";
 }
 
-enum AssetType { cash, bankCasa, loan, termDeposit, eWallet, creditCard, payLaterAccount }
+enum AssetType { genericAccount, bankCasa, loan, eWallet, creditCard, payLaterAccount }
 
-class CashAccount extends Asset {
-  CashAccount({
+class GenericAccount extends Asset {
+  GenericAccount({
     required super.id,
     required super.icon,
     required super.name,
@@ -96,11 +96,11 @@ class CashAccount extends Asset {
   @override
   Map<String, Object?> toMap() {
     var result = super.toMap();
-    result.addAll({'asset_type': AssetType.cash.name});
+    result.addAll({'asset_type': AssetType.genericAccount.name});
     return result;
   }
 
-  factory CashAccount.fromMap(Map<String, dynamic> json) => CashAccount(
+  factory GenericAccount.fromMap(Map<String, dynamic> json) => GenericAccount(
         id: json['uid'],
         icon: Util().iconDataFromJSONString(json['icon'] as String),
         name: json['name'],
@@ -191,48 +191,6 @@ class LoanAccount extends Asset {
         index: json['position_index'],
         updatedDateTime: DateTime.fromMicrosecondsSinceEpoch(json['last_updated']),
         loanAmount: json['loan_amount'],
-        categoryUid: json['category_uid'],
-      );
-}
-
-class TermDepositAccount extends Asset {
-  TermDepositAccount({
-    required super.id,
-    required super.icon,
-    required super.name,
-    required super.description,
-    super.localizeNames,
-    super.localizeDescriptions,
-    super.updatedDateTime,
-    super.index,
-    required super.currencyUid,
-    required super.categoryUid,
-    required double depositAmount,
-  }) : super(availableAmount: depositAmount);
-
-  @override
-  Map<String, Object?> toMap() {
-    var result = super.toMap();
-    result.addAll({'deposit_amount': availableAmount, 'asset_type': AssetType.termDeposit.name});
-    return result;
-  }
-
-  @override
-  String attributeString() {
-    return '${super.attributeString()},"depositAmount": "$availableAmount"';
-  }
-
-  factory TermDepositAccount.fromMap(Map<String, dynamic> json) => TermDepositAccount(
-        id: json['uid'],
-        icon: Util().iconDataFromJSONString(json['icon'] as String),
-        name: json['name'],
-        description: json['description'],
-        currencyUid: json['currency_uid'],
-        localizeNames: Util().fromLocalizeDbField(Util().customJsonDecode(json['localize_names'])),
-        localizeDescriptions: Util().fromLocalizeDbField(Util().customJsonDecode(json['localize_descriptions'])),
-        index: json['position_index'],
-        updatedDateTime: DateTime.fromMicrosecondsSinceEpoch(json['last_updated']),
-        depositAmount: json['deposit_amount'],
         categoryUid: json['category_uid'],
       );
 }

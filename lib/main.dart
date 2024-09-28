@@ -5,9 +5,11 @@ import 'package:income_expense_budget_plan/app-layout/desktop/desktop_home.dart'
 import 'package:income_expense_budget_plan/app-layout/mobile-landscape/mobile_landscape_home.dart';
 import 'package:income_expense_budget_plan/dao/setting_dao.dart';
 import 'package:income_expense_budget_plan/app-layout/mobile-portrait/mobile_portrait_home.dart';
+import 'package:income_expense_budget_plan/model/assets.dart';
 import 'package:income_expense_budget_plan/model/setting.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/database_service.dart';
+import 'package:income_expense_budget_plan/service/util.dart';
 import 'package:provider/provider.dart';
 
 import 'model/currency.dart';
@@ -40,7 +42,9 @@ void main() async {
       if (kDebugMode) {
         print("Currencies: $currencies");
       }
-      runApp(const MyApp());
+      Util().refreshAssets((List<Asset> assets) {
+        runApp(const MyApp());
+      });
     });
   });
 }

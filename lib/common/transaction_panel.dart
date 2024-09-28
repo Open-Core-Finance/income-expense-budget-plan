@@ -1,19 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:income_expense_budget_plan/common/add_account_form.dart';
 import 'package:income_expense_budget_plan/common/add_transaction_form.dart';
-import 'package:income_expense_budget_plan/common/assets_categories_panel.dart';
 import 'package:income_expense_budget_plan/common/no_data.dart';
-import 'package:income_expense_budget_plan/model/asset_category.dart';
-import 'package:income_expense_budget_plan/model/assets.dart';
-import 'package:income_expense_budget_plan/service/app_const.dart';
-import 'package:income_expense_budget_plan/service/app_state.dart';
-import 'package:income_expense_budget_plan/service/database_service.dart';
+import 'package:income_expense_budget_plan/dao/transaction_dao.dart';
+import 'package:income_expense_budget_plan/service/form_util.dart';
 import 'package:income_expense_budget_plan/service/util.dart';
+import 'package:income_expense_budget_plan/service/year_month_filter_data.dart';
 import 'package:provider/provider.dart';
-import 'package:sqflite/sqflite.dart';
 
 import '../model/transaction.dart';
 
@@ -26,18 +19,38 @@ class TransactionPanel extends StatefulWidget {
 
 class _TransactionPanelState extends State<TransactionPanel> {
   late TextEditingController _searchController;
-  List<Transactions> transactions = [];
   List<Transactions> filteredTransactions = [];
+  YearMonthFilterData? yearMonthFilterData;
 
   @override
   void initState() {
     super.initState();
     _searchController = TextEditingController();
+    YearMonthFilterData? providedYearMonthFilterData = _retrieveProvidedFilter();
+    if (providedYearMonthFilterData == null) {
+      yearMonthFilterData = YearMonthFilterData();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final ColorScheme colorScheme = theme.colorScheme;
+
+    YearMonthFilterData? providedYearMonthFilterData = _retrieveProvidedFilter();
+    List<Transactions> transactions = [];
+    if (providedYearMonthFilterData != null) {
+      transactions = providedYearMonthFilterData.transactions;
+    } else {
+      transactions = yearMonthFilterData!.transactions;
+    }
+
+    Widget body;
+    if (transactions.isEmpty) {
+      body = const NoDataCard();
+    } else {
+      body = Container();
+    }
 
     return Scaffold(
       floatingActionButton: FloatingActionButton(
@@ -49,7 +62,31 @@ class _TransactionPanelState extends State<TransactionPanel> {
         child: const Icon(Icons.add),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      body: const NoDataCard(),
+      appBar: FormUtil().buildYearMonthFilteredAppBar(context, providedYearMonthFilterData, yearMonthFilterData, () => setState(() {})),
+      body: body,
     );
+  }
+
+  YearMonthFilterData _getCurrentFilter() {
+    YearMonthFilterData? providedYearMonthFilterData = _retrieveProvidedFilter();
+    if (providedYearMonthFilterData != null) {
+      return providedYearMonthFilterData;
+    }
+    return yearMonthFilterData!;
+  }
+
+  YearMonthFilterData? _retrieveProvidedFilter() {
+    YearMonthFilterData? providedYearMonthFilterData;
+    try {
+      providedYearMonthFilterData = Provider.of<YearMonthFilterData>(context);
+      if (kDebugMode) {
+        print("Debug purpose only!. Provided filter: $providedYearMonthFilterData");
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Debug purpose only!. There's no provided filter!");
+      }
+    }
+    return providedYearMonthFilterData;
   }
 }

@@ -51,10 +51,6 @@ class _HomePageMobilePortraitState extends State<HomePageMobilePortrait> {
             const ReportPanel(),
             const MorePanel()
           ][appState.currentHomePageIndex % 4],
-          // bottomNavigationBar: BottomAppBar(
-          //   shape: const CircularNotchedRectangle(),
-          //   child: Container(height: 50.0)
-          // ),
           bottomNavigationBar: NavigationBar(
             onDestinationSelected: (int index) {
               setState(() {
@@ -65,20 +61,20 @@ class _HomePageMobilePortraitState extends State<HomePageMobilePortrait> {
             selectedIndex: currentAppState.currentHomePageIndex,
             destinations: <Widget>[
               NavigationDestination(
-                icon: const Icon(Icons.history),
+                icon: Icon(Icons.history, color: theme.primaryColor),
                 label: AppLocalizations.of(context)!.navHistory,
               ),
               NavigationDestination(
-                selectedIcon: const Icon(Icons.home),
-                icon: const Icon(Icons.account_box),
+                selectedIcon: Icon(Icons.home, color: theme.primaryColor),
+                icon: Icon(Icons.account_box, color: theme.primaryColor),
                 label: AppLocalizations.of(context)!.navAccount,
               ),
               NavigationDestination(
-                icon: const Icon(Icons.analytics),
+                icon: Icon(Icons.analytics, color: theme.primaryColor),
                 label: AppLocalizations.of(context)!.navReport,
               ),
               NavigationDestination(
-                icon: const Icon(Icons.more),
+                icon: Icon(Icons.more, color: theme.primaryColor),
                 label: AppLocalizations.of(context)!.navMore,
               ),
             ],

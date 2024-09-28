@@ -10,12 +10,21 @@ CREATE TABLE IF NOT EXISTS asset(uid TEXT PRIMARY KEY, icon TEXT, name TEXT, des
     last_updated Integer DEFAULT 0, FOREIGN KEY (category_uid) REFERENCES asset_category (uid), FOREIGN KEY (currency_uid) REFERENCES currency (uid) );
 CREATE TABLE IF NOT EXISTS transaction_category(uid TEXT PRIMARY KEY, name TEXT, icon TEXT, parent_uid TEXT, transaction_type TEXT, system Integer, localize_names TEXT,
     position_index Integer Integer DEFAULT 0 NOT NULL, last_updated Integer DEFAULT 0);
-CREATE TABLE IF NOT EXISTS transactions(id TEXT PRIMARY KEY, description TEXT, transaction_time Integer DEFAULT 0, transaction_category_uid TEXT, transaction_type TEXT,
-    with_fee REAL DEFAULT 0.0, fee_amount REAL DEFAULT 0.0, amount REAL DEFAULT 0.0, last_updated Integer DEFAULT 0, account_uid TEXT,
-    currency_uid TEXT, to_account_uid TEXT, my_split REAL default 0.0, remaining_amount REAL default 0.0, shared_bill_id TEXT,
+CREATE TABLE IF NOT EXISTS transactions(id TEXT PRIMARY KEY, description TEXT, transaction_date Integer DEFAULT 0, transaction_time Integer DEFAULT 0, transaction_category_uid TEXT, transaction_type TEXT,
+    with_fee integer NOT NULL DEFAULT 0, fee_amount REAL NOT NULL DEFAULT 0.0, amount REAL NOT NULL DEFAULT 0.0, last_updated Integer NOT NULL DEFAULT 0, account_uid TEXT,
+    currency_uid TEXT, to_account_uid TEXT, my_split REAL NOT NULL default 0.0, remaining_amount REAL NOT NULL default 0.0, shared_bill_id TEXT,
+    year_month INTEGER NOT NULL DEFAULT 22800,
     FOREIGN KEY (transaction_category_uid) REFERENCES transaction_category (uid),
     FOREIGN KEY (account_uid) REFERENCES asset (uid),
     FOREIGN KEY (currency_uid) REFERENCES currency (uid));
+
+CREATE INDEX IF NOT EXISTS transaction_year_month_index ON transactions(year_month);
+
+CREATE TABLE debug_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    message TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
 INSERT OR IGNORE INTO asset_category(uid, name, icon, "system", localize_names, position_index, last_updated)
 VALUES('20240814-1016-8412-a943-a2e9d6ba37c9', 'Bank accounts', '{"codePoint":63178,"fontFamily":"CupertinoIcons","fontPackage":"cupertino_icons","matchTextDirection":false}', 1, '{"en":"Bank accounts","vi":"Tài khoản ngân hàng"}', 3, 1724245880000);
@@ -40,9 +49,14 @@ VALUES('20240817-1311-8e31-9761-1a2b7758c617', 'Salary', '{"codePoint":62780,"fo
 INSERT OR IGNORE INTO transaction_category (uid, name, icon, parent_uid, transaction_type, "system", localize_names, position_index, last_updated)
 VALUES('20240817-1320-8e58-b557-203534d739d9', 'Selling', '{"codePoint":58664,"fontFamily":"FontAwesomeSolid","fontPackage":"font_awesome_flutter","matchTextDirection":false}', '', 'income', 1, '{"en":"Selling","vi":"Bán hàng"}', 4, unixepoch() * 1000);
 INSERT OR IGNORE INTO transaction_category (uid, name, icon, parent_uid, transaction_type, "system", localize_names, position_index, last_updated)
-VALUES('20240817-1335-8037-8900-7d6dd33ec68f', 'Other', '{"codePoint":57778,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}', '', 'income', 1, '{"en":"Other","vi":"Loại khác"}', 5, unixepoch() * 1000);
+VALUES('20240817-1335-8037-8900-7d6dd33ec68f', 'Other', '{"codePoint":57778,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}', '', 'income', 1, '{"en":"Other","vi":"Loại khác"}', 15, unixepoch() * 1000);
 INSERT OR IGNORE INTO transaction_category (uid, name, icon, parent_uid, transaction_type, "system", localize_names, position_index, last_updated)
 VALUES('20240817-1323-8253-9141-8d10e6f5e904', 'Saving', '{"codePoint":58707,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}', '', 'income', 1, '{"en":"Saving","vi":"Tiết kiệm"}', 6, unixepoch() * 1000);
+
+INSERT OR IGNORE INTO transaction_category (uid,name,icon,parent_uid,transaction_type,"system",localize_names,position_index,last_updated) VALUES
+	 ('20240925-0755-8805-8199-8fdd9ccb635c','Mua sắm','{"codePoint":62455,"fontFamily":"CupertinoIcons","fontPackage":"cupertino_icons","matchTextDirection":false}','','expense',0,'{"en":"Shopping","vi":"Mua sắm"}',14,unixepoch() * 1000),
+	 ('20240925-0755-8557-9160-80ccca9d75f0','Online shopping','{"codePoint":62849,"fontFamily":"CupertinoIcons","fontPackage":"cupertino_icons","matchTextDirection":false}','20240925-0755-8805-8199-8fdd9ccb635c','expense',0,'{}',0,unixepoch() * 1000),
+	 ('20240925-0756-8f22-a053-a29c19ba8a84','Siêu thị','{"codePoint":62455,"fontFamily":"CupertinoIcons","fontPackage":"cupertino_icons","matchTextDirection":false}','20240925-0755-8805-8199-8fdd9ccb635c','expense',0,'{"en":"Super market","vi":"Siêu thị"}',1,unixepoch() * 1000);
 
 INSERT OR IGNORE INTO transaction_category (uid, name, icon, parent_uid, transaction_type, "system", localize_names, position_index, last_updated) VALUES('20240818-0916-8313-b803-8caf4636f8ed', 'Auto/Transport', '{"codePoint":58590,"fontFamily":"FontAwesomeSolid","fontPackage":"font_awesome_flutter","matchTextDirection":false}', '', 'expense', 0, '{"en":"Auto/Transport","vi":"Xe cộ/di chuyển"}', 3, unixepoch() * 1000);
 INSERT OR IGNORE INTO transaction_category (uid, name, icon, parent_uid, transaction_type, "system", localize_names, position_index, last_updated) VALUES('20240818-0917-8a23-8537-c81942dc694b', 'Bank', '{"codePoint":62781,"fontFamily":"FontAwesomeSolid","fontPackage":"font_awesome_flutter","matchTextDirection":false}', '', 'expense', 0, '{"en":"Bank","vi":"Ngân hàng"}', 6, unixepoch() * 1000);
@@ -146,7 +160,7 @@ INSERT OR IGNORE INTO currency (uid, name, iso, deleted, symbol, symbol_position
 INSERT OR IGNORE INTO asset (uid, icon, name, description, available_amount, loan_amount, deposit_amount, credit_limit, payment_limit, currency_uid,
     asset_type, category_uid, localize_names, localize_descriptions, position_index, last_updated)
     VALUES('20240823-1529-8009-a864-e7b9299a07f6', '{"codePoint":58360,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}',
-    'Cash', 'The amount of cash in your wallet', 0.0, 0.0, 0.0, 0.0, 0.0, '3', 'cash', '20240823-0515-8322-8813-46af221b06bc',
+    'Cash', 'The amount of cash in your wallet', 0.0, 0.0, 0.0, 0.0, 0.0, '3', 'genericAccount', '20240823-0515-8322-8813-46af221b06bc',
     '{"en":"Cash","vi":"Tiền mặt"}', '{"en":"The amount of cash in your wallet","vi":"Số tiền mặt bạn đang có"}', 1, unixepoch() * 1000);
 INSERT OR IGNORE INTO asset (uid, icon, name, description, available_amount, loan_amount, deposit_amount, credit_limit, payment_limit, currency_uid,
     asset_type, category_uid, localize_names, localize_descriptions, position_index, last_updated)

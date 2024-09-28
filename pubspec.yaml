@@ -79,6 +79,7 @@ flutter:
     - assets/db_init.sql
     - assets/db_validate_and_correct.sql
     - assets/icons/borrow.png
+    - assets/db_create_triggers.sql
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
