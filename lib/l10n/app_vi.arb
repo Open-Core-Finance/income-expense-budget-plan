@@ -117,5 +117,20 @@
   "transactionHaveFee": "Có phí",
   "transactionFee": "Phí",
   "transactionInvalidFee": "Phí phải lớn hơn 0",
-  "transactionInvalidAmount": "Giá trị phải lớn hơn 0"
+  "transactionInvalidAmount": "Giá trị phải lớn hơn 0",
+  "transactionTotalIncome": "Tổng thu",
+  "transactionTotalExpense": "Tổng chi",
+  "weekDay1": "Thứ hai",
+  "weekDay2": "Thứ ba",
+  "weekDay3": "Thứ tư",
+  "weekDay4": "Thứ năm",
+  "weekDay5": "Thứ sáu",
+  "weekDay6": "Thứ bảy",
+  "weekDay7": "Chủ nhật",
+  "weekDayToday": "Hôm nay",
+  "weekDayYesterday": "Hôm qua",
+  "weekDayTomorrow": "Ngày mai",
+  "transactionTransferTitle": "Chuyển khoản đến tài khoản \"{assetName}\"",
+  "transactionSharedBillTitle": "Thanh toán \"{categoryName}\" với giá trị \"{amount}\"",
+  "transactionSharedBillReturnedTitle": "Nhận tiền trả cho \"{categoryName}\""
 }

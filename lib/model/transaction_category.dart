@@ -4,7 +4,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:income_expense_budget_plan/dao/transaction_dao.dart';
+import 'package:income_expense_budget_plan/model/local_date.dart';
 import 'package:income_expense_budget_plan/model/name_localized_model.dart';
+import 'package:income_expense_budget_plan/model/transaction.dart';
 import 'package:income_expense_budget_plan/service/util.dart';
 
 class TransactionCategory extends NameLocalizedModel<String> {
@@ -72,7 +74,7 @@ class TransactionCategory extends NameLocalizedModel<String> {
         system: json['system'] == 1,
         localizeNames: Util().fromLocalizeDbField(Util().customJsonDecode(json['localize_names'])),
         index: json['position_index'],
-        updatedDateTime: DateTime.fromMicrosecondsSinceEpoch(json['last_updated']),
+        updatedDateTime: DateTime.fromMillisecondsSinceEpoch(json['last_updated']),
       );
 
   @override

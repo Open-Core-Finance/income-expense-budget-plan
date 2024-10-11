@@ -1,5 +1,8 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
+import 'package:income_expense_budget_plan/service/app_const.dart';
+import 'package:income_expense_budget_plan/service/form_util.dart';
 import 'package:income_expense_budget_plan/service/util.dart';
 
 import 'asset_category.dart';
@@ -74,6 +77,23 @@ abstract class Asset extends AssetTreeNode {
 
   @override
   String idFieldName() => "uid";
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is Asset && other.id == id && id != null;
+  }
+
+  @override
+  int get hashCode => id?.hashCode ?? 0;
+
+  Widget getAmountDisplayText() {
+    var formatter = FormUtil().buildFormatter(currentAppState.currencies
+        .firstWhere((element) => element.id == currencyUid, orElse: () => currentAppState.systemSetting.defaultCurrency!));
+    return Text(formatter.formatDouble(availableAmount));
+  }
+
+  String getAssetType();
 }
 
 enum AssetType { genericAccount, bankCasa, loan, eWallet, creditCard, payLaterAccount }
@@ -109,10 +129,13 @@ class GenericAccount extends Asset {
         localizeNames: Util().fromLocalizeDbField(Util().customJsonDecode(json['localize_names'])),
         localizeDescriptions: Util().fromLocalizeDbField(Util().customJsonDecode(json['localize_descriptions'])),
         index: json['position_index'],
-        updatedDateTime: DateTime.fromMicrosecondsSinceEpoch(json['last_updated']),
+        updatedDateTime: DateTime.fromMillisecondsSinceEpoch(json['last_updated']),
         availableAmount: json['available_amount'],
         categoryUid: json['category_uid'],
       );
+
+  @override
+  String getAssetType() => AssetType.genericAccount.name;
 }
 
 class BankCasaAccount extends Asset {
@@ -146,10 +169,13 @@ class BankCasaAccount extends Asset {
         localizeNames: Util().fromLocalizeDbField(Util().customJsonDecode(json['localize_names'])),
         localizeDescriptions: Util().fromLocalizeDbField(Util().customJsonDecode(json['localize_descriptions'])),
         index: json['position_index'],
-        updatedDateTime: DateTime.fromMicrosecondsSinceEpoch(json['last_updated']),
+        updatedDateTime: DateTime.fromMillisecondsSinceEpoch(json['last_updated']),
         availableAmount: json['available_amount'],
         categoryUid: json['category_uid'],
       );
+
+  @override
+  String getAssetType() => AssetType.bankCasa.name;
 }
 
 class LoanAccount extends Asset {
@@ -189,10 +215,20 @@ class LoanAccount extends Asset {
         localizeNames: Util().fromLocalizeDbField(Util().customJsonDecode(json['localize_names'])),
         localizeDescriptions: Util().fromLocalizeDbField(Util().customJsonDecode(json['localize_descriptions'])),
         index: json['position_index'],
-        updatedDateTime: DateTime.fromMicrosecondsSinceEpoch(json['last_updated']),
+        updatedDateTime: DateTime.fromMillisecondsSinceEpoch(json['last_updated']),
         loanAmount: json['loan_amount'],
         categoryUid: json['category_uid'],
       );
+
+  @override
+  Widget getAmountDisplayText() {
+    var formatter = FormUtil().buildFormatter(currentAppState.currencies
+        .firstWhere((element) => element.id == currencyUid, orElse: () => currentAppState.systemSetting.defaultCurrency!));
+    return Text(formatter.formatDouble(loanAmount));
+  }
+
+  @override
+  String getAssetType() => AssetType.loan.name;
 }
 
 class EWallet extends Asset {
@@ -226,10 +262,13 @@ class EWallet extends Asset {
         localizeNames: Util().fromLocalizeDbField(Util().customJsonDecode(json['localize_names'])),
         localizeDescriptions: Util().fromLocalizeDbField(Util().customJsonDecode(json['localize_descriptions'])),
         index: json['position_index'],
-        updatedDateTime: DateTime.fromMicrosecondsSinceEpoch(json['last_updated']),
+        updatedDateTime: DateTime.fromMillisecondsSinceEpoch(json['last_updated']),
         availableAmount: json['available_amount'],
         categoryUid: json['category_uid'],
       );
+
+  @override
+  String getAssetType() => AssetType.eWallet.name;
 }
 
 class CreditCard extends Asset {
@@ -269,11 +308,21 @@ class CreditCard extends Asset {
         localizeNames: Util().fromLocalizeDbField(Util().customJsonDecode(json['localize_names'])),
         localizeDescriptions: Util().fromLocalizeDbField(Util().customJsonDecode(json['localize_descriptions'])),
         index: json['position_index'],
-        updatedDateTime: DateTime.fromMicrosecondsSinceEpoch(json['last_updated']),
+        updatedDateTime: DateTime.fromMillisecondsSinceEpoch(json['last_updated']),
         availableAmount: json['available_amount'],
         creditLimit: json['credit_limit'],
         categoryUid: json['category_uid'],
       );
+
+  @override
+  Widget getAmountDisplayText() {
+    var formatter = FormUtil().buildFormatter(currentAppState.currencies
+        .firstWhere((element) => element.id == currencyUid, orElse: () => currentAppState.systemSetting.defaultCurrency!));
+    return Text('${formatter.formatDouble(creditLimit - availableAmount)}/${formatter.formatDouble(creditLimit)}');
+  }
+
+  @override
+  String getAssetType() => AssetType.creditCard.name;
 }
 
 class PayLaterAccount extends Asset {
@@ -313,9 +362,12 @@ class PayLaterAccount extends Asset {
         localizeNames: Util().fromLocalizeDbField(Util().customJsonDecode(json['localize_names'])),
         localizeDescriptions: Util().fromLocalizeDbField(Util().customJsonDecode(json['localize_descriptions'])),
         index: json['position_index'],
-        updatedDateTime: DateTime.fromMicrosecondsSinceEpoch(json['last_updated']),
+        updatedDateTime: DateTime.fromMillisecondsSinceEpoch(json['last_updated']),
         availableAmount: json['available_amount'],
         paymentLimit: json['payment_limit'],
         categoryUid: json['category_uid'],
       );
+
+  @override
+  String getAssetType() => AssetType.payLaterAccount.name;
 }

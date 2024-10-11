@@ -65,7 +65,7 @@ class AssetCategory extends AssetTreeNode {
         system: json['system'] == 1,
         localizeNames: Util().fromLocalizeDbField(Util().customJsonDecode(json['localize_names'])),
         index: json['position_index'],
-        updatedDateTime: DateTime.fromMicrosecondsSinceEpoch(json['last_updated']),
+        updatedDateTime: DateTime.fromMillisecondsSinceEpoch(json['last_updated']),
       );
 
   @override

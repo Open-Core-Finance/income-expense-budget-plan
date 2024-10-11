@@ -9,6 +9,7 @@ import 'package:income_expense_budget_plan/model/assets.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/app_state.dart';
 import 'package:income_expense_budget_plan/service/database_service.dart';
+import 'package:income_expense_budget_plan/service/form_util.dart';
 import 'package:income_expense_budget_plan/service/util.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
@@ -270,7 +271,13 @@ class AssetTreeNodeTile extends StatelessWidget {
     var category = entry.node;
     String tileText = category.getTitleText(appState.systemSetting);
     Widget? subTitle;
-    if (category is AssetCategory && category.assets.isEmpty) subTitle = Text(AppLocalizations.of(context)!.accountCategoryEmpty);
+    if (category is AssetCategory) {
+      if (category.assets.isEmpty) {
+        subTitle = Text(AppLocalizations.of(context)!.accountCategoryEmpty);
+      }
+    } else if (category is Asset) {
+      subTitle = category.getAmountDisplayText();
+    }
     Widget treeNodeTile = InkWell(
       onTap: onTap,
       child: TreeIndentation(

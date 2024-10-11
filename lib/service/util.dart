@@ -440,4 +440,95 @@ class Util {
     }
     return {};
   }
+
+  Asset changeAssetType(Asset original, String selectedAccountType) {
+    if (selectedAccountType == original.getAssetType()) {
+      return original;
+    }
+    switch (selectedAccountType) {
+      case "genericAccount":
+        return GenericAccount(
+            id: original.id,
+            icon: original.icon,
+            name: original.name,
+            localizeNames: original.localizeNames,
+            index: original.positionIndex,
+            localizeDescriptions: original.localizeDescriptions,
+            description: original.description,
+            currencyUid: original.currencyUid,
+            categoryUid: original.categoryUid,
+            availableAmount: original.availableAmount);
+      case "bankCasa":
+        return BankCasaAccount(
+            id: original.id,
+            icon: original.icon,
+            name: original.name,
+            localizeNames: original.localizeNames,
+            index: original.positionIndex,
+            localizeDescriptions: original.localizeDescriptions,
+            description: original.description,
+            currencyUid: original.currencyUid,
+            categoryUid: original.categoryUid,
+            availableAmount: original.availableAmount);
+      case "loan":
+        return LoanAccount(
+            id: original.id,
+            icon: original.icon,
+            name: original.name,
+            localizeNames: original.localizeNames,
+            index: original.positionIndex,
+            localizeDescriptions: original.localizeDescriptions,
+            description: original.description,
+            currencyUid: original.currencyUid,
+            categoryUid: original.categoryUid,
+            loanAmount: 0);
+      case "eWallet":
+        return EWallet(
+            id: original.id,
+            icon: original.icon,
+            name: original.name,
+            localizeNames: original.localizeNames,
+            index: original.positionIndex,
+            localizeDescriptions: original.localizeDescriptions,
+            description: original.description,
+            currencyUid: original.currencyUid,
+            categoryUid: original.categoryUid,
+            availableAmount: original.availableAmount);
+        break;
+      case "payLaterAccount":
+        PayLaterAccount assets = PayLaterAccount(
+            id: original.id,
+            icon: original.icon,
+            name: original.name,
+            localizeNames: original.localizeNames,
+            index: original.positionIndex,
+            localizeDescriptions: original.localizeDescriptions,
+            description: original.description,
+            currencyUid: original.currencyUid,
+            categoryUid: original.categoryUid,
+            availableAmount: original.availableAmount,
+            paymentLimit: 0);
+        if (original is CreditCard) {
+          assets.paymentLimit = original.creditLimit;
+        }
+        return assets;
+      default:
+        CreditCard assets = CreditCard(
+            id: original.id,
+            icon: original.icon,
+            name: original.name,
+            localizeNames: original.localizeNames,
+            index: original.positionIndex,
+            localizeDescriptions: original.localizeDescriptions,
+            description: original.description,
+            currencyUid: original.currencyUid,
+            categoryUid: original.categoryUid,
+            availableAmount: original.availableAmount,
+            creditLimit: 0);
+        if (original is PayLaterAccount) {
+          assets.creditLimit = original.paymentLimit;
+        }
+        return assets;
+    }
+  }
 }

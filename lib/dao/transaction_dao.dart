@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:income_expense_budget_plan/model/asset_category.dart';
 import 'package:income_expense_budget_plan/model/transaction.dart';
 import 'package:income_expense_budget_plan/model/transaction_category.dart';
@@ -34,12 +35,16 @@ class TransactionDao {
 
   Future<List<Transactions>> transactionsByYearAndMonth(int year, int month) async {
     final db = await databaseService.database;
-    List<Map<String, dynamic>> records = await db.query(tableNameTransaction, where: 'year_month = ?', whereArgs: [year * 12 + month]);
+    List<Map<String, dynamic>> records =
+        await db.query(tableNameTransaction, where: 'year_month = ?', whereArgs: [year * 12 + month], orderBy: 'transaction_date DESC');
     return [for (Map<String, Object?> record in records) _transactionFromDb(record)];
   }
 
   Transactions _transactionFromDb(Map<String, Object?> record) {
     String txnType = record['transaction_type']! as String;
+    if (kDebugMode) {
+      print("Transaction: $record => ${DateTime.fromMillisecondsSinceEpoch(record['transaction_date'] as int)}");
+    }
     switch (txnType) {
       case "income":
         return IncomeTransaction.fromMap(record);
@@ -54,7 +59,7 @@ class TransactionDao {
       case "adjustment":
         return AdjustmentTransaction.fromMap(record);
       case "shareBill":
-        return ShareBillReturnTransaction.fromMap(record);
+        return ShareBillTransaction.fromMap(record);
       default:
         return ShareBillReturnTransaction.fromMap(record);
     }

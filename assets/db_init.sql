@@ -13,14 +13,14 @@ CREATE TABLE IF NOT EXISTS transaction_category(uid TEXT PRIMARY KEY, name TEXT,
 CREATE TABLE IF NOT EXISTS transactions(id TEXT PRIMARY KEY, description TEXT, transaction_date Integer DEFAULT 0, transaction_time Integer DEFAULT 0, transaction_category_uid TEXT, transaction_type TEXT,
     with_fee integer NOT NULL DEFAULT 0, fee_amount REAL NOT NULL DEFAULT 0.0, amount REAL NOT NULL DEFAULT 0.0, last_updated Integer NOT NULL DEFAULT 0, account_uid TEXT,
     currency_uid TEXT, to_account_uid TEXT, my_split REAL NOT NULL default 0.0, remaining_amount REAL NOT NULL default 0.0, shared_bill_id TEXT,
-    year_month INTEGER NOT NULL DEFAULT 22800,
+    year_month INTEGER NOT NULL DEFAULT 22800, fee_apply_to_from_account INTEGER NOT NULL DEFAULT 0,
     FOREIGN KEY (transaction_category_uid) REFERENCES transaction_category (uid),
     FOREIGN KEY (account_uid) REFERENCES asset (uid),
     FOREIGN KEY (currency_uid) REFERENCES currency (uid));
 
 CREATE INDEX IF NOT EXISTS transaction_year_month_index ON transactions(year_month);
 
-CREATE TABLE debug_log (
+CREATE TABLE IF NOT EXISTS debug_log (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     message TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -120,7 +120,14 @@ INSERT OR IGNORE INTO transaction_category (uid, name, icon, parent_uid, transac
 INSERT OR IGNORE INTO transaction_category (uid, name, icon, parent_uid, transaction_type, "system", localize_names, position_index, last_updated) VALUES('20240818-1143-8308-a655-5f5b16c6fb07', 'Gas', '{"codePoint":58609,"fontFamily":"FontAwesomeSolid","fontPackage":"font_awesome_flutter","matchTextDirection":false}', '20240818-0930-8e06-b551-b47065a0de2f', 'expense', 0, '{}', 2, unixepoch() * 1000);
 INSERT OR IGNORE INTO transaction_category (uid, name, icon, parent_uid, transaction_type, "system", localize_names, position_index, last_updated) VALUES('20240818-1143-8f41-b413-46554f46cbcd', 'Phone', '{"codePoint":62648,"fontFamily":"CupertinoIcons","fontPackage":"cupertino_icons","matchTextDirection":false}', '20240818-0930-8e06-b551-b47065a0de2f', 'expense', 0, '{"en":"Phone","vi":"Điện thoại"}', 3, unixepoch() * 1000);
 INSERT OR IGNORE INTO transaction_category (uid, name, icon, parent_uid, transaction_type, "system", localize_names, position_index, last_updated) VALUES('20240818-1144-8313-8806-7cb03d0b6db1', 'Internet', '{"codePoint":58406,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}', '20240818-0930-8e06-b551-b47065a0de2f', 'expense', 0, '{}', 4, unixepoch() * 1000);
-INSERT OR IGNORE INTO transaction_category (uid, name, icon, parent_uid, transaction_type, "system", localize_names, position_index, last_updated) VALUES('20240818-1144-8434-8901-1e143c0e7b9f', 'Water', '{"codePoint":984482,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}', '20240818-0930-8e06-b551-b47065a0de2f', 'expense', 0, '{"en":"Water","vi":"Nước"}', 5, unixepoch() * 1000);
+INSERT OR IGNORE INTO transaction_category (uid, name, icon, parent_uid, transaction_type, "system", localize_names, position_index, last_updated) VALUES('20240818-1144-8434-8901-1e143c0e7b9f', 'Water', '{"codePoint":984482,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}', '20240818-0930-8e06-b551-b47065a0de2f', 'expense', 0, '{"en":"Water","vi":"Nước"}', 5, unixepoch() * 1000),
+('20241005-1326-8908-b764-fe5cb32434bd','Convenience store','{"codePoint":58892,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}',
+     '20240925-0755-8805-8199-8fdd9ccb635c','expense',0,'{"en":"Convenience store","vi":"Cửa hàng tiện lợi"}',2,unixepoch() * 1000),
+('20241005-1333-8133-a906-7e4db558f38a','Bill payment','{"codePoint":58348,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}',
+'20240818-0930-8e06-b551-b47065a0de2f','expense',0,'{"en":"Bill payment","vi":"Thanh toán hoá đơn"}',6,1728135213918);
+
+INSERT OR IGNORE INTO transaction_category (uid,name,icon,parent_uid,transaction_type,"system",localize_names,position_index,last_updated) VALUES
+	 ('20241011-0918-8449-9006-bb2177ca1ffd','Paper work','{"codePoint":985181,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}','20240818-0927-8e53-8521-7514cee10522','expense',0,'{"en":"Paper work","vi":"Hành chính/Giấy tờ"}',1,unixepoch() * 1000);
 
 INSERT OR IGNORE INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('1', 'Viet Nam Dong', 'VND', 0, '₫', 'S', 1, 1, 0, 'vi-VN');
 INSERT OR IGNORE INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('3', 'United States Dollar', 'USD', 0, '$', 'P', 0, 1, 2, 'en-US');
@@ -171,5 +178,5 @@ INSERT OR IGNORE INTO asset (uid, icon, name, description, available_amount, loa
 INSERT OR IGNORE INTO asset (uid, icon, name, description, available_amount, loan_amount, deposit_amount, credit_limit, payment_limit, currency_uid,
     asset_type, category_uid, localize_names, localize_descriptions, position_index, last_updated)
     VALUES('20240923-1658-8307-9686-bc5528febb04', '{"codePoint":57749,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}',
-    'Loyalty point', 'My Loyalty Points', 0.0, 0.0, 0.0, 0.0, 0.0, '35', 'cash', '20240814-1027-8317-9580-ef12a94c7312',
+    'Loyalty point', 'My Loyalty Points', 0.0, 0.0, 0.0, 0.0, 0.0, '35', 'genericAccount', '20240814-1027-8317-9580-ef12a94c7312',
     '{"en":"Loyalty point","vi":"Điểm thưởng"}', '{"en":"My Loyalty Points","vi":"Điểm thưởng của tôi"}', 3, unixepoch() * 1000);

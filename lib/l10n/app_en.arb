@@ -117,5 +117,20 @@
   "transactionHaveFee": "Have fee",
   "transactionFee": "Fee",
   "transactionInvalidFee": "Fee must be larger than 0",
-  "transactionInvalidAmount": "Value must be larger than 0"
+  "transactionInvalidAmount": "Value must be larger than 0",
+  "transactionTotalIncome": "Total incomes",
+  "transactionTotalExpense": "Total expenses",
+  "weekDay1": "Monday",
+  "weekDay2": "Tuesday",
+  "weekDay3": "Wednesday",
+  "weekDay4": "Thursday",
+  "weekDay5": "Friday",
+  "weekDay6": "Saturday",
+  "weekDay7": "Sunday",
+  "weekDayToday": "Today",
+  "weekDayYesterday": "Yesterday",
+  "weekDayTomorrow": "Tomorrow",
+  "transactionTransferTitle": "Transferred to account \"{assetName}\"",
+  "transactionSharedBillTitle": "Paid \"{amount}\" for \"{categoryName}\"",
+  "transactionSharedBillReturnedTitle": "Received return for \"{categoryName}\""
 }

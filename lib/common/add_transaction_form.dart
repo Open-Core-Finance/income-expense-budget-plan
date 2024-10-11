@@ -51,6 +51,7 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
   late TimeOfDay _selectedTxnTime;
 
   late bool _haveFee;
+  bool _feeApplyToFromAccount = true;
 
   // Create a global key that uniquely identifies the Form widget
   // and allows validation of the form.
@@ -81,6 +82,7 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
 
       if (_editingTransaction is TransferTransaction) {
         _selectedAccount = (_editingTransaction as TransferTransaction).toAccount;
+        _feeApplyToFromAccount = (_editingTransaction as TransferTransaction).feeApplyToFromAccount;
       } else if (_editingTransaction is ShareBillTransaction) {
         _transactionMySplitAmountController.text = '${(_editingTransaction as ShareBillTransaction).mySplit}';
       } else if (_editingTransaction is ShareBillReturnTransaction) {
@@ -97,8 +99,7 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
     } else {
       _selectedCurrency = currentAppState.systemSetting.defaultCurrency!;
     }
-    _currencyTextInputFormatter = CurrencyTextInputFormatter.currency(
-        locale: _selectedCurrency.language, symbol: _selectedCurrency.symbol, decimalDigits: _selectedCurrency.decimalPoint);
+    _currencyTextInputFormatter = FormUtil().buildFormatter(_selectedCurrency);
   }
 
   _initEmptyForm() {
@@ -117,6 +118,7 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
     _transactionReturnSharedBillIdController = TextEditingController(text: '');
     _haveFee = false;
     _transactionFeeController = TextEditingController(text: '');
+    _feeApplyToFromAccount = true;
   }
 
   @override
@@ -161,66 +163,32 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
           child: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                if (_selectedTransactionType == TransactionType.adjustment && _selectedAccount != null) ...[
+                if (_selectedTransactionType != TransactionType.shareBillReturn) ...[
                   Row(
                     children: [
-                      Text(appLocalizations.adjustmentCurrentAmount),
+                      Text(appLocalizations.transactionCategory),
                       const SizedBox(width: 10),
                       Flexible(
-                        child: TextFormField(
-                          maxLines: 1,
-                          keyboardType: TextInputType.number,
-                          inputFormatters: [_currencyTextInputFormatter],
-                          controller: TextEditingController(
-                              text: _currencyTextInputFormatter.formatString("${_selectedAccount!.availableAmount})")),
-                          enabled: false,
-                          style: TextStyle(color: theme.colorScheme.primary),
-                        ),
-                      )
-                    ],
-                  ),
-                  const SizedBox(height: 10)
-                ],
-                if (_selectedTransactionType != TransactionType.adjustment || _selectedAccount != null) ...[
-                  ..._moneyInputField(true, amountLabel, _transactionAmountController, theme, validator: (String? value) {
-                    if (kDebugMode) {
-                      print("Value: $value");
-                    }
-                    if (_isValidAmount != true) {
-                      return AppLocalizations.of(context)!.transactionInvalidAmount;
-                    }
-                    return null;
-                  }),
-                  const SizedBox(height: 10)
-                ],
-                if (_selectedTransactionType == TransactionType.shareBill) ...[
-                  ..._moneyInputField(true, appLocalizations.sharedBillMySplit, _transactionMySplitAmountController, theme),
-                  const SizedBox(height: 10)
-                ],
-                Row(
-                  children: [
-                    Text(appLocalizations.transactionCategory),
-                    const SizedBox(width: 10),
-                    Flexible(
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
-                        child: ElevatedButton(
-                          onPressed: () => _chooseCategory(context, _selectedTransactionType),
-                          child: Row(children: _buildSelectedLocalizedItemDisplay(theme, _selectedCategory)),
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+                          child: ElevatedButton(
+                            onPressed: () => _chooseCategory(context, _selectedTransactionType),
+                            child: Row(children: _buildSelectedLocalizedItemDisplay(theme, _selectedCategory)),
+                          ),
                         ),
                       ),
-                    ),
-                    IconButton(
-                      onPressed: () {
-                        setState(() {
-                          _selectedCategory = null;
-                        });
-                      },
-                      icon: const Icon(Icons.clear),
-                      color: theme.colorScheme.error,
-                    ),
-                  ],
-                ),
+                      IconButton(
+                        onPressed: () {
+                          setState(() {
+                            _selectedCategory = null;
+                          });
+                        },
+                        icon: const Icon(Icons.clear),
+                        color: theme.colorScheme.error,
+                      ),
+                    ],
+                  ),
+                ],
                 const SizedBox(height: 10),
                 Row(
                   children: [
@@ -269,6 +237,42 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
                   ],
                 ),
                 const SizedBox(height: 10),
+                if (_selectedTransactionType == TransactionType.adjustment && _selectedAccount != null) ...[
+                  Row(
+                    children: [
+                      Text(appLocalizations.adjustmentCurrentAmount),
+                      const SizedBox(width: 10),
+                      Flexible(
+                        child: TextFormField(
+                          maxLines: 1,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [_currencyTextInputFormatter],
+                          controller: TextEditingController(
+                              text: _currencyTextInputFormatter.formatString("${_selectedAccount!.availableAmount})")),
+                          enabled: false,
+                          style: TextStyle(color: theme.colorScheme.primary),
+                        ),
+                      )
+                    ],
+                  ),
+                  const SizedBox(height: 10)
+                ],
+                if (_selectedTransactionType != TransactionType.adjustment || _selectedAccount != null) ...[
+                  ..._moneyInputField(true, amountLabel, _transactionAmountController, theme, validator: (String? value) {
+                    if (kDebugMode) {
+                      print("Value: $value");
+                    }
+                    if (_isValidAmount != true) {
+                      return AppLocalizations.of(context)!.transactionInvalidAmount;
+                    }
+                    return null;
+                  }),
+                  const SizedBox(height: 10)
+                ],
+                if (_selectedTransactionType == TransactionType.shareBill) ...[
+                  ..._moneyInputField(true, appLocalizations.sharedBillMySplit, _transactionMySplitAmountController, theme),
+                  const SizedBox(height: 10)
+                ],
                 Row(
                   children: [
                     Flexible(
@@ -363,6 +367,34 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
                     }
                     return null;
                   }),
+                  if (_selectedTransactionType == TransactionType.transfer) ...[
+                    const SizedBox(height: 10),
+                    Column(
+                      // mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        RadioListTile<bool>(
+                          title: const Text('Fee apply to source account'),
+                          value: true,
+                          groupValue: _feeApplyToFromAccount,
+                          onChanged: (value) {
+                            setState(() {
+                              _feeApplyToFromAccount = value ?? true;
+                            });
+                          },
+                        ),
+                        RadioListTile<bool>(
+                          title: const Text('Fee apply to dest account'),
+                          value: false,
+                          groupValue: _feeApplyToFromAccount,
+                          onChanged: (value) {
+                            setState(() {
+                              _feeApplyToFromAccount = value ?? false;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
                 if (_canSubmit()) ...[
                   const SizedBox(height: 20),
@@ -524,7 +556,8 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
             account: _selectedAccount!,
             currencyUid: _selectedCurrency.id,
             toAccount: _selectedToAccount!,
-            updatedDateTime: DateTime.now());
+            updatedDateTime: DateTime.now(),
+            feeApplyTo: _feeApplyToFromAccount);
       case TransactionType.lend:
         return LendTransaction(
             id: const UuidV8().generate(),
@@ -628,17 +661,13 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
     return result;
   }
 
-  DropdownMenuItem<T> _buildDropdownMenuItem<T>(BuildContext context, T value, String text) {
-    return DropdownMenuItem<T>(value: value, child: Padding(padding: const EdgeInsets.fromLTRB(10, 0, 0, 0), child: Text(text)));
-  }
-
   List<DropdownMenuItem<TransactionType>> _buildTransactionTypeDropdownMenuEntries(BuildContext context) {
     var appLocalization = AppLocalizations.of(context)!;
     List<List<dynamic>> iconMap = [
       [TransactionType.income, incomeIconData, Colors.green, 1.0, appLocalization.transactionTypeIncome],
       [TransactionType.expense, expenseIconData, Colors.red, 1.0, appLocalization.transactionTypeExpense],
-      [TransactionType.lend, lendIconData, Colors.blue, 1.0, appLocalization.transactionTypeLend],
-      [TransactionType.borrowing, Icons.add_business_sharp, Colors.blue, 1.0, appLocalization.transactionTypeBorrowing],
+      // [TransactionType.lend, lendIconData, Colors.blue, 1.0, appLocalization.transactionTypeLend],
+      // [TransactionType.borrowing, Icons.add_business_sharp, Colors.blue, 1.0, appLocalization.transactionTypeBorrowing],
       [TransactionType.transfer, Icons.currency_exchange_outlined, Colors.blueGrey, 1.0, appLocalization.transactionTypeTransfer],
       [TransactionType.shareBill, Icons.receipt_long_outlined, Colors.deepOrangeAccent, 1.0, appLocalization.transactionTypeShareBill],
       [
@@ -767,8 +796,7 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
             if (fromAccount) {
               _selectedCurrency = currentAppState.currencies.firstWhere((c) => c.id == account.currencyUid);
               _selectedAccount = account;
-              _currencyTextInputFormatter = CurrencyTextInputFormatter.currency(
-                  locale: _selectedCurrency.language, symbol: _selectedCurrency.symbol, decimalDigits: _selectedCurrency.decimalPoint);
+              _currencyTextInputFormatter = FormUtil().buildFormatter(_selectedCurrency);
               currentAppState.updateLastSelectedAsset(account);
             } else {
               _selectedToAccount = account;
