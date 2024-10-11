@@ -68,6 +68,15 @@ class Currency extends GenericModel {
       show: json['show'] == 1,
       decimalPoint: json['decimal_point'],
       language: json['language']);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is Currency && other.id == id;
+  }
+
+  @override
+  int get hashCode => iso.hashCode;
 }
 
 enum SymbolPosition { S, P }

@@ -108,36 +108,32 @@ class FormUtil {
     return moneyFormat.tryParse(amountText)?.toDouble();
   }
 
-  AppBar? buildYearMonthFilteredAppBar(
-      BuildContext context, YearMonthFilterData? mainFilter, YearMonthFilterData? localFilter, Function? stateChangeCallback) {
+  AppBar? buildYearMonthFilteredAppBar(BuildContext context, YearMonthFilterData? filter, Function? stateChangeCallback) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
 
     AppBar? appBar;
-    YearMonthFilterData filterData;
-    if (mainFilter == null) {
-      if (localFilter != null) {
-        YearMonthFilterData filterData = localFilter;
-        appBar = AppBar(
-          leading: IconButton(
-            icon: Icon(Icons.navigate_before, color: colorScheme.primary),
+    if (filter != null) {
+      YearMonthFilterData filterData = filter;
+      appBar = AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.navigate_before, color: colorScheme.primary),
+          onPressed: () {
+            filterData.previousMonth();
+            if (stateChangeCallback != null) stateChangeCallback();
+          },
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.navigate_next, color: colorScheme.primary),
             onPressed: () {
-              filterData.previousMonth();
+              filterData.nextMonth();
               if (stateChangeCallback != null) stateChangeCallback();
             },
           ),
-          actions: [
-            IconButton(
-              icon: Icon(Icons.navigate_next, color: colorScheme.primary),
-              onPressed: () {
-                filterData.nextMonth();
-                if (stateChangeCallback != null) stateChangeCallback();
-              },
-            ),
-          ],
-          title: Center(child: Text("${filterData.getMonthAsNumberString()}/${filterData.year}")),
-        );
-      }
+        ],
+        title: Center(child: Text("${filterData.getMonthAsNumberString()}/${filterData.year}")),
+      );
     }
     return appBar;
   }

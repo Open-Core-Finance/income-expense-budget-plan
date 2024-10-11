@@ -109,10 +109,22 @@ class AppState extends ChangeNotifier {
   TransactionCategory? retrieveCategory(String categoryId) {
     for (var entry in categoriesMap.entries) {
       var cats = entry.value;
-      for (var cat in cats) {
-        if (cat.id == categoryId) {
-          return cat;
-        }
+      TransactionCategory? tmp = _findChildCategory(cats, categoryId);
+      if (tmp != null) {
+        return tmp;
+      }
+    }
+    return null;
+  }
+
+  TransactionCategory? _findChildCategory(List<TransactionCategory> cats, String categoryId) {
+    for (var cat in cats) {
+      if (cat.id == categoryId) {
+        return cat;
+      }
+      TransactionCategory? tmp = _findChildCategory(cat.child, categoryId);
+      if (tmp != null) {
+        return tmp;
       }
     }
     return null;

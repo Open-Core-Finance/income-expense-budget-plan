@@ -40,7 +40,7 @@ class _ReportPanelState extends State<ReportPanel> {
     final ColorScheme colorScheme = theme.colorScheme;
 
     return Scaffold(
-      appBar: FormUtil().buildYearMonthFilteredAppBar(context, widget.yearMonthFilterData, yearMonthFilterData, () => setState(() {})),
+      appBar: widget.yearMonthFilterData != null ? null : yearMonthFilterData!.generateFilterLabel(context, () => setState(() {})),
       body: const NoDataCard(),
     );
   }

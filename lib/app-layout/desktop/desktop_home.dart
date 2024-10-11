@@ -66,7 +66,7 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
         }
         AppBar? appBar;
         if (appState.currentHomePageIndex == 0) {
-          appBar = FormUtil().buildYearMonthFilteredAppBar(context, null, yearMonthFilterData, () => setState(() {}));
+          appBar = yearMonthFilterData.generateFilterLabel(context, () => setState(() {}));
         }
         return Scaffold(
           appBar: appBar,

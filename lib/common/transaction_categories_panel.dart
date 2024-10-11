@@ -197,14 +197,8 @@ class _AddTransactionCategoryPanelState extends State<AddTransactionCategoryPane
                       Text(AppLocalizations.of(context)!.transactionCategoryActionSelectIcon),
                       IconButton(
                         onPressed: () {
-                          showIconPicker(context, iconPackModes: [
-                            IconPack.cupertino,
-                            IconPack.allMaterial,
-                            IconPack.custom,
-                            IconPack.fontAwesomeIcons,
-                            IconPack.lineAwesomeIcons
-                          ]).then((IconData? iconData) {
-                            if (iconData != null) setState(() => _selectedIcon = iconData);
+                          showIconPicker(context).then((IconPickerIcon? iconData) {
+                            if (iconData != null) setState(() => _selectedIcon = iconData.data);
                           });
                         },
                         icon: Icon(_selectedIcon),

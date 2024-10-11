@@ -11,6 +11,7 @@ import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/app_state.dart';
 import 'package:income_expense_budget_plan/service/form_util.dart';
 import 'package:income_expense_budget_plan/service/database_service.dart';
+import 'package:income_expense_budget_plan/service/util.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/v8.dart';
@@ -102,8 +103,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
     } else {
       _initEmptyForm();
     }
-    _currencyTextInputFormatter = CurrencyTextInputFormatter.currency(
-        locale: _selectedCurrency.language, symbol: _selectedCurrency.symbol, decimalDigits: _selectedCurrency.decimalPoint);
+    _currencyTextInputFormatter = FormUtil().buildFormatter(_selectedCurrency);
     _creditLimitController.text = _currencyTextInputFormatter.formatDouble(double.tryParse(_creditLimitController.text) ?? 0);
     _loanAmountController.text = _currencyTextInputFormatter.formatDouble(double.tryParse(_loanAmountController.text) ?? 0);
     _availableAmountController.text = _currencyTextInputFormatter.formatDouble(double.tryParse(_availableAmountController.text) ?? 0);
@@ -154,8 +154,8 @@ class _AddAccountFormState extends State<AddAccountForm> {
                     Text(AppLocalizations.of(context)!.accountActionSelectIcon),
                     IconButton(
                       onPressed: () {
-                        showIconPicker(context, iconPackModes: [IconPack.material, IconPack.cupertino]).then((IconData? iconData) {
-                          if (iconData != null) setState(() => _selectedIcon = iconData);
+                        showIconPicker(context).then((IconPickerIcon? iconData) {
+                          if (iconData != null) setState(() => _selectedIcon = iconData.data);
                         });
                       },
                       icon: Icon(_selectedIcon),
@@ -237,6 +237,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
       double? creditLimitNumber = formUtil.parseAmount(_creditLimitController.text, moneyFormat);
 
       if (_editingAsset != null) {
+        _editingAsset = Util().changeAssetType(_editingAsset!, _selectedAccountType);
         DatabaseService().database.then((db) {
           _editingAsset?.icon = _selectedIcon;
           _editingAsset?.name = _assetNameController.text;
@@ -532,7 +533,6 @@ class _AddAccountFormState extends State<AddAccountForm> {
     List<Widget> result = [];
     result.addAll(_dropdownButtonFormField(
       context,
-      enabled: _editingAsset?.id == null,
       value: _selectedAccountType,
       label: AppLocalizations.of(context)!.accountType,
       items: AssetType.values
@@ -559,8 +559,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
       onChange: (Currency? value) => setState(
         () {
           _selectedCurrency = value!;
-          _currencyTextInputFormatter = CurrencyTextInputFormatter.currency(
-              locale: _selectedCurrency.language, symbol: _selectedCurrency.symbol, decimalDigits: _selectedCurrency.decimalPoint);
+          _currencyTextInputFormatter = FormUtil().buildFormatter(_selectedCurrency);
           _availableAmountController.text = _currencyTextInputFormatter.formatString(_availableAmountController.text);
           _loanAmountController.text = _currencyTextInputFormatter.formatString(_loanAmountController.text);
           _creditLimitController.text = _currencyTextInputFormatter.formatString(_creditLimitController.text);
