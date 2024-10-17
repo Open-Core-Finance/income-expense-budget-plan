@@ -130,7 +130,11 @@
   "weekDayToday": "Hôm nay",
   "weekDayYesterday": "Hôm qua",
   "weekDayTomorrow": "Ngày mai",
-  "transactionTransferTitle": "Chuyển khoản đến tài khoản \"{assetName}\"",
+  "transactionTransferTitle": "Chuyển khoản đến \"{assetName}\"",
   "transactionSharedBillTitle": "Thanh toán \"{categoryName}\" với giá trị \"{amount}\"",
-  "transactionSharedBillReturnedTitle": "Nhận tiền trả cho \"{categoryName}\""
+  "transactionSharedBillReturnedTitle": "Nhận tiền trả cho \"{categoryName}\"",
+  "transactionAdjustedFrom": "Chỉnh thành \"{amountTo}\"",
+  "transactionSkipReport": "Không tính vào báo cáo",
+  "transactionInCompleteSharedBillDialogTitle": "Danh sách đơn chưa được trả hết",
+  "transactionSharedBillRemainingLabel": "Còn lại"
 }

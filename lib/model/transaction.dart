@@ -16,23 +16,29 @@ abstract class Transactions extends GenericModel {
   double amount;
   Asset account;
   String currencyUid;
-  Transactions({
-    required super.id,
-    required this.transactionDate,
-    required this.transactionTime,
-    required this.transactionCategory,
-    required this.description,
-    required this.withFee,
-    required this.feeAmount,
-    required this.amount,
-    DateTime? updatedDateTime,
-    required this.account,
-    required this.currencyUid,
-  }) {
+  late bool notIncludeToReport;
+  Transactions(
+      {required super.id,
+      required this.transactionDate,
+      required this.transactionTime,
+      required this.transactionCategory,
+      required this.description,
+      required this.withFee,
+      required this.feeAmount,
+      required this.amount,
+      DateTime? updatedDateTime,
+      required this.account,
+      required this.currencyUid,
+      bool? skipReport}) {
     if (updatedDateTime == null) {
       lastUpdated = DateTime.now();
     } else {
       lastUpdated = updatedDateTime;
+    }
+    if (skipReport != null) {
+      notIncludeToReport = skipReport;
+    } else {
+      notIncludeToReport = false;
     }
   }
 
@@ -50,7 +56,8 @@ abstract class Transactions extends GenericModel {
       'last_updated': lastUpdated.millisecondsSinceEpoch,
       'account_uid': account.id,
       'currency_uid': currencyUid,
-      "transaction_type": getType()
+      "transaction_type": getType().name,
+      "not_include_to_report": notIncludeToReport == true ? 1 : 0
     };
   }
 
@@ -64,7 +71,7 @@ abstract class Transactions extends GenericModel {
   String attributeString() {
     return '"${idFieldName()}": "$id", "transactionDate": "$transactionDate", "transactionTime": "$transactionTime", "transactionCategory": $transactionCategory,"description": "$description", '
         '"withFee": $withFee, "feeAmount": "$feeAmount", "amount": "$amount", '
-        '"lastUpdated": "$lastUpdated", "transactionType": "${getType()}"';
+        '"lastUpdated": "$lastUpdated", "transactionType": "${getType()}", "notIncludeToReport": $notIncludeToReport';
   }
 
   @override
@@ -75,7 +82,7 @@ abstract class Transactions extends GenericModel {
 
   factory Transactions.fromMap(Map<String, dynamic> json) => throw UnimplementedError('fromMap must be implemented in subclasses');
 
-  String getType();
+  TransactionType getType();
 }
 
 class IncomeTransaction extends Transactions {
@@ -90,24 +97,25 @@ class IncomeTransaction extends Transactions {
       required super.amount,
       super.updatedDateTime,
       required super.account,
-      required super.currencyUid});
+      required super.currencyUid,
+      super.skipReport});
 
   factory IncomeTransaction.fromMap(Map<String, dynamic> json) => IncomeTransaction(
-        id: json['id'],
-        description: json['description'] as String,
-        transactionDate: DateTime.fromMillisecondsSinceEpoch(json['transaction_date']),
-        transactionTime: Util().minutesToTimeOfDay(json['transaction_time']),
-        transactionCategory: currentAppState.retrieveCategory(json['transaction_category_uid'] as String),
-        currencyUid: json['currency_uid'],
-        withFee: json['with_fee'] == 1,
-        feeAmount: json['fee_amount'],
-        amount: json['amount'],
-        updatedDateTime: DateTime.fromMillisecondsSinceEpoch(json['last_updated']),
-        account: currentAppState.retrieveAccount(json['account_uid'] as String) ?? currentAppState.assets[0],
-      );
+      id: json['id'],
+      description: json['description'] as String,
+      transactionDate: DateTime.fromMillisecondsSinceEpoch(json['transaction_date']),
+      transactionTime: Util().minutesToTimeOfDay(json['transaction_time']),
+      transactionCategory: currentAppState.retrieveCategory(json['transaction_category_uid'] as String?),
+      currencyUid: json['currency_uid'],
+      withFee: json['with_fee'] == 1,
+      feeAmount: json['fee_amount'],
+      amount: json['amount'],
+      updatedDateTime: DateTime.fromMillisecondsSinceEpoch(json['last_updated']),
+      account: currentAppState.retrieveAccount(json['account_uid'] as String) ?? currentAppState.assets[0],
+      skipReport: json['not_include_to_report'] == 1);
 
   @override
-  String getType() => TransactionType.income.name;
+  TransactionType getType() => TransactionType.income;
 }
 
 class ExpenseTransaction extends Transactions {
@@ -122,24 +130,25 @@ class ExpenseTransaction extends Transactions {
       required super.amount,
       super.updatedDateTime,
       required super.account,
-      required super.currencyUid});
+      required super.currencyUid,
+      super.skipReport});
 
   @override
-  String getType() => TransactionType.expense.name;
+  TransactionType getType() => TransactionType.expense;
 
   factory ExpenseTransaction.fromMap(Map<String, dynamic> json) => ExpenseTransaction(
-        id: json['id'],
-        description: json['description'] as String,
-        transactionDate: DateTime.fromMillisecondsSinceEpoch(json['transaction_date']),
-        transactionTime: Util().minutesToTimeOfDay(json['transaction_time']),
-        transactionCategory: currentAppState.retrieveCategory(json['transaction_category_uid'] as String),
-        currencyUid: json['currency_uid'],
-        withFee: json['with_fee'] == 1,
-        feeAmount: json['fee_amount'],
-        amount: json['amount'],
-        updatedDateTime: DateTime.fromMillisecondsSinceEpoch(json['last_updated']),
-        account: currentAppState.retrieveAccount(json['account_uid'] as String) ?? currentAppState.assets[0],
-      );
+      id: json['id'],
+      description: json['description'] as String,
+      transactionDate: DateTime.fromMillisecondsSinceEpoch(json['transaction_date']),
+      transactionTime: Util().minutesToTimeOfDay(json['transaction_time']),
+      transactionCategory: currentAppState.retrieveCategory(json['transaction_category_uid'] as String?),
+      currencyUid: json['currency_uid'],
+      withFee: json['with_fee'] == 1,
+      feeAmount: json['fee_amount'],
+      amount: json['amount'],
+      updatedDateTime: DateTime.fromMillisecondsSinceEpoch(json['last_updated']),
+      account: currentAppState.retrieveAccount(json['account_uid'] as String) ?? currentAppState.assets[0],
+      skipReport: json['not_include_to_report'] == 1);
 }
 
 class TransferTransaction extends Transactions {
@@ -158,7 +167,8 @@ class TransferTransaction extends Transactions {
       required super.account,
       required super.currencyUid,
       required this.toAccount,
-      bool? feeApplyTo}) {
+      bool? feeApplyTo,
+      super.skipReport}) {
     if (feeApplyTo == true) {
       feeApplyToFromAccount = true;
     } else {
@@ -174,7 +184,7 @@ class TransferTransaction extends Transactions {
   }
 
   @override
-  String getType() => TransactionType.transfer.name;
+  TransactionType getType() => TransactionType.transfer;
 
   @override
   String attributeString() {
@@ -186,7 +196,7 @@ class TransferTransaction extends Transactions {
       description: json['description'] as String,
       transactionDate: DateTime.fromMillisecondsSinceEpoch(json['transaction_date']),
       transactionTime: Util().minutesToTimeOfDay(json['transaction_time']),
-      transactionCategory: currentAppState.retrieveCategory(json['transaction_category_uid'] as String),
+      transactionCategory: currentAppState.retrieveCategory(json['transaction_category_uid'] as String?),
       currencyUid: json['currency_uid'],
       withFee: json['with_fee'] == 1,
       feeAmount: json['fee_amount'],
@@ -194,7 +204,8 @@ class TransferTransaction extends Transactions {
       updatedDateTime: DateTime.fromMillisecondsSinceEpoch(json['last_updated']),
       account: currentAppState.retrieveAccount(json['account_uid'] as String) ?? currentAppState.assets[0],
       toAccount: currentAppState.retrieveAccount(json['to_account_uid'] as String) ?? currentAppState.assets[0],
-      feeApplyTo: json['fee_apply_to_from_account'] == 1);
+      feeApplyTo: json['fee_apply_to_from_account'] == 1,
+      skipReport: json['not_include_to_report'] == 1);
 }
 
 class LendTransaction extends Transactions {
@@ -209,24 +220,25 @@ class LendTransaction extends Transactions {
       required super.amount,
       super.updatedDateTime,
       required super.account,
-      required super.currencyUid});
+      required super.currencyUid,
+      super.skipReport});
 
   @override
-  String getType() => TransactionType.lend.name;
+  TransactionType getType() => TransactionType.lend;
 
   factory LendTransaction.fromMap(Map<String, dynamic> json) => LendTransaction(
-        id: json['id'],
-        description: json['description'] as String,
-        transactionDate: DateTime.fromMillisecondsSinceEpoch(json['transaction_date']),
-        transactionTime: Util().minutesToTimeOfDay(json['transaction_time']),
-        transactionCategory: currentAppState.retrieveCategory(json['transaction_category_uid'] as String),
-        currencyUid: json['currency_uid'],
-        withFee: json['with_fee'] == 1,
-        feeAmount: json['fee_amount'],
-        amount: json['amount'],
-        updatedDateTime: DateTime.fromMillisecondsSinceEpoch(json['last_updated']),
-        account: currentAppState.retrieveAccount(json['account_uid'] as String) ?? currentAppState.assets[0],
-      );
+      id: json['id'],
+      description: json['description'] as String,
+      transactionDate: DateTime.fromMillisecondsSinceEpoch(json['transaction_date']),
+      transactionTime: Util().minutesToTimeOfDay(json['transaction_time']),
+      transactionCategory: currentAppState.retrieveCategory(json['transaction_category_uid'] as String?),
+      currencyUid: json['currency_uid'],
+      withFee: json['with_fee'] == 1,
+      feeAmount: json['fee_amount'],
+      amount: json['amount'],
+      updatedDateTime: DateTime.fromMillisecondsSinceEpoch(json['last_updated']),
+      account: currentAppState.retrieveAccount(json['account_uid'] as String) ?? currentAppState.assets[0],
+      skipReport: json['not_include_to_report'] == 1);
 }
 
 class BorrowingTransaction extends Transactions {
@@ -241,27 +253,29 @@ class BorrowingTransaction extends Transactions {
       required super.amount,
       super.updatedDateTime,
       required super.account,
-      required super.currencyUid});
+      required super.currencyUid,
+      super.skipReport});
 
   @override
-  String getType() => TransactionType.borrowing.name;
+  TransactionType getType() => TransactionType.borrowing;
 
   factory BorrowingTransaction.fromMap(Map<String, dynamic> json) => BorrowingTransaction(
-        id: json['id'],
-        description: json['description'] as String,
-        transactionDate: DateTime.fromMillisecondsSinceEpoch(json['transaction_date']),
-        transactionTime: Util().minutesToTimeOfDay(json['transaction_time']),
-        transactionCategory: currentAppState.retrieveCategory(json['transaction_category_uid'] as String),
-        currencyUid: json['currency_uid'],
-        withFee: json['with_fee'] == 1,
-        feeAmount: json['fee_amount'],
-        amount: json['amount'],
-        updatedDateTime: DateTime.fromMillisecondsSinceEpoch(json['last_updated']),
-        account: currentAppState.retrieveAccount(json['account_uid'] as String) ?? currentAppState.assets[0],
-      );
+      id: json['id'],
+      description: json['description'] as String,
+      transactionDate: DateTime.fromMillisecondsSinceEpoch(json['transaction_date']),
+      transactionTime: Util().minutesToTimeOfDay(json['transaction_time']),
+      transactionCategory: currentAppState.retrieveCategory(json['transaction_category_uid'] as String?),
+      currencyUid: json['currency_uid'],
+      withFee: json['with_fee'] == 1,
+      feeAmount: json['fee_amount'],
+      amount: json['amount'],
+      updatedDateTime: DateTime.fromMillisecondsSinceEpoch(json['last_updated']),
+      account: currentAppState.retrieveAccount(json['account_uid'] as String) ?? currentAppState.assets[0],
+      skipReport: json['not_include_to_report'] == 1);
 }
 
 class AdjustmentTransaction extends Transactions {
+  double adjustedAmount = 0;
   AdjustmentTransaction(
       {required super.id,
       required super.transactionDate,
@@ -273,44 +287,63 @@ class AdjustmentTransaction extends Transactions {
       required super.amount,
       super.updatedDateTime,
       required super.account,
-      required super.currencyUid});
+      required super.currencyUid,
+      double? adjustedAmount,
+      super.skipReport}) {
+    if (adjustedAmount != null) {
+      this.adjustedAmount = adjustedAmount;
+    }
+  }
 
   @override
-  String getType() => TransactionType.adjustment.name;
+  TransactionType getType() => TransactionType.adjustment;
 
   factory AdjustmentTransaction.fromMap(Map<String, dynamic> json) => AdjustmentTransaction(
-        id: json['id'],
-        description: json['description'] as String,
-        transactionDate: DateTime.fromMillisecondsSinceEpoch(json['transaction_date']),
-        transactionTime: Util().minutesToTimeOfDay(json['transaction_time']),
-        transactionCategory: currentAppState.retrieveCategory(json['transaction_category_uid'] as String),
-        currencyUid: json['currency_uid'],
-        withFee: json['with_fee'] == 1,
-        feeAmount: json['fee_amount'],
-        amount: json['amount'],
-        updatedDateTime: DateTime.fromMillisecondsSinceEpoch(json['last_updated']),
-        account: currentAppState.retrieveAccount(json['account_uid'] as String) ?? currentAppState.assets[0],
-      );
+      id: json['id'],
+      description: json['description'] as String,
+      transactionDate: DateTime.fromMillisecondsSinceEpoch(json['transaction_date']),
+      transactionTime: Util().minutesToTimeOfDay(json['transaction_time']),
+      transactionCategory: currentAppState.retrieveCategory(json['transaction_category_uid'] as String?),
+      currencyUid: json['currency_uid'],
+      withFee: json['with_fee'] == 1,
+      feeAmount: json['fee_amount'],
+      amount: json['amount'],
+      updatedDateTime: DateTime.fromMillisecondsSinceEpoch(json['last_updated']),
+      account: currentAppState.retrieveAccount(json['account_uid'] as String) ?? currentAppState.assets[0],
+      adjustedAmount: json['adjusted_amount'],
+      skipReport: json['not_include_to_report'] == 1);
+
+  @override
+  Map<String, Object?> toMap() {
+    var result = super.toMap();
+    result.addAll({'adjusted_amount': adjustedAmount});
+    return result;
+  }
+
+  @override
+  String attributeString() {
+    return '${super.attributeString()}, "adjustedAmount":"$adjustedAmount"}';
+  }
 }
 
 class ShareBillTransaction extends Transactions {
   double mySplit;
   late double remainingAmount;
-  ShareBillTransaction({
-    required super.id,
-    required super.transactionDate,
-    required super.transactionTime,
-    required super.transactionCategory,
-    required super.description,
-    required super.withFee,
-    required super.feeAmount,
-    required super.amount,
-    super.updatedDateTime,
-    required super.account,
-    required super.currencyUid,
-    required this.mySplit,
-    double? remaining,
-  }) {
+  ShareBillTransaction(
+      {required super.id,
+      required super.transactionDate,
+      required super.transactionTime,
+      required super.transactionCategory,
+      required super.description,
+      required super.withFee,
+      required super.feeAmount,
+      required super.amount,
+      super.updatedDateTime,
+      required super.account,
+      required super.currencyUid,
+      required this.mySplit,
+      double? remaining,
+      super.skipReport}) {
     if (remaining != null) {
       remainingAmount = remaining;
     } else {
@@ -326,7 +359,7 @@ class ShareBillTransaction extends Transactions {
   }
 
   @override
-  String getType() => TransactionType.shareBill.name;
+  TransactionType getType() => TransactionType.shareBill;
 
   @override
   String attributeString() {
@@ -334,24 +367,24 @@ class ShareBillTransaction extends Transactions {
   }
 
   factory ShareBillTransaction.fromMap(Map<String, dynamic> json) => ShareBillTransaction(
-        id: json['id'],
-        description: json['description'] as String,
-        transactionDate: DateTime.fromMillisecondsSinceEpoch(json['transaction_date']),
-        transactionTime: Util().minutesToTimeOfDay(json['transaction_time']),
-        transactionCategory: currentAppState.retrieveCategory(json['transaction_category_uid'] as String),
-        currencyUid: json['currency_uid'],
-        withFee: json['with_fee'] == 1,
-        feeAmount: json['fee_amount'],
-        amount: json['amount'],
-        updatedDateTime: DateTime.fromMillisecondsSinceEpoch(json['last_updated']),
-        account: currentAppState.retrieveAccount(json['account_uid'] as String) ?? currentAppState.assets[0],
-        mySplit: json['my_split'],
-        remaining: json['remaining_amount'],
-      );
+      id: json['id'],
+      description: json['description'] as String,
+      transactionDate: DateTime.fromMillisecondsSinceEpoch(json['transaction_date']),
+      transactionTime: Util().minutesToTimeOfDay(json['transaction_time']),
+      transactionCategory: currentAppState.retrieveCategory(json['transaction_category_uid'] as String?),
+      currencyUid: json['currency_uid'],
+      withFee: json['with_fee'] == 1,
+      feeAmount: json['fee_amount'],
+      amount: json['amount'],
+      updatedDateTime: DateTime.fromMillisecondsSinceEpoch(json['last_updated']),
+      account: currentAppState.retrieveAccount(json['account_uid'] as String) ?? currentAppState.assets[0],
+      mySplit: json['my_split'],
+      remaining: json['remaining_amount'],
+      skipReport: json['not_include_to_report'] == 1);
 }
 
 class ShareBillReturnTransaction extends Transactions {
-  String? sharedBillId;
+  ShareBillTransaction? sharedBill;
   ShareBillReturnTransaction(
       {required super.id,
       required super.transactionDate,
@@ -364,34 +397,37 @@ class ShareBillReturnTransaction extends Transactions {
       super.updatedDateTime,
       required super.account,
       required super.currencyUid,
-      this.sharedBillId});
+      this.sharedBill,
+      super.skipReport});
+
   @override
   Map<String, Object?> toMap() {
     var result = super.toMap();
-    result.addAll({'shared_bill_id': sharedBillId});
+    result.addAll({'shared_bill_id': sharedBill?.id});
     return result;
   }
 
   @override
-  String getType() => TransactionType.shareBillReturn.name;
+  TransactionType getType() => TransactionType.shareBillReturn;
 
   @override
   String attributeString() {
-    return '${super.attributeString()}, "sharedBillId": "$sharedBillId"';
+    return '${super.attributeString()}, "sharedBillId": "$sharedBill"';
   }
 
-  factory ShareBillReturnTransaction.fromMap(Map<String, dynamic> json) => ShareBillReturnTransaction(
-        id: json['id'],
-        description: json['description'] as String,
-        transactionDate: DateTime.fromMillisecondsSinceEpoch(json['transaction_date']),
-        transactionTime: Util().minutesToTimeOfDay(json['transaction_time']),
-        transactionCategory: currentAppState.retrieveCategory(json['transaction_category_uid'] as String),
-        currencyUid: json['currency_uid'],
-        withFee: json['with_fee'] == 1,
-        feeAmount: json['fee_amount'],
-        amount: json['amount'],
-        updatedDateTime: DateTime.fromMillisecondsSinceEpoch(json['last_updated']),
-        account: currentAppState.retrieveAccount(json['account_uid'] as String) ?? currentAppState.assets[0],
-        sharedBillId: json['shared_bill_id'],
-      );
+  factory ShareBillReturnTransaction.fromMap(Map<String, dynamic> json, ShareBillTransaction? shareBill) => ShareBillReturnTransaction(
+      id: json['id'],
+      description: json['description'] as String,
+      transactionDate: DateTime.fromMillisecondsSinceEpoch(json['transaction_date']),
+      transactionTime: Util().minutesToTimeOfDay(json['transaction_time']),
+      transactionCategory: currentAppState.retrieveCategory(json['transaction_category_uid'] as String?),
+      currencyUid: json['currency_uid'],
+      withFee: json['with_fee'] == 1,
+      feeAmount: json['fee_amount'],
+      amount: json['amount'],
+      updatedDateTime: DateTime.fromMillisecondsSinceEpoch(json['last_updated']),
+      account: currentAppState.retrieveAccount(json['account_uid'] as String) ?? currentAppState.assets[0],
+      // sharedBillId: json['shared_bill_id'],
+      sharedBill: shareBill,
+      skipReport: json['not_include_to_report'] == 1);
 }

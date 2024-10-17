@@ -4,7 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:income_expense_budget_plan/common/account_panel.dart';
 import 'package:income_expense_budget_plan/common/date_time_form_field.dart';
+import 'package:income_expense_budget_plan/common/no_data.dart';
 import 'package:income_expense_budget_plan/common/transaction_categories_panel.dart';
+import 'package:income_expense_budget_plan/common/transaction_item_display.dart';
+import 'package:income_expense_budget_plan/dao/transaction_dao.dart';
 import 'package:income_expense_budget_plan/model/assets.dart';
 import 'package:income_expense_budget_plan/model/currency.dart';
 import 'package:income_expense_budget_plan/model/name_localized_model.dart';
@@ -35,11 +38,10 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
   late TextEditingController _transactionDescriptionController;
   late TextEditingController _transactionAmountController;
   late TextEditingController _transactionMySplitAmountController;
-  late TextEditingController _transactionReturnSharedBillIdController;
   late TextEditingController _transactionFeeController;
   Transactions? _editingTransaction;
-  Transactions? _selectedBillToReturn;
-  TransactionType _selectedTransactionType = TransactionType.expense;
+  ShareBillTransaction? _selectedBillToReturn;
+  late TransactionType _selectedTransactionType;
 
   late Currency _selectedCurrency;
   late TransactionCategory? _selectedCategory;
@@ -53,6 +55,10 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
   late bool _haveFee;
   bool _feeApplyToFromAccount = true;
 
+  late bool _skipReport;
+
+  List<ShareBillTransaction> _inCompletedSharedBills = [];
+
   // Create a global key that uniquely identifies the Form widget
   // and allows validation of the form.
   //
@@ -65,6 +71,7 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
     super.initState();
     if (widget.editingTransaction != null) {
       var transaction = widget.editingTransaction!;
+      _selectedTransactionType = transaction.getType();
       _editingTransaction = transaction;
       _transactionDescriptionController = TextEditingController(text: transaction.description);
       _transactionAmountController = TextEditingController(text: '${transaction.amount}');
@@ -78,19 +85,18 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
       _selectedToAccount = null;
 
       _transactionMySplitAmountController = TextEditingController(text: '');
-      _transactionReturnSharedBillIdController = TextEditingController(text: '');
 
       if (_editingTransaction is TransferTransaction) {
-        _selectedAccount = (_editingTransaction as TransferTransaction).toAccount;
+        _selectedToAccount = (_editingTransaction as TransferTransaction).toAccount;
         _feeApplyToFromAccount = (_editingTransaction as TransferTransaction).feeApplyToFromAccount;
       } else if (_editingTransaction is ShareBillTransaction) {
         _transactionMySplitAmountController.text = '${(_editingTransaction as ShareBillTransaction).mySplit}';
       } else if (_editingTransaction is ShareBillReturnTransaction) {
-        // _selectedBillToReturn= (_editingTransaction as ShareBillReturnTransaction).sharedBillId;
-        // TODO fill in bill to return
-        _transactionReturnSharedBillIdController.text = _selectedBillToReturn != null ? _selectedBillToReturn!.description : '';
+        _selectedBillToReturn = (_editingTransaction as ShareBillReturnTransaction).sharedBill;
       }
       _haveFee = transaction.withFee;
+      _skipReport = transaction.notIncludeToReport;
+      reloadInCompleteSharedBills();
     } else {
       _initEmptyForm();
     }
@@ -115,10 +121,16 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
     _selectedToAccount = null;
     _transactionMySplitAmountController = TextEditingController(text: '');
     _selectedBillToReturn = null;
-    _transactionReturnSharedBillIdController = TextEditingController(text: '');
     _haveFee = false;
     _transactionFeeController = TextEditingController(text: '');
     _feeApplyToFromAccount = true;
+    _skipReport = false;
+    _selectedTransactionType = TransactionType.expense;
+    reloadInCompleteSharedBills();
+  }
+
+  void reloadInCompleteSharedBills() {
+    TransactionDao().inCompleteSharedBills().then((values) => _inCompletedSharedBills = values);
   }
 
   @override
@@ -212,11 +224,13 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
                       Text(appLocalizations.transferToAccount),
                       const SizedBox(width: 10),
                       Flexible(
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(0, 0, 10, 0),
-                          child: ElevatedButton(
-                            onPressed: () => _chooseAccount(context, false),
-                            child: Row(children: _buildSelectedLocalizedItemDisplay(theme, _selectedToAccount)),
+                        child: ElevatedButton(
+                          onPressed: () => _chooseAccount(context, false),
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+                            child: Row(
+                              children: _buildSelectedLocalizedItemDisplay(theme, _selectedToAccount),
+                            ),
                           ),
                         ),
                       ),
@@ -247,8 +261,8 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
                           maxLines: 1,
                           keyboardType: TextInputType.number,
                           inputFormatters: [_currencyTextInputFormatter],
-                          controller: TextEditingController(
-                              text: _currencyTextInputFormatter.formatString("${_selectedAccount!.availableAmount})")),
+                          controller:
+                              TextEditingController(text: _currencyTextInputFormatter.formatDouble(_selectedAccount!.availableAmount)),
                           enabled: false,
                           style: TextStyle(color: theme.colorScheme.primary),
                         ),
@@ -319,24 +333,16 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
                   Row(
                     children: [
                       Flexible(
-                        child: TextFormField(
-                          obscureText: false,
-                          enabled: false,
-                          decoration:
-                              InputDecoration(border: const OutlineInputBorder(), labelText: appLocalizations.sharedBillReturnForBill),
-                          controller: _transactionReturnSharedBillIdController,
-                          validator: (value) {
-                            return null;
-                          },
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 0, 10, 0),
+                          child: ElevatedButton(
+                            onPressed: () => _chooseSharedBill(context),
+                            child: Row(children: _buildShareBillSelectionItemDisplay(context, theme, _selectedBillToReturn)),
+                          ),
                         ),
                       ),
                       IconButton(
-                        onPressed: () {
-                          // You can also use the controller to manipulate what is shown in the
-                          // text field. For example, the clear() method removes all the text
-                          // from the text field.
-                          _transactionReturnSharedBillIdController.clear();
-                        },
+                        onPressed: () => setState(() => _selectedBillToReturn = null),
                         icon: const Icon(Icons.clear),
                         color: theme.colorScheme.error,
                       ),
@@ -396,6 +402,22 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
                     ),
                   ],
                 ],
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Flexible(
+                      child: FormUtil().buildCheckboxFormField(
+                        context,
+                        theme,
+                        value: _skipReport,
+                        title: AppLocalizations.of(context)!.transactionSkipReport,
+                        onChanged: (bool? value) => setState(() {
+                          _skipReport = value!;
+                        }),
+                      ),
+                    ),
+                  ],
+                ),
                 if (_canSubmit()) ...[
                   const SizedBox(height: 20),
                   Row(
@@ -433,7 +455,7 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
   }
 
   bool _canSubmit() {
-    if (_selectedTransactionType == TransactionType.adjustment) {
+    if (_selectedTransactionType == TransactionType.adjustment || _selectedTransactionType == TransactionType.shareBillReturn) {
       return _selectedAccount != null;
     } else {
       bool result = _selectedAccount != null && _selectedCategory != null;
@@ -442,7 +464,6 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
       }
       return result;
     }
-    return true;
   }
 
   Widget transactionAccountLabel(BuildContext context, TransactionType type) {
@@ -465,7 +486,7 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
     return Text(label);
   }
 
-  void _validateForm(BuildContext context, Function(Transactions transaction, Transactions? deletedTran) callback) async {
+  void _validateForm(BuildContext context, Function(Transactions transaction, Transactions? deletedTran) callback) {
     setState(() {
       _isChecking = true;
       _isValidFeeAmount = true;
@@ -511,6 +532,9 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
   void _proceedSave(Database db, String tableName, double availableAmount, double feeAmount, Transactions? deletedTran,
       Function(Transactions transaction, Transactions? deletedTran) callback) {
     final Transactions transaction = _createTransaction(availableAmount, feeAmount);
+    if (transaction.withFee != true) {
+      transaction.feeAmount = 0;
+    }
     db.insert(tableName, transaction.toMap(), conflictAlgorithm: ConflictAlgorithm.replace).then((_) => callback(transaction, deletedTran));
   }
 
@@ -529,7 +553,8 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
             amount: amount,
             account: _selectedAccount!,
             currencyUid: _selectedCurrency.id,
-            updatedDateTime: DateTime.now());
+            updatedDateTime: DateTime.now(),
+            skipReport: _skipReport);
       case TransactionType.expense:
         return ExpenseTransaction(
             id: const UuidV8().generate(),
@@ -542,7 +567,8 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
             amount: amount,
             account: _selectedAccount!,
             currencyUid: _selectedCurrency.id,
-            updatedDateTime: DateTime.now());
+            updatedDateTime: DateTime.now(),
+            skipReport: _skipReport);
       case TransactionType.transfer:
         return TransferTransaction(
             id: const UuidV8().generate(),
@@ -557,7 +583,8 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
             currencyUid: _selectedCurrency.id,
             toAccount: _selectedToAccount!,
             updatedDateTime: DateTime.now(),
-            feeApplyTo: _feeApplyToFromAccount);
+            feeApplyTo: _feeApplyToFromAccount,
+            skipReport: _skipReport);
       case TransactionType.lend:
         return LendTransaction(
             id: const UuidV8().generate(),
@@ -570,7 +597,8 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
             amount: amount,
             account: _selectedAccount!,
             currencyUid: _selectedCurrency.id,
-            updatedDateTime: DateTime.now());
+            updatedDateTime: DateTime.now(),
+            skipReport: _skipReport);
       case TransactionType.borrowing:
         return BorrowingTransaction(
             id: const UuidV8().generate(),
@@ -583,8 +611,15 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
             amount: amount,
             account: _selectedAccount!,
             currencyUid: _selectedCurrency.id,
-            updatedDateTime: DateTime.now());
+            updatedDateTime: DateTime.now(),
+            skipReport: _skipReport);
       case TransactionType.adjustment:
+        double adjustedAmount = 0;
+        if (_selectedAccount is LoanAccount) {
+          adjustedAmount = (_selectedAccount as LoanAccount).loanAmount - amount;
+        } else {
+          adjustedAmount = _selectedAccount!.availableAmount - amount;
+        }
         return AdjustmentTransaction(
             id: const UuidV8().generate(),
             transactionDate: _selectedTxnDate,
@@ -596,7 +631,9 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
             amount: amount,
             account: _selectedAccount!,
             currencyUid: _selectedCurrency.id,
-            updatedDateTime: DateTime.now());
+            updatedDateTime: DateTime.now(),
+            adjustedAmount: adjustedAmount,
+            skipReport: _skipReport);
       case TransactionType.shareBill:
         var mySplit = FormUtil().parseAmount(_transactionMySplitAmountController.text, moneyFormat)!;
         return ShareBillTransaction(
@@ -611,20 +648,24 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
             account: _selectedAccount!,
             currencyUid: _selectedCurrency.id,
             mySplit: mySplit,
-            updatedDateTime: DateTime.now());
+            updatedDateTime: DateTime.now(),
+            skipReport: _skipReport);
       case TransactionType.shareBillReturn:
         return ShareBillReturnTransaction(
-            id: const UuidV8().generate(),
-            transactionDate: _selectedTxnDate,
-            transactionTime: _selectedTxnTime,
-            transactionCategory: _selectedCategory,
-            description: _transactionDescriptionController.text,
-            withFee: _haveFee,
-            feeAmount: feeAmount,
-            amount: amount,
-            account: _selectedAccount!,
-            currencyUid: _selectedCurrency.id,
-            updatedDateTime: DateTime.now());
+          id: const UuidV8().generate(),
+          transactionDate: _selectedTxnDate,
+          transactionTime: _selectedTxnTime,
+          transactionCategory: _selectedCategory,
+          description: _transactionDescriptionController.text,
+          withFee: _haveFee,
+          feeAmount: feeAmount,
+          amount: amount,
+          account: _selectedAccount!,
+          currencyUid: _selectedCurrency.id,
+          updatedDateTime: DateTime.now(),
+          skipReport: _skipReport,
+          sharedBill: _selectedBillToReturn,
+        );
     }
   }
 
@@ -808,6 +849,68 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
             Navigator.of(context).pop();
           }),
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            style: ButtonStyle(foregroundColor: WidgetStateProperty.all(theme.colorScheme.error)),
+            child: Text(AppLocalizations.of(context)!.actionClose),
+          )
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildShareBillSelectionItemDisplay(BuildContext context, ThemeData theme, ShareBillTransaction? sharedBill) {
+    final category = sharedBill?.transactionCategory;
+    IconData? iconData = category?.icon;
+    String text = "";
+    if (sharedBill != null) {
+      if (_selectedBillToReturn!.description.isNotEmpty == true) {
+        text = _selectedBillToReturn!.description;
+      } else {
+        text = category?.getTitleText(currentAppState.systemSetting) ?? "";
+      }
+    }
+    return [if (iconData != null) Icon(iconData, color: theme.iconTheme.color), const SizedBox(width: 5), Text(text)];
+  }
+
+  void _chooseSharedBill(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    // Get the current screen size
+    final Size screenSize = MediaQuery.of(context).size;
+    // Set min and max size based on the screen size
+    final double maxWidth = screenSize.width * 0.9; // 80% of screen width
+    final double maxHeight = screenSize.height * 0.9; // 50% of screen height
+    Widget dialogBody;
+    if (_inCompletedSharedBills.isEmpty) {
+      dialogBody = const NoDataCard();
+    } else {
+      dialogBody = SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+              minHeight: 0, maxHeight: TransactionItemConfigKey.eachTransactionHeight + 4, maxWidth: screenSize.width * 0.85),
+          child: ListView(
+            children: <Widget>[
+              for (var item in _inCompletedSharedBills)
+                SharedBillTransactionTileForDialog(
+                  transaction: item,
+                  onTap: (Transactions transaction) {
+                    _selectedBillToReturn = transaction as ShareBillTransaction;
+                    Navigator.of(context).pop();
+                    setState(() {});
+                  },
+                )
+            ],
+          ),
+        ),
+      );
+    }
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: Text(AppLocalizations.of(context)!.transactionInCompleteSharedBillDialogTitle),
+        content: SizedBox(width: maxWidth, height: maxHeight, child: dialogBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),

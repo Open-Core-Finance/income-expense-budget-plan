@@ -106,12 +106,14 @@ class AppState extends ChangeNotifier {
     systemSetting.lastTransactionAccountUid = asset.id;
   }
 
-  TransactionCategory? retrieveCategory(String categoryId) {
-    for (var entry in categoriesMap.entries) {
-      var cats = entry.value;
-      TransactionCategory? tmp = _findChildCategory(cats, categoryId);
-      if (tmp != null) {
-        return tmp;
+  TransactionCategory? retrieveCategory(String? categoryId) {
+    if (categoryId != null) {
+      for (var entry in categoriesMap.entries) {
+        var cats = entry.value;
+        TransactionCategory? tmp = _findChildCategory(cats, categoryId);
+        if (tmp != null) {
+          return tmp;
+        }
       }
     }
     return null;
