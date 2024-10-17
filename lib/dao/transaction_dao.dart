@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:income_expense_budget_plan/model/asset_category.dart';
 import 'package:income_expense_budget_plan/model/transaction.dart';
 import 'package:income_expense_budget_plan/model/transaction_category.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
@@ -9,7 +8,10 @@ import '../service/util.dart';
 
 class TransactionDao {
   final DatabaseService databaseService = DatabaseService();
-  TransactionDao();
+  // Singleton pattern
+  static final TransactionDao _dao = TransactionDao._internal();
+  factory TransactionDao() => _dao;
+  TransactionDao._internal();
 
   Future<List<TransactionCategory>> transactionCategoryByType(TransactionType transactionType) async {
     final db = await databaseService.database;
@@ -34,6 +36,9 @@ class TransactionDao {
   }
 
   Future<List<Transactions>> transactionsByYearAndMonth(int year, int month) async {
+    if (kDebugMode) {
+      print("Loading transaction by year and month...");
+    }
     final db = await databaseService.database;
     List<Map<String, dynamic>> records =
         await db.query(tableNameTransaction, where: 'year_month = ?', whereArgs: [year * 12 + month], orderBy: 'transaction_date DESC');
@@ -42,9 +47,9 @@ class TransactionDao {
 
   Future<Transactions> _transactionFromDb(Map<String, Object?> record) async {
     String txnType = record['transaction_type']! as String;
-    if (kDebugMode) {
-      print("Transaction: $record => ${DateTime.fromMillisecondsSinceEpoch(record['transaction_date'] as int)}");
-    }
+    // if (kDebugMode) {
+    //   print("Transaction: $record => ${DateTime.fromMillisecondsSinceEpoch(record['transaction_date'] as int)}");
+    // }
     switch (txnType) {
       case "income":
         return IncomeTransaction.fromMap(record);

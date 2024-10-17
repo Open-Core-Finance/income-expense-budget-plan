@@ -7,7 +7,10 @@ import 'package:sqflite/sqflite.dart';
 
 class SettingDao {
   final DatabaseService databaseService = DatabaseService();
-  SettingDao();
+  // Singleton pattern
+  static final SettingDao _dao = SettingDao._internal();
+  factory SettingDao() => _dao;
+  SettingDao._internal();
 
   Future<SettingModel> loadSettings() async {
     var listSettings = await databaseService.loadListModel(tableNameSetting, SettingModel.fromMap);

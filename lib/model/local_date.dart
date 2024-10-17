@@ -43,9 +43,9 @@ class LocalDate {
       int todayDate = today.day;
       if (todayDate == day) {
         return appLocalizations.weekDayToday;
-      } else if (todayDate == day - 1) {
+      } else if (todayDate - 1 == day) {
         return appLocalizations.weekDayYesterday;
-      } else if (todayDate == day + 1) {
+      } else if (todayDate + 1 == day) {
         return appLocalizations.weekDayTomorrow;
       }
     }

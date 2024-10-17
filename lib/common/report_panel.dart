@@ -6,6 +6,7 @@ import 'package:income_expense_budget_plan/common/add_account_form.dart';
 import 'package:income_expense_budget_plan/common/assets_categories_panel.dart';
 import 'package:income_expense_budget_plan/model/asset_category.dart';
 import 'package:income_expense_budget_plan/model/assets.dart';
+import 'package:income_expense_budget_plan/model/resource_statistic.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/app_state.dart';
 import 'package:income_expense_budget_plan/service/database_service.dart';
@@ -34,14 +35,46 @@ class _ReportPanelState extends State<ReportPanel> {
     yearMonthFilterData = YearMonthFilterData();
   }
 
+  YearMonthFilterData? _retrieveProvidedFilter() {
+    YearMonthFilterData? providedYearMonthFilterData;
+    try {
+      providedYearMonthFilterData = widget.yearMonthFilterData;
+      if (kDebugMode) {
+        print("Debug purpose only!. Provided filter: $providedYearMonthFilterData");
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Debug purpose only!. There's no provided filter! $e");
+      }
+    }
+    return providedYearMonthFilterData;
+  }
+
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
+    // final ColorScheme colorScheme = theme.colorScheme;
+    // var appLocalizations = AppLocalizations.of(context)!;
+
+    YearMonthFilterData? providedYearMonthFilterData = _retrieveProvidedFilter();
+    YearMonthFilterData filterData;
+    if (providedYearMonthFilterData != null) {
+      filterData = providedYearMonthFilterData;
+    } else {
+      filterData = yearMonthFilterData!;
+    }
+    List<ResourceStatisticMonthly> resourcesStatisticsMonthly = filterData.resourcesStatisticsMonthly;
+
+    Widget body;
+    if (resourcesStatisticsMonthly.isEmpty) {
+      body = const NoDataCard();
+    } else {
+      body = const Text("Report will be generated here!");
+    }
 
     return Scaffold(
-      appBar: widget.yearMonthFilterData != null ? null : yearMonthFilterData!.generateFilterLabel(context, () => setState(() {})),
-      body: const NoDataCard(),
+      appBar: providedYearMonthFilterData == null ? yearMonthFilterData!.generateFilterLabel(context, () => setState(() {})) : null,
+      body: body,
     );
   }
 }
