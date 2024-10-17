@@ -37,10 +37,10 @@ class TransactionDao {
     final db = await databaseService.database;
     List<Map<String, dynamic>> records =
         await db.query(tableNameTransaction, where: 'year_month = ?', whereArgs: [year * 12 + month], orderBy: 'transaction_date DESC');
-    return [for (Map<String, Object?> record in records) _transactionFromDb(record)];
+    return [for (Map<String, Object?> record in records) await _transactionFromDb(record)];
   }
 
-  Transactions _transactionFromDb(Map<String, Object?> record) {
+  Future<Transactions> _transactionFromDb(Map<String, Object?> record) async {
     String txnType = record['transaction_type']! as String;
     if (kDebugMode) {
       print("Transaction: $record => ${DateTime.fromMillisecondsSinceEpoch(record['transaction_date'] as int)}");
@@ -61,7 +61,29 @@ class TransactionDao {
       case "shareBill":
         return ShareBillTransaction.fromMap(record);
       default:
-        return ShareBillReturnTransaction.fromMap(record);
+        String? sharedBillId = record['shared_bill_id'] as String?;
+        ShareBillTransaction? sharedBill;
+        if (sharedBillId != null) {
+          sharedBill = (await transactionById(sharedBillId)) as ShareBillTransaction?;
+        }
+        return ShareBillReturnTransaction.fromMap(record, sharedBill);
     }
+  }
+
+  Future<Transactions?> transactionById(String id) async {
+    final db = await databaseService.database;
+    List<Map<String, dynamic>> records =
+        await db.query(tableNameTransaction, where: 'id = ?', whereArgs: [id], orderBy: 'transaction_date DESC');
+    if (records.isNotEmpty) {
+      return _transactionFromDb(records.first);
+    }
+    return null;
+  }
+
+  Future<List<ShareBillTransaction>> inCompleteSharedBills() async {
+    final db = await databaseService.database;
+    List<Map<String, dynamic>> records = await db.query(tableNameTransaction,
+        where: 'transaction_type = ? AND remaining_amount > 0', whereArgs: ['shareBill'], orderBy: 'transaction_date DESC');
+    return [for (Map<String, Object?> record in records) ShareBillTransaction.fromMap(record)];
   }
 }

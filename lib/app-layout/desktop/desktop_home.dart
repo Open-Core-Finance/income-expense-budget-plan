@@ -47,7 +47,7 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
     TransactionDao().transactionCategoryByType(TransactionType.income).then((loadCats) => setState(() => incomeCategories = loadCats));
     TransactionDao().transactionCategoryByType(TransactionType.expense).then((loadCats) => setState(() => expenseCategories = loadCats));
 
-    yearMonthFilterData = YearMonthFilterData();
+    yearMonthFilterData = YearMonthFilterData(refreshFunction: () => setState(() {}));
   }
 
   @override
@@ -71,14 +71,10 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
         return Scaffold(
           appBar: appBar,
           body: <Widget>[
-            ChangeNotifierProvider(
-              create: (context) => yearMonthFilterData,
-              builder: (context, child) => child!,
-              child: VerticalSplitView(
-                key: const Key("1st_panel"),
-                left: const TransactionPanel(),
-                right: ReportPanel(yearMonthFilterData: yearMonthFilterData),
-              ),
+            VerticalSplitView(
+              key: const Key("1st_panel"),
+              left: TransactionPanel(yearMonthFilterData: yearMonthFilterData),
+              right: ReportPanel(yearMonthFilterData: yearMonthFilterData),
             ),
             const VerticalSplitView(
                 key: Key("2nd_panel"), left: AccountPanel(), right: AssetCategoriesPanel(disableBack: true), ratio: 0.6),

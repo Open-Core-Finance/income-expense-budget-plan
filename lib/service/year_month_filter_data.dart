@@ -7,7 +7,6 @@ import 'package:income_expense_budget_plan/model/daily_transaction_entry.dart';
 import 'package:income_expense_budget_plan/model/local_date.dart';
 import 'package:income_expense_budget_plan/model/transaction.dart';
 import 'package:income_expense_budget_plan/service/account_statistic.dart';
-import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/form_util.dart';
 import 'package:income_expense_budget_plan/service/transaction_service.dart';
 
@@ -18,8 +17,9 @@ class YearMonthFilterData extends ChangeNotifier {
   List<DailyTransactionEntry> transactionsMap = [];
   Map<Asset, AccountStatistic> accountStatistics = {};
   Map<Currency, CurrencyStatistic> statisticMap = {};
+  Function? refreshFunction;
 
-  YearMonthFilterData({int? year, int? month}) {
+  YearMonthFilterData({int? year, int? month, this.refreshFunction}) {
     var currentDate = DateTime.now();
     if (year != null) {
       this.year = year;
@@ -31,7 +31,7 @@ class YearMonthFilterData extends ChangeNotifier {
     } else {
       this.month = currentDate.month;
     }
-    _refreshFilterTransactions((transactions) => notifyListeners());
+    refreshFilterTransactions();
   }
 
   String getMonthAsNumberString() {
@@ -49,13 +49,7 @@ class YearMonthFilterData extends ChangeNotifier {
       month = 12;
       year = year - 1;
     }
-    _refreshFilterTransactions((transactions) {
-      try {
-        notifyListeners();
-      } catch (e) {
-        print("$e");
-      }
-    });
+    refreshFilterTransactions();
   }
 
   void nextMonth() {
@@ -65,15 +59,7 @@ class YearMonthFilterData extends ChangeNotifier {
       month = 1;
       year = year + 1;
     }
-    _refreshFilterTransactions((transactions) {
-      try {
-        notifyListeners();
-      } catch (e) {
-        if (kDebugMode) {
-          print("$e");
-        }
-      }
-    });
+    refreshFilterTransactions();
   }
 
   @override
@@ -88,6 +74,13 @@ class YearMonthFilterData extends ChangeNotifier {
     if (kDebugMode) {
       print("Account Statistics: $accountStatistics");
     }
+  }
+
+  void refreshFilterTransactions() {
+    _refreshFilterTransactions((transactions) {
+      notifyListeners();
+      if (refreshFunction != null) refreshFunction!();
+    });
   }
 
   void _refreshFilterTransactions(void Function(List<Transactions>) callback) {
@@ -149,15 +142,5 @@ class YearMonthFilterData extends ChangeNotifier {
       }
       accountStatisticTo.totalTransferIn += transactions.amount;
     }
-  }
-
-  Currency _findTransactionCurrency(Transactions transactions) {
-    var currencies = currentAppState.currencies;
-    for (var currency in currencies) {
-      if (currency.id == transactions.currencyUid) {
-        return currency;
-      }
-    }
-    return currentAppState.systemSetting.defaultCurrency!;
   }
 }

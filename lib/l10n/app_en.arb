@@ -130,7 +130,11 @@
   "weekDayToday": "Today",
   "weekDayYesterday": "Yesterday",
   "weekDayTomorrow": "Tomorrow",
-  "transactionTransferTitle": "Transferred to account \"{assetName}\"",
+  "transactionTransferTitle": "Transferred to \"{assetName}\"",
   "transactionSharedBillTitle": "Paid \"{amount}\" for \"{categoryName}\"",
-  "transactionSharedBillReturnedTitle": "Received return for \"{categoryName}\""
+  "transactionSharedBillReturnedTitle": "Received return for \"{categoryName}\"",
+  "transactionAdjustedFrom": "Adjusted to \"{amountTo}\"",
+  "transactionSkipReport": "Do not include to report",
+  "transactionInCompleteSharedBillDialogTitle": "List in-completed shared bills",
+  "transactionSharedBillRemainingLabel": "Remaining"
 }

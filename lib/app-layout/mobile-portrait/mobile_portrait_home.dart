@@ -21,7 +21,7 @@ class HomePageMobilePortrait extends StatefulWidget {
 }
 
 class _HomePageMobilePortraitState extends State<HomePageMobilePortrait> {
-  _HomePageMobilePortraitState() {}
+  _HomePageMobilePortraitState();
 
   refresh() {
     setState(() {});

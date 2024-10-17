@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS currency(uid TEXT PRIMARY KEY, name TEXT, iso TEXT, d
 CREATE TABLE IF NOT EXISTS asset_category(uid TEXT PRIMARY KEY, name TEXT, icon TEXT, system Integer, localize_names TEXT,
     position_index Integer DEFAULT 0 NOT NULL, last_updated Integer DEFAULT 0);
 CREATE TABLE IF NOT EXISTS asset(uid TEXT PRIMARY KEY, icon TEXT, name TEXT, description TEXT, available_amount REAL DEFAULT 0.0,
-    loan_amount REAL DEFAULT 0.0, deposit_amount REAL DEFAULT 0.0, credit_limit REAL DEFAULT 0.0, payment_limit REAL DEFAULT 0.0, currency_uid TEXT,
+    loan_amount REAL DEFAULT 0.0, credit_limit REAL DEFAULT 0.0, payment_limit REAL DEFAULT 0.0, currency_uid TEXT,
     asset_type TEXT, category_uid TEXT, localize_names TEXT, localize_descriptions TEXT, position_index Integer DEFAULT 0 NOT NULL,
     last_updated Integer DEFAULT 0, FOREIGN KEY (category_uid) REFERENCES asset_category (uid), FOREIGN KEY (currency_uid) REFERENCES currency (uid) );
 CREATE TABLE IF NOT EXISTS transaction_category(uid TEXT PRIMARY KEY, name TEXT, icon TEXT, parent_uid TEXT, transaction_type TEXT, system Integer, localize_names TEXT,
@@ -13,7 +13,8 @@ CREATE TABLE IF NOT EXISTS transaction_category(uid TEXT PRIMARY KEY, name TEXT,
 CREATE TABLE IF NOT EXISTS transactions(id TEXT PRIMARY KEY, description TEXT, transaction_date Integer DEFAULT 0, transaction_time Integer DEFAULT 0, transaction_category_uid TEXT, transaction_type TEXT,
     with_fee integer NOT NULL DEFAULT 0, fee_amount REAL NOT NULL DEFAULT 0.0, amount REAL NOT NULL DEFAULT 0.0, last_updated Integer NOT NULL DEFAULT 0, account_uid TEXT,
     currency_uid TEXT, to_account_uid TEXT, my_split REAL NOT NULL default 0.0, remaining_amount REAL NOT NULL default 0.0, shared_bill_id TEXT,
-    year_month INTEGER NOT NULL DEFAULT 22800, fee_apply_to_from_account INTEGER NOT NULL DEFAULT 0,
+    year_month INTEGER NOT NULL DEFAULT 22800, fee_apply_to_from_account INTEGER NOT NULL DEFAULT 0, adjusted_amount REAL NOT NULL default 0.0,
+    not_include_to_report Integer DEFAULT 0,
     FOREIGN KEY (transaction_category_uid) REFERENCES transaction_category (uid),
     FOREIGN KEY (account_uid) REFERENCES asset (uid),
     FOREIGN KEY (currency_uid) REFERENCES currency (uid));
@@ -164,19 +165,31 @@ INSERT OR IGNORE INTO currency (uid, name, iso, deleted, symbol, symbol_position
 INSERT OR IGNORE INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('34', 'Romanian Leu', 'RON', 0, 'L', 'S', 0, 1, 2, 'ro-RO');
 INSERT OR IGNORE INTO currency (uid, name, iso, deleted, symbol, symbol_position, main_currency, show, decimal_point, language) VALUES('35', 'Loyalty Point', 'Point', 0, '⭐', 'S', 0, 1, 0, 'en-US');
 
-INSERT OR IGNORE INTO asset (uid, icon, name, description, available_amount, loan_amount, deposit_amount, credit_limit, payment_limit, currency_uid,
+INSERT OR IGNORE INTO asset (uid, icon, name, description, available_amount, loan_amount, credit_limit, payment_limit, currency_uid,
     asset_type, category_uid, localize_names, localize_descriptions, position_index, last_updated)
     VALUES('20240823-1529-8009-a864-e7b9299a07f6', '{"codePoint":58360,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}',
-    'Cash', 'The amount of cash in your wallet', 0.0, 0.0, 0.0, 0.0, 0.0, '3', 'genericAccount', '20240823-0515-8322-8813-46af221b06bc',
+    'Cash', 'The amount of cash in your wallet', 0.0, 0.0, 0.0, 0.0, '3', 'genericAccount', '20240823-0515-8322-8813-46af221b06bc',
     '{"en":"Cash","vi":"Tiền mặt"}', '{"en":"The amount of cash in your wallet","vi":"Số tiền mặt bạn đang có"}', 1, unixepoch() * 1000);
-INSERT OR IGNORE INTO asset (uid, icon, name, description, available_amount, loan_amount, deposit_amount, credit_limit, payment_limit, currency_uid,
+INSERT OR IGNORE INTO asset (uid, icon, name, description, available_amount, loan_amount, credit_limit, payment_limit, currency_uid,
     asset_type, category_uid, localize_names, localize_descriptions, position_index, last_updated)
     VALUES('20240824-1557-8718-b097-5d9d1c51ff98', '{"codePoint":62998,"fontFamily":"CupertinoIcons","fontPackage":"cupertino_icons","matchTextDirection":false}',
-    'My Credit Card', 'My first credit card', 0.0, 0.0, 0.0, 10000.0, 0.0, '3', 'creditCard', '20240814-1025-8e05-9011-a6fed676958f',
+    'My Credit Card', 'My first credit card', 0.0, 0.0, 10000.0, 0.0, '3', 'creditCard', '20240814-1025-8e05-9011-a6fed676958f',
     '{"en":"My Credit Card","vi":"Thẻ tín dụng"}', '{"en":"My first credit card","vi":"Thẻ tín dụng đầu tiên của tôi"}', 2, unixepoch() * 1000);
 
-INSERT OR IGNORE INTO asset (uid, icon, name, description, available_amount, loan_amount, deposit_amount, credit_limit, payment_limit, currency_uid,
+INSERT OR IGNORE INTO asset (uid, icon, name, description, available_amount, loan_amount, credit_limit, payment_limit, currency_uid,
     asset_type, category_uid, localize_names, localize_descriptions, position_index, last_updated)
     VALUES('20240923-1658-8307-9686-bc5528febb04', '{"codePoint":57749,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}',
-    'Loyalty point', 'My Loyalty Points', 0.0, 0.0, 0.0, 0.0, 0.0, '35', 'genericAccount', '20240814-1027-8317-9580-ef12a94c7312',
+    'Loyalty point', 'My Loyalty Points', 0.0, 0.0, 0.0, 0.0, '35', 'genericAccount', '20240814-1027-8317-9580-ef12a94c7312',
     '{"en":"Loyalty point","vi":"Điểm thưởng"}', '{"en":"My Loyalty Points","vi":"Điểm thưởng của tôi"}', 3, unixepoch() * 1000);
+
+CREATE TABLE IF NOT EXISTS resource_statistic_daily(resource_type TEXT NOT NULL, resource_uid TEXT NOT NULL, stat_year Integer NOT NULL,
+    stat_month Integer NOT NULL, stat_day Integer NOT NULL, total_income REAL NOT NULL DEFAULT 0.0, total_expense REAL NOT NULL DEFAULT 0.0,
+    total_transfer_out REAL NOT NULL DEFAULT 0.0, total_transfer_in REAL NOT NULL DEFAULT 0.0, total_transfer REAL NOT NULL DEFAULT 0.0,
+    total_fee_paid REAL NOT NULL DEFAULT 0.0, total_loan REAL NOT NULL DEFAULT 0.0, total_borrow REAL NOT NULL DEFAULT 0.0, last_updated Integer DEFAULT 0,
+    PRIMARY KEY (resource_type, resource_uid, stat_year, stat_month, stat_day));
+
+CREATE TABLE IF NOT EXISTS resource_statistic_monthly(resource_type TEXT NOT NULL, resource_uid TEXT NOT NULL, stat_year Integer NOT NULL,
+    stat_month Integer NOT NULL, total_income REAL NOT NULL DEFAULT 0.0, total_expense REAL NOT NULL DEFAULT 0.0,
+    total_transfer_out REAL NOT NULL DEFAULT 0.0, total_transfer_in REAL NOT NULL DEFAULT 0.0, total_transfer REAL NOT NULL DEFAULT 0.0,
+    total_fee_paid REAL NOT NULL DEFAULT 0.0, total_loan REAL NOT NULL DEFAULT 0.0, total_borrow REAL NOT NULL DEFAULT 0.0, last_updated Integer DEFAULT 0,
+    PRIMARY KEY (resource_type, resource_uid, stat_year, stat_month));
