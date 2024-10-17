@@ -2,7 +2,7 @@ import 'package:income_expense_budget_plan/model/currency.dart';
 import 'package:income_expense_budget_plan/model/transaction.dart';
 import 'package:income_expense_budget_plan/service/account_statistic.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
-import 'package:income_expense_budget_plan/service/statistic.dart';
+import 'package:income_expense_budget_plan/model/statistic.dart';
 
 class TransactionService {
   // Singleton pattern

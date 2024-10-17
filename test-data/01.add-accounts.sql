@@ -85,3 +85,8 @@ INSERT OR IGNORE INTO asset (uid,icon,name,description,available_amount,loan_amo
     localize_descriptions,position_index,last_updated) VALUES ('20240923-1707-8544-a439-185350d8af92',
     '{"codePoint":58348,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}','Viettel++','Viettel++',
     8485.0,0.0,0.0,0.0,'1','genericAccount','20240814-1027-8317-9580-ef12a94c7312','{}','{}',17,unixepoch() * 1000);
+
+INSERT INTO transaction_category (uid,name,icon,parent_uid,transaction_type,"system",localize_names,position_index,last_updated) VALUES
+	 ('20241017-0856-8118-b332-f38f429f6625','Home loan repayment',
+	 '{"codePoint":58313,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}',
+	 '20240818-0924-8159-a073-fd1943976cc7','expense',0,'{"en":"Home loan repayment","vi":"Trả tiền vay mua nhà"}',3,1729155378347);

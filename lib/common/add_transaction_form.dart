@@ -455,7 +455,9 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
   }
 
   bool _canSubmit() {
-    if (_selectedTransactionType == TransactionType.adjustment || _selectedTransactionType == TransactionType.shareBillReturn) {
+    if (_selectedTransactionType == TransactionType.adjustment ||
+        _selectedTransactionType == TransactionType.shareBillReturn ||
+        _selectedTransactionType == TransactionType.transfer) {
       return _selectedAccount != null;
     } else {
       bool result = _selectedAccount != null && _selectedCategory != null;
@@ -518,6 +520,9 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
             if (deletedCount > 0) {
               _proceedSave(db, tableName, amount!, feeAmount, _editingTransaction!, callback);
             } else {
+              setState(() {
+                _isChecking = false;
+              });
               String errorMessage = AppLocalizations.of(context)!.transactionUpdateError;
               Util().showErrorDialog(context, errorMessage, null);
             }
@@ -535,7 +540,12 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
     if (transaction.withFee != true) {
       transaction.feeAmount = 0;
     }
-    db.insert(tableName, transaction.toMap(), conflictAlgorithm: ConflictAlgorithm.replace).then((_) => callback(transaction, deletedTran));
+    db.insert(tableName, transaction.toMap(), conflictAlgorithm: ConflictAlgorithm.replace).then((_) {
+      setState(() {
+        _isChecking = false;
+        callback(transaction, deletedTran);
+      });
+    });
   }
 
   Transactions _createTransaction(double amount, double feeAmount) {

@@ -5,7 +5,11 @@ import 'package:income_expense_budget_plan/service/database_service.dart';
 
 class AssetsDao {
   final DatabaseService databaseService = DatabaseService();
-  AssetsDao();
+
+  // Singleton pattern
+  static final AssetsDao _dao = AssetsDao._internal();
+  factory AssetsDao() => _dao;
+  AssetsDao._internal();
 
   Future<List<AssetCategory>> assetCategories() async {
     return databaseService.loadListModel(tableNameAssetCategory, AssetCategory.fromMap);

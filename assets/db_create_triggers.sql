@@ -151,78 +151,79 @@ CREATE TRIGGER transaction_deleted
 AFTER DELETE ON transactions
 FOR EACH ROW
 BEGIN
-   -- Income & transfer in & shared bill returned
-   update asset set available_amount = available_amount - NEW.amount + NEW.fee_amount
-      WHERE ((uid = NEW.account_uid and (NEW.transaction_type = 'income' or NEW.transaction_type = 'shareBillReturn')) or (uid = NEW.to_account_uid and NEW.transaction_type = 'transfer'))
+    -- Income & transfer in & shared bill returned
+    update asset set available_amount = available_amount - OLD.amount + OLD.fee_amount
+      WHERE ((uid = OLD.account_uid and (OLD.transaction_type = 'income' or OLD.transaction_type = 'shareBillReturn')) or (uid = OLD.to_account_uid and OLD.transaction_type = 'transfer'))
       and asset_type <> 'loan';
-   update asset set loan_amount = loan_amount + NEW.amount - NEW.fee_amount
-      WHERE ((uid = NEW.account_uid and (NEW.transaction_type = 'income' or NEW.transaction_type = 'shareBillReturn')) or (uid = NEW.to_account_uid and NEW.transaction_type = 'transfer'))
+    update asset set loan_amount = loan_amount + OLD.amount - OLD.fee_amount
+      WHERE ((uid = OLD.account_uid and (OLD.transaction_type = 'income' or OLD.transaction_type = 'shareBillReturn')) or (uid = OLD.to_account_uid and OLD.transaction_type = 'transfer'))
       and asset_type = 'loan';
 
-   -- Expense & transfer out & Shared bill paid
-   update asset set available_amount = available_amount + NEW.amount + NEW.fee_amount
-      WHERE uid = NEW.account_uid and (NEW.transaction_type = 'expense' or NEW.transaction_type = 'transfer' or NEW.transaction_type = 'shareBill') and asset_type <> 'loan';
-   update asset set loan_amount = loan_amount - NEW.amount - NEW.fee_amount
-      WHERE uid = NEW.account_uid and (NEW.transaction_type = 'expense' or NEW.transaction_type = 'transfer' or NEW.transaction_type = 'shareBill') and asset_type = 'loan';
+    -- Expense & transfer out & Shared bill paid
+    update asset set available_amount = available_amount + OLD.amount + OLD.fee_amount
+      WHERE uid = OLD.account_uid and (OLD.transaction_type = 'expense' or OLD.transaction_type = 'transfer' or OLD.transaction_type = 'shareBill') and asset_type <> 'loan';
+    update asset set loan_amount = loan_amount - OLD.amount - OLD.fee_amount
+      WHERE uid = OLD.account_uid and (OLD.transaction_type = 'expense' or OLD.transaction_type = 'transfer' or OLD.transaction_type = 'shareBill') and asset_type = 'loan';
 
-   -- Adjustment
-   update asset set available_amount = available_amount + NEW.adjusted_amount WHERE uid = NEW.account_uid and NEW.transaction_type = 'adjustment' and asset_type <> 'loan';
-   update asset set loan_amount = loan_amount + NEW.adjusted_amount WHERE uid = NEW.account_uid and NEW.transaction_type = 'adjustment' and asset_type = 'loan';
+    -- Adjustment
+    update asset set available_amount = available_amount + OLD.adjusted_amount WHERE uid = OLD.account_uid and OLD.transaction_type = 'adjustment' and asset_type <> 'loan';
+    update asset set loan_amount = loan_amount + OLD.adjusted_amount WHERE uid = OLD.account_uid and OLD.transaction_type = 'adjustment' and asset_type = 'loan';
 
-   -- Update statistic for Income
-   UPDATE resource_statistic_daily set last_updated = unixepoch() * 1000, total_income = total_income - NEW.amount, total_fee_paid = total_fee_paid - NEW.fee_amount
-   WHERE stat_year = CAST(strftime('%Y', datetime(NEW.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
-       stat_month = CAST(strftime('%m', datetime(NEW.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
-       stat_day = CAST(strftime('%d', datetime(NEW.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
-       NEW.transaction_type = 'income' AND NEW.not_include_to_report = 0;
+    -- Update statistic for Income
+    UPDATE resource_statistic_daily set last_updated = unixepoch() * 1000, total_income = total_income - OLD.amount, total_fee_paid = total_fee_paid - OLD.fee_amount
+    WHERE stat_year = CAST(strftime('%Y', datetime(OLD.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
+       stat_month = CAST(strftime('%m', datetime(OLD.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
+       stat_day = CAST(strftime('%d', datetime(OLD.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
+       OLD.transaction_type = 'income' AND OLD.not_include_to_report = 0;
 
-   -- Update statistic for Expense
-   UPDATE resource_statistic_daily set last_updated = unixepoch() * 1000, total_expense = total_expense - NEW.amount, total_fee_paid = total_fee_paid - NEW.fee_amount
-   WHERE stat_year = CAST(strftime('%Y', datetime(NEW.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
-       stat_month = CAST(strftime('%m', datetime(NEW.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
-       stat_day = CAST(strftime('%d', datetime(NEW.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
-       NEW.transaction_type = 'expense' AND NEW.not_include_to_report = 0;
+    -- Update statistic for Expense
+    UPDATE resource_statistic_daily set last_updated = unixepoch() * 1000, total_expense = total_expense - OLD.amount, total_fee_paid = total_fee_paid - OLD.fee_amount
+    WHERE stat_year = CAST(strftime('%Y', datetime(OLD.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
+       stat_month = CAST(strftime('%m', datetime(OLD.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
+       stat_day = CAST(strftime('%d', datetime(OLD.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
+       OLD.transaction_type = 'expense' AND OLD.not_include_to_report = 0;
 
-   -- Update statistic for Transfer
-   UPDATE resource_statistic_daily set last_updated = unixepoch() * 1000, total_transfer_out = total_transfer_out - NEW.amount,
+    -- Update statistic for Transfer
+    UPDATE resource_statistic_daily set last_updated = unixepoch() * 1000, total_transfer_out = total_transfer_out - OLD.amount,
        total_fee_paid = total_fee_paid - CASE
-                                           WHEN (NEW.fee_apply_to_from_account <> 0) THEN NEW.fee_amount
+                                           WHEN (OLD.fee_apply_to_from_account <> 0) THEN OLD.fee_amount
                                            ELSE 0
                                          END
-   WHERE resource_type = 'account' AND stat_year = CAST(strftime('%Y', datetime(NEW.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
-       stat_month = CAST(strftime('%m', datetime(NEW.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
-       stat_day = CAST(strftime('%d', datetime(NEW.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
-       NEW.transaction_type = 'transfer' AND resource_uid = NEW.account_uid AND NEW.not_include_to_report = 0;
+    WHERE resource_type = 'account' AND stat_year = CAST(strftime('%Y', datetime(OLD.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
+       stat_month = CAST(strftime('%m', datetime(OLD.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
+       stat_day = CAST(strftime('%d', datetime(OLD.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
+       OLD.transaction_type = 'transfer' AND resource_uid = OLD.account_uid AND OLD.not_include_to_report = 0;
 
-   UPDATE resource_statistic_daily set last_updated = unixepoch() * 1000, total_transfer_in = total_transfer_in - NEW.amount,
+    UPDATE resource_statistic_daily set last_updated = unixepoch() * 1000, total_transfer_in = total_transfer_in - OLD.amount,
        total_fee_paid = total_fee_paid - CASE
-                                           WHEN (NEW.fee_apply_to_from_account = 0) THEN NEW.fee_amount
+                                           WHEN (OLD.fee_apply_to_from_account = 0) THEN OLD.fee_amount
                                            ELSE 0
                                          END
-   WHERE resource_type = 'account' AND stat_year = CAST(strftime('%Y', datetime(NEW.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
-       stat_month = CAST(strftime('%m', datetime(NEW.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
-       stat_day = CAST(strftime('%d', datetime(NEW.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
-       NEW.transaction_type = 'transfer' AND resource_uid = NEW.to_account_uid AND NEW.not_include_to_report = 0;
+    WHERE resource_type = 'account' AND stat_year = CAST(strftime('%Y', datetime(OLD.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
+       stat_month = CAST(strftime('%m', datetime(OLD.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
+       stat_day = CAST(strftime('%d', datetime(OLD.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
+       OLD.transaction_type = 'transfer' AND resource_uid = OLD.to_account_uid AND OLD.not_include_to_report = 0;
 
-   UPDATE resource_statistic_daily set last_updated = unixepoch() * 1000, total_transfer = total_transfer - NEW.amount, total_fee_paid = total_fee_paid - NEW.fee_amount
-   WHERE resource_type = 'category' AND stat_year = CAST(strftime('%Y', datetime(NEW.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
-       stat_month = CAST(strftime('%m', datetime(NEW.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
-       stat_day = CAST(strftime('%d', datetime(NEW.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND NEW.transaction_type = 'transfer' AND
-       NEW.not_include_to_report = 0;
+    UPDATE resource_statistic_daily set last_updated = unixepoch() * 1000, total_transfer = total_transfer - OLD.amount, total_fee_paid = total_fee_paid - OLD.fee_amount
+    WHERE resource_type = 'category' AND stat_year = CAST(strftime('%Y', datetime(OLD.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
+       stat_month = CAST(strftime('%m', datetime(OLD.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
+       stat_day = CAST(strftime('%d', datetime(OLD.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND OLD.transaction_type = 'transfer' AND
+       OLD.not_include_to_report = 0;
 
-   -- Update statistic for Shared bill paid
-   UPDATE resource_statistic_daily set last_updated = unixepoch() * 1000, total_expense = total_expense - NEW.my_split, total_fee_paid = total_fee_paid - NEW.fee_amount
-   WHERE stat_year = CAST(strftime('%Y', datetime(NEW.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
-       stat_month = CAST(strftime('%m', datetime(NEW.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
-       stat_day = CAST(strftime('%d', datetime(NEW.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
-       NEW.transaction_type = 'shareBill' AND NEW.not_include_to_report = 0;
+    -- Update statistic for Shared bill paid
+    UPDATE resource_statistic_daily set last_updated = unixepoch() * 1000, total_expense = total_expense - OLD.my_split, total_fee_paid = total_fee_paid - OLD.fee_amount
+    WHERE stat_year = CAST(strftime('%Y', datetime(OLD.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
+       stat_month = CAST(strftime('%m', datetime(OLD.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
+       stat_day = CAST(strftime('%d', datetime(OLD.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
+       OLD.transaction_type = 'shareBill' AND OLD.not_include_to_report = 0;
 
-   -- Update statistic for Shared bill return
-   UPDATE resource_statistic_daily set last_updated = unixepoch() * 1000, total_fee_paid = total_fee_paid + NEW.fee_amount
-   WHERE stat_year = CAST(strftime('%Y', datetime(NEW.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
-       stat_month = CAST(strftime('%m', datetime(NEW.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
-       stat_day = CAST(strftime('%d', datetime(NEW.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
-       NEW.transaction_type = 'shareBillReturn' AND NEW.not_include_to_report = 0;
+    -- Update statistic for Shared bill return
+    UPDATE resource_statistic_daily set last_updated = unixepoch() * 1000, total_fee_paid = total_fee_paid + OLD.fee_amount
+    WHERE stat_year = CAST(strftime('%Y', datetime(OLD.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
+       stat_month = CAST(strftime('%m', datetime(OLD.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
+       stat_day = CAST(strftime('%d', datetime(OLD.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
+       OLD.transaction_type = 'shareBillReturn' AND OLD.not_include_to_report = 0;
+
 END;
 
 CREATE TRIGGER resource_statistic_daily_after_insert
@@ -231,14 +232,14 @@ FOR EACH ROW
 BEGIN
    -- Insert monthly statistic if not existed
    INSERT OR IGNORE INTO resource_statistic_monthly (resource_type, resource_uid, stat_year, stat_month, last_updated,
-        total_income, total_expense, total_transfer_out, total_transfer_in, total_transfer, total_fee_paid, total_loan,
+        total_income, total_expense, total_transfer_out, total_transfer_in, total_transfer, total_fee_paid, total_lend,
         total_borrow) VALUES
        (NEW.resource_type, NEW.resource_uid, NEW.stat_year, NEW.stat_month, unixepoch() * 1000, 0, 0, 0, 0, 0, 0, 0, 0);
    -- Update monthly statistic
    UPDATE resource_statistic_monthly SET last_updated = unixepoch() * 1000, total_income = total_income + NEW.total_income,
        total_expense = total_expense + NEW.total_expense, total_transfer_out = total_transfer_out + NEW.total_transfer_out,
        total_transfer_in = total_transfer_in + NEW.total_transfer_in, total_transfer = total_transfer + NEW.total_transfer,
-       total_fee_paid = total_fee_paid + NEW.total_fee_paid, total_loan = total_loan + NEW.total_loan,
+       total_fee_paid = total_fee_paid + NEW.total_fee_paid, total_lend = total_lend + NEW.total_lend,
        total_borrow = total_borrow + NEW.total_borrow
    WHERE resource_type = NEW.resource_type AND resource_uid = NEW.resource_uid AND stat_year = NEW.stat_year AND stat_month = NEW.stat_month;
 END;
@@ -251,7 +252,7 @@ BEGIN
    UPDATE resource_statistic_monthly SET last_updated = unixepoch() * 1000, total_income = total_income + (NEW.total_income - OLD.total_income),
         total_expense = total_expense + (NEW.total_expense - OLD.total_expense), total_transfer_out = total_transfer_out + (NEW.total_transfer_out - OLD.total_transfer_out),
         total_transfer_in = total_transfer_in + (NEW.total_transfer_in - OLD.total_transfer_in), total_transfer = total_transfer + (NEW.total_transfer - OLD.total_transfer),
-        total_fee_paid = total_fee_paid + (NEW.total_fee_paid - OLD.total_fee_paid), total_loan = total_loan + (NEW.total_loan - OLD.total_loan),
+        total_fee_paid = total_fee_paid + (NEW.total_fee_paid - OLD.total_fee_paid), total_lend = total_lend + (NEW.total_lend - OLD.total_lend),
         total_borrow = total_borrow + (NEW.total_borrow - OLD.total_borrow)
    WHERE resource_type = NEW.resource_type AND resource_uid = NEW.resource_uid AND stat_year = NEW.stat_year AND stat_month = NEW.stat_month;
 END;
@@ -260,11 +261,14 @@ CREATE TRIGGER resource_statistic_daily_after_delete
 AFTER DELETE ON resource_statistic_daily
 FOR EACH ROW
 BEGIN
-   -- Update monthly statistic
-   UPDATE resource_statistic_monthly SET last_updated = unixepoch() * 1000, total_income = total_income - NEW.total_income,
-        total_expense = total_expense - NEW.total_expense, total_transfer_out = total_transfer_out - NEW.total_transfer_out,
-        total_transfer_in = total_transfer_in - NEW.total_transfer_in, total_transfer = total_transfer - NEW.total_transfer,
-        total_fee_paid = total_fee_paid - NEW.total_fee_paid, total_loan = total_loan - NEW.total_loan,
-        total_borrow = total_borrow - NEW.total_borrow
-   WHERE resource_type = NEW.resource_type AND resource_uid = NEW.resource_uid AND stat_year = NEW.stat_year AND stat_month = NEW.stat_month;
+    INSERT INTO debug_log (message) VALUES ('Deleted resource_statistic_daily resource_type =' || OLD.resource_type || ' AND resource_uid = ' || OLD.resource_uid || ' AND stat_year = ' ||
+       OLD.stat_year || ' AND stat_month = ' || OLD.stat_month || ' AND stat_day = ' || OLD.stat_day);
+    -- Update monthly statistic
+    UPDATE resource_statistic_monthly SET last_updated = unixepoch() * 1000, total_income = total_income - OLD.total_income,
+        total_expense = total_expense - OLD.total_expense, total_transfer_out = total_transfer_out - OLD.total_transfer_out,
+        total_transfer_in = total_transfer_in - OLD.total_transfer_in, total_transfer = total_transfer - OLD.total_transfer,
+        total_fee_paid = total_fee_paid - OLD.total_fee_paid, total_lend = total_lend - OLD.total_lend,
+        total_borrow = total_borrow - OLD.total_borrow
+    WHERE resource_type = OLD.resource_type AND resource_uid = OLD.resource_uid AND stat_year = OLD.stat_year AND stat_month = OLD.stat_month;
+    INSERT INTO debug_log (message) VALUES ('Updated resource_statistic_monthly after delete resource_statistic_daily');
 END;

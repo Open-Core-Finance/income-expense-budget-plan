@@ -199,7 +199,7 @@ class _TransactionPanelState extends State<TransactionPanel> {
         foregroundColor: theme.primaryColor,
         backgroundColor: theme.iconTheme.color,
         shape: const CircleBorder(),
-        onPressed: () => Util().navigateTo(context, const AddTransactionForm()),
+        onPressed: () => Util().navigateTo(context, AddTransactionForm(editCallback: transactionUpdated)),
         heroTag: "Add-transaction-Button",
         child: const Icon(Icons.add),
       ),
@@ -257,12 +257,7 @@ class _TransactionPanelState extends State<TransactionPanel> {
     onTap(Transactions tr) {
       Util().navigateTo(
         context,
-        AddTransactionForm(
-          editingTransaction: tran,
-          editCallback: (Transactions transaction, Transactions? deletedTran) {
-            _retrieveProvidedFilter()?.refreshFilterTransactions();
-          },
-        ),
+        AddTransactionForm(editingTransaction: tran, editCallback: transactionUpdated),
       );
     }
 
@@ -286,4 +281,7 @@ class _TransactionPanelState extends State<TransactionPanel> {
       Text(tran.getType().name)
     ]);
   }
+
+  void transactionUpdated(Transactions transaction, Transactions? deletedTran) =>
+      setState(() => _retrieveProvidedFilter()?.refreshFilterTransactions());
 }

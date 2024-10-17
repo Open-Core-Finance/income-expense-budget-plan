@@ -1,10 +1,22 @@
 import 'package:income_expense_budget_plan/model/assets.dart';
 import 'package:income_expense_budget_plan/model/currency.dart';
-import 'package:income_expense_budget_plan/service/statistic.dart';
+import 'package:income_expense_budget_plan/model/statistic.dart';
 
 class AccountStatistic extends Statistic {
   Asset account;
-  AccountStatistic({required this.account});
+  AccountStatistic({
+    required this.account,
+    super.totalIncome,
+    super.totalExpense,
+    super.totalTransferOut,
+    super.totalTransferIn,
+    super.totalTransfer,
+    super.totalFeePaid,
+    super.totalSharedBillPaid,
+    super.totalSharedBillReturn,
+    super.totalLend,
+    super.totalBorrow,
+  });
 
   @override
   bool operator ==(Object other) {
@@ -21,7 +33,19 @@ class AccountStatistic extends Statistic {
 
 class CurrencyStatistic extends Statistic {
   Currency currency;
-  CurrencyStatistic({required this.currency});
+  CurrencyStatistic({
+    required this.currency,
+    super.totalIncome,
+    super.totalExpense,
+    super.totalTransferOut,
+    super.totalTransferIn,
+    super.totalTransfer,
+    super.totalFeePaid,
+    super.totalSharedBillPaid,
+    super.totalSharedBillReturn,
+    super.totalLend,
+    super.totalBorrow,
+  });
 
   @override
   bool operator ==(Object other) {

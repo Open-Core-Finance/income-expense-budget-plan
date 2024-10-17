@@ -1,10 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:income_expense_budget_plan/dao/resource_statistic_dao.dart';
 import 'package:income_expense_budget_plan/dao/transaction_dao.dart';
 import 'package:income_expense_budget_plan/model/assets.dart';
 import 'package:income_expense_budget_plan/model/currency.dart';
 import 'package:income_expense_budget_plan/model/daily_transaction_entry.dart';
 import 'package:income_expense_budget_plan/model/local_date.dart';
+import 'package:income_expense_budget_plan/model/resource_statistic.dart';
 import 'package:income_expense_budget_plan/model/transaction.dart';
 import 'package:income_expense_budget_plan/service/account_statistic.dart';
 import 'package:income_expense_budget_plan/service/form_util.dart';
@@ -17,9 +19,11 @@ class YearMonthFilterData extends ChangeNotifier {
   List<DailyTransactionEntry> transactionsMap = [];
   Map<Asset, AccountStatistic> accountStatistics = {};
   Map<Currency, CurrencyStatistic> statisticMap = {};
+  List<ResourceStatisticMonthly> _resourcesStatisticsMonthlyList = [];
   Function? refreshFunction;
+  Function? refreshStatisticFunction;
 
-  YearMonthFilterData({int? year, int? month, this.refreshFunction}) {
+  YearMonthFilterData({int? year, int? month, this.refreshFunction, this.refreshStatisticFunction}) {
     var currentDate = DateTime.now();
     if (year != null) {
       this.year = year;
@@ -76,17 +80,33 @@ class YearMonthFilterData extends ChangeNotifier {
     }
   }
 
+  List<ResourceStatisticMonthly> get resourcesStatisticsMonthly => _resourcesStatisticsMonthlyList;
+  set resourcesStatisticsMonthly(List<ResourceStatisticMonthly> statistic) {
+    _resourcesStatisticsMonthlyList = statistic;
+    if (kDebugMode) {
+      print("Loaded resources statistics");
+    }
+  }
+
   void refreshFilterTransactions() {
     _refreshFilterTransactions((transactions) {
       notifyListeners();
       if (refreshFunction != null) refreshFunction!();
+    }, (statistics) {
+      notifyListeners();
+      if (refreshStatisticFunction != null) refreshStatisticFunction!();
     });
   }
 
-  void _refreshFilterTransactions(void Function(List<Transactions>) callback) {
+  void _refreshFilterTransactions(
+      void Function(List<Transactions>) callback, void Function(List<ResourceStatisticMonthly>) statisticMonthlyCallback) {
     TransactionDao().transactionsByYearAndMonth(year, month).then((txns) {
       transactions = txns;
       callback(txns);
+    });
+    ResourceStatisticDao().loadMonthlyStatistics(year, month).then((statistic) {
+      _resourcesStatisticsMonthlyList = statistic;
+      statisticMonthlyCallback(statistic);
     });
   }
 
