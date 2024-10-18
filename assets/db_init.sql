@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS setting(id Integer PRIMARY KEY, locale TEXT, dark_mode Integer, default_currency_uid TEXT,
-    last_transaction_account_uid TEXT);
+    last_transaction_account_uid TEXT, report_color_palette TEXT);
 CREATE TABLE IF NOT EXISTS currency(uid TEXT PRIMARY KEY, name TEXT, iso TEXT, deleted Integer, symbol TEXT,
     symbol_position TEXT, main_currency Integer, show Integer, decimal_point Integer, language TEXT);
 CREATE TABLE IF NOT EXISTS asset_category(uid TEXT PRIMARY KEY, name TEXT, icon TEXT, system Integer, localize_names TEXT,
@@ -182,6 +182,7 @@ INSERT OR IGNORE INTO asset (uid, icon, name, description, available_amount, loa
     'Loyalty point', 'My Loyalty Points', 0.0, 0.0, 0.0, 0.0, '35', 'genericAccount', '20240814-1027-8317-9580-ef12a94c7312',
     '{"en":"Loyalty point","vi":"Điểm thưởng"}', '{"en":"My Loyalty Points","vi":"Điểm thưởng của tôi"}', 3, unixepoch() * 1000);
 
+-- TODO statistic must base on currency
 CREATE TABLE IF NOT EXISTS resource_statistic_daily(resource_type TEXT NOT NULL, resource_uid TEXT NOT NULL, stat_year Integer NOT NULL,
     stat_month Integer NOT NULL, stat_day Integer NOT NULL, total_income REAL NOT NULL DEFAULT 0.0, total_expense REAL NOT NULL DEFAULT 0.0,
     total_transfer_out REAL NOT NULL DEFAULT 0.0, total_transfer_in REAL NOT NULL DEFAULT 0.0, total_transfer REAL NOT NULL DEFAULT 0.0,

@@ -17,13 +17,22 @@ class SettingModel extends ChangeNotifier {
   String? defaultCurrencyUid;
   Currency? defaultCurrency;
   String? _lastTransactionAccountUid;
+  List<Color> reportColorPalette;
 
-  SettingModel({required String localeKey, int? darkMode, this.defaultCurrencyUid, String? lastTransactionAccountUid}) {
+  SettingModel(
+      {required String localeKey,
+      int? darkMode,
+      this.defaultCurrencyUid,
+      String? lastTransactionAccountUid,
+      required this.reportColorPalette}) {
     _locale = Locale(localeKey);
     if (darkMode != null) {
       _darkMode = darkMode;
     }
     _lastTransactionAccountUid = lastTransactionAccountUid;
+    if (reportColorPalette.isEmpty) {
+      reportColorPalette = [Colors.red, Colors.blue, Colors.green, Colors.orange, Colors.purple];
+    }
   }
 
   Locale? get locale => _locale;
@@ -56,13 +65,15 @@ class SettingModel extends ChangeNotifier {
       'locale': _locale?.languageCode ?? 'en',
       'dark_mode': darkMode,
       'default_currency_uid': defaultCurrencyUid,
-      'last_transaction_account_uid': _lastTransactionAccountUid
+      'last_transaction_account_uid': _lastTransactionAccountUid,
+      'report_color_palette': reportColorPalette.map((color) => color.value.toRadixString(16)).join(',')
     };
   }
 
   @override
   String toString() {
-    return '{"locale": "$_locale", "darkMode": "$darkMode", "defaultCurrencyUid": "$defaultCurrencyUid", "lastTransactionAccountUid":"$_lastTransactionAccountUid"}';
+    return '{"locale": "$_locale", "darkMode": "$darkMode", "defaultCurrencyUid": "$defaultCurrencyUid", '
+        '"lastTransactionAccountUid":"$_lastTransactionAccountUid", "reportColorPalette": $reportColorPalette}';
   }
 
   factory SettingModel.fromMap(Map<String, dynamic> json) => SettingModel(
@@ -70,6 +81,9 @@ class SettingModel extends ChangeNotifier {
         darkMode: json['dark_mode'],
         defaultCurrencyUid: json['default_currency_uid'],
         lastTransactionAccountUid: json['last_transaction_account_uid'],
+        reportColorPalette: json['report_color_palette'] != null
+            ? json['report_color_palette'].split(',').map((colorHex) => Color(int.parse(colorHex, radix: 16))).toList()
+            : [],
       );
 
   String getDarkModeText(BuildContext context) {

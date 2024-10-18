@@ -136,5 +136,8 @@
   "transactionAdjustedFrom": "Chỉnh thành \"{amountTo}\"",
   "transactionSkipReport": "Không tính vào báo cáo",
   "transactionInCompleteSharedBillDialogTitle": "Danh sách đơn chưa được trả hết",
-  "transactionSharedBillRemainingLabel": "Còn lại"
+  "transactionSharedBillRemainingLabel": "Còn lại",
+  "reportSummarizeIncomeExpense": "Tình hình thu chi",
+  "reportUnknownCategoryName": "Unknown",
+  "reportOtherCategoryName": "Khác"
 }
