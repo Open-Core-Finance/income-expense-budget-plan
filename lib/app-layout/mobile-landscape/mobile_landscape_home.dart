@@ -114,7 +114,7 @@ class _HomePageMobileLandscapeState extends State<HomePageMobileLandscape> {
                 child: [
               const TransactionPanel(),
               const AccountPanel(),
-              const ReportPanel(),
+              ReportPanel(),
               const AssetCategoriesPanel(),
               const Material(child: MorePanel())
             ][appState.currentHomePageIndex % 5]),

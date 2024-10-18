@@ -12,7 +12,6 @@ import 'package:income_expense_budget_plan/model/setting.dart';
 import 'package:income_expense_budget_plan/model/transaction_category.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/app_state.dart';
-import 'package:income_expense_budget_plan/service/form_util.dart';
 import 'package:income_expense_budget_plan/service/util.dart';
 import 'package:income_expense_budget_plan/service/year_month_filter_data.dart';
 import 'package:provider/provider.dart';
@@ -47,7 +46,12 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
     TransactionDao().transactionCategoryByType(TransactionType.income).then((loadCats) => setState(() => incomeCategories = loadCats));
     TransactionDao().transactionCategoryByType(TransactionType.expense).then((loadCats) => setState(() => expenseCategories = loadCats));
 
-    yearMonthFilterData = YearMonthFilterData(refreshFunction: () => setState(() {}));
+    yearMonthFilterData = YearMonthFilterData(
+      refreshFunction: () => setState(() {}),
+      refreshStatisticFunction: () => setState(() {}),
+      supportLoadTransactions: true,
+      supportLoadStatisticMonthly: true,
+    );
   }
 
   @override

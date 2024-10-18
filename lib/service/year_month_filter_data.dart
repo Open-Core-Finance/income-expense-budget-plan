@@ -15,6 +15,8 @@ import 'package:income_expense_budget_plan/service/transaction_service.dart';
 class YearMonthFilterData extends ChangeNotifier {
   late int year;
   late int month;
+  late bool supportLoadTransactions;
+  late bool supportLoadStatisticMonthly;
   List<Transactions> _transactions = [];
   List<DailyTransactionEntry> transactionsMap = [];
   Map<Asset, AccountStatistic> accountStatistics = {};
@@ -23,7 +25,13 @@ class YearMonthFilterData extends ChangeNotifier {
   Function? refreshFunction;
   Function? refreshStatisticFunction;
 
-  YearMonthFilterData({int? year, int? month, this.refreshFunction, this.refreshStatisticFunction}) {
+  YearMonthFilterData(
+      {int? year,
+      int? month,
+      this.refreshFunction,
+      this.refreshStatisticFunction,
+      bool? supportLoadTransactions,
+      bool? supportLoadStatisticMonthly}) {
     var currentDate = DateTime.now();
     if (year != null) {
       this.year = year;
@@ -35,6 +43,8 @@ class YearMonthFilterData extends ChangeNotifier {
     } else {
       this.month = currentDate.month;
     }
+    this.supportLoadTransactions = supportLoadTransactions == false ? false : true;
+    this.supportLoadStatisticMonthly = supportLoadStatisticMonthly == false ? false : true;
     refreshFilterTransactions();
   }
 
@@ -100,14 +110,18 @@ class YearMonthFilterData extends ChangeNotifier {
 
   void _refreshFilterTransactions(
       void Function(List<Transactions>) callback, void Function(List<ResourceStatisticMonthly>) statisticMonthlyCallback) {
-    TransactionDao().transactionsByYearAndMonth(year, month).then((txns) {
-      transactions = txns;
-      callback(txns);
-    });
-    ResourceStatisticDao().loadMonthlyStatistics(year, month).then((statistic) {
-      _resourcesStatisticsMonthlyList = statistic;
-      statisticMonthlyCallback(statistic);
-    });
+    if (supportLoadTransactions) {
+      TransactionDao().transactionsByYearAndMonth(year, month).then((txns) {
+        transactions = txns;
+        callback(txns);
+      });
+    }
+    if (supportLoadStatisticMonthly) {
+      ResourceStatisticDao().loadMonthlyStatistics(year, month).then((statistic) {
+        _resourcesStatisticsMonthlyList = statistic;
+        statisticMonthlyCallback(statistic);
+      });
+    }
   }
 
   AppBar? generateFilterLabel(BuildContext context, Function? callback) {

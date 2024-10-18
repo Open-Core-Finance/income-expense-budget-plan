@@ -3,6 +3,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:income_expense_budget_plan/model/transaction.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/form_util.dart';
+import 'package:income_expense_budget_plan/service/transaction_service.dart';
 
 class TransactionItemConfigKey {
   static const double markDisplaySize = 24;
@@ -94,7 +95,7 @@ abstract class GenericTransactionTile<T extends Transactions> extends StatelessW
   Widget iconDisplay(BuildContext context) =>
       Icon(transaction.transactionCategory?.icon ?? defaultIcon(context), size: TransactionItemConfigKey.iconDisplaySize);
 
-  IconData defaultIcon(BuildContext context) => defaultIconData;
+  IconData defaultIcon(BuildContext context) => TransactionService().getDefaultIconData(transaction);
 }
 
 class ExpenseTransactionTile extends GenericTransactionTile<ExpenseTransaction> {
@@ -104,9 +105,6 @@ class ExpenseTransactionTile extends GenericTransactionTile<ExpenseTransaction> 
   TextStyle amountTextStyle(BuildContext context) {
     return const TextStyle(fontSize: TransactionItemConfigKey.amountSize, color: Colors.red);
   }
-
-  @override
-  IconData defaultIcon(BuildContext context) => Icons.paid_sharp;
 }
 
 class IncomeTransactionTile extends GenericTransactionTile<IncomeTransaction> {
@@ -116,9 +114,6 @@ class IncomeTransactionTile extends GenericTransactionTile<IncomeTransaction> {
   TextStyle amountTextStyle(BuildContext context) {
     return const TextStyle(fontSize: TransactionItemConfigKey.amountSize, color: Colors.blue);
   }
-
-  @override
-  IconData defaultIcon(BuildContext context) => const IconData(0xf3ee, fontFamily: 'MaterialSymbolsIcons');
 }
 
 class TransferTransactionTile extends GenericTransactionTile<TransferTransaction> {
@@ -145,9 +140,6 @@ class TransferTransactionTile extends GenericTransactionTile<TransferTransaction
       );
     }
   }
-
-  @override
-  IconData defaultIcon(BuildContext context) => Icons.published_with_changes_sharp;
 }
 
 class SharedBillTransactionTile extends GenericTransactionTile<ShareBillTransaction> {
@@ -155,9 +147,6 @@ class SharedBillTransactionTile extends GenericTransactionTile<ShareBillTransact
 
   @override
   TextStyle amountTextStyle(BuildContext context) => const TextStyle(fontSize: TransactionItemConfigKey.amountSize, color: Colors.red);
-
-  @override
-  IconData defaultIcon(BuildContext context) => Icons.paid_sharp;
 
   @override
   Widget nameDisplay(BuildContext context) {
@@ -256,16 +245,6 @@ class AdjustmentTransactionTile extends GenericTransactionTile<AdjustmentTransac
       color = Colors.red;
     }
     return TextStyle(fontSize: TransactionItemConfigKey.amountSize, color: color);
-  }
-
-  @override
-  IconData defaultIcon(BuildContext context) {
-    if (isNegative) {
-      return Icons.paid_sharp;
-    } else {
-      // Money bag
-      return const IconData(0xf3ee, fontFamily: 'MaterialSymbolsIcons');
-    }
   }
 
   @override

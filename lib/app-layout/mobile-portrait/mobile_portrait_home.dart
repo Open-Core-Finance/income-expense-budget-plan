@@ -48,7 +48,7 @@ class _HomePageMobilePortraitState extends State<HomePageMobilePortrait> {
           body: <Widget>[
             const TransactionPanel(),
             const AccountPanel(),
-            const ReportPanel(),
+            ReportPanel(),
             const MorePanel()
           ][appState.currentHomePageIndex % 4],
           bottomNavigationBar: NavigationBar(

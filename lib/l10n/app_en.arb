@@ -136,5 +136,8 @@
   "transactionAdjustedFrom": "Adjusted to \"{amountTo}\"",
   "transactionSkipReport": "Do not include to report",
   "transactionInCompleteSharedBillDialogTitle": "List in-completed shared bills",
-  "transactionSharedBillRemainingLabel": "Remaining"
+  "transactionSharedBillRemainingLabel": "Remaining",
+  "reportSummarizeIncomeExpense": "Income/Expense statistics",
+  "reportUnknownCategoryName": "Unknown",
+  "reportOtherCategoryName": "Other"
 }

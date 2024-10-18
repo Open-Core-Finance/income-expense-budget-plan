@@ -27,7 +27,7 @@ class SettingDao {
       if (!localeMap.containsKey(systemLocaleStr)) {
         systemLocaleStr = defaultLocale;
       }
-      result = SettingModel(localeKey: systemLocaleStr);
+      result = SettingModel(localeKey: systemLocaleStr, reportColorPalette: []);
       databaseService.database.then((database) {
         database.insert(tableNameSetting, result.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
       });

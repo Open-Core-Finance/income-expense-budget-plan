@@ -1,3 +1,5 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:income_expense_budget_plan/model/currency.dart';
 import 'package:income_expense_budget_plan/model/transaction.dart';
 import 'package:income_expense_budget_plan/service/account_statistic.dart';
@@ -57,5 +59,24 @@ class TransactionService {
       }
     }
     return currentAppState.systemSetting.defaultCurrency!;
+  }
+
+  IconData getDefaultIconData(Transactions tran) {
+    if ((tran is IncomeTransaction) || (tran is ShareBillTransaction)) {
+      return Icons.paid_sharp;
+    } else if (tran is ExpenseTransaction) {
+      return const IconData(0xf3ee, fontFamily: 'MaterialSymbolsIcons');
+    } else if (tran is TransferTransaction) {
+      return Icons.published_with_changes_sharp;
+    } else if (tran is AdjustmentTransaction) {
+      bool isNegative = tran.adjustedAmount < 0;
+      if (isNegative) {
+        return Icons.paid_sharp;
+      } else {
+        // Money bag
+        return const IconData(0xf3ee, fontFamily: 'MaterialSymbolsIcons');
+      }
+    }
+    return defaultIconData;
   }
 }
