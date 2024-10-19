@@ -36,7 +36,7 @@ class Statistic {
 
   @override
   String toString() {
-    return '{${toAttrString()}';
+    return '{${toAttrString()}}';
   }
 
   String toAttrString() => '"totalIncome": $totalIncome, "totalExpense": $totalExpense,'

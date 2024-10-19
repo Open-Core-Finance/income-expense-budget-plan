@@ -18,20 +18,44 @@ class SettingModel extends ChangeNotifier {
   Currency? defaultCurrency;
   String? _lastTransactionAccountUid;
   List<Color> reportColorPalette;
+  double reportChartSizeDefault = 200;
+  double reportChartPadding = 10;
 
-  SettingModel(
-      {required String localeKey,
-      int? darkMode,
-      this.defaultCurrencyUid,
-      String? lastTransactionAccountUid,
-      required this.reportColorPalette}) {
+  SettingModel({
+    required String localeKey,
+    int? darkMode,
+    this.defaultCurrencyUid,
+    String? lastTransactionAccountUid,
+    required this.reportColorPalette,
+    double? reportChartSizeDefault,
+    double? reportChartPadding,
+  }) {
     _locale = Locale(localeKey);
     if (darkMode != null) {
       _darkMode = darkMode;
     }
     _lastTransactionAccountUid = lastTransactionAccountUid;
     if (reportColorPalette.isEmpty) {
-      reportColorPalette = [Colors.red, Colors.blue, Colors.green, Colors.orange, Colors.purple];
+      reportColorPalette = [
+        Colors.red,
+        Colors.blue,
+        Colors.green,
+        Colors.orange,
+        Colors.purple,
+        Colors.black,
+        Colors.amber,
+        Colors.cyan,
+        Colors.lime,
+        Colors.pink,
+        Colors.teal,
+        Colors.yellow
+      ];
+    }
+    if (reportChartSizeDefault != null) {
+      this.reportChartSizeDefault = reportChartSizeDefault;
+    }
+    if (reportChartPadding != null) {
+      this.reportChartPadding = reportChartPadding;
     }
   }
 
@@ -66,14 +90,17 @@ class SettingModel extends ChangeNotifier {
       'dark_mode': darkMode,
       'default_currency_uid': defaultCurrencyUid,
       'last_transaction_account_uid': _lastTransactionAccountUid,
-      'report_color_palette': reportColorPalette.map((color) => color.value.toRadixString(16)).join(',')
+      'report_color_palette': reportColorPalette.map((color) => color.value.toRadixString(16)).join(','),
+      'report_chart_size_default': reportChartSizeDefault,
+      'report_chart_padding': reportChartPadding
     };
   }
 
   @override
   String toString() {
     return '{"locale": "$_locale", "darkMode": "$darkMode", "defaultCurrencyUid": "$defaultCurrencyUid", '
-        '"lastTransactionAccountUid":"$_lastTransactionAccountUid", "reportColorPalette": $reportColorPalette}';
+        '"lastTransactionAccountUid":"$_lastTransactionAccountUid", "reportColorPalette": $reportColorPalette,'
+        '"reportChartSizeDefault": $reportChartSizeDefault, "reportChartPadding": $reportChartPadding}';
   }
 
   factory SettingModel.fromMap(Map<String, dynamic> json) => SettingModel(
@@ -84,6 +111,8 @@ class SettingModel extends ChangeNotifier {
         reportColorPalette: json['report_color_palette'] != null
             ? json['report_color_palette'].split(',').map((colorHex) => Color(int.parse(colorHex, radix: 16))).toList()
             : [],
+        reportChartSizeDefault: json['report_chart_size_default'],
+        reportChartPadding: json['report_chart_padding'],
       );
 
   String getDarkModeText(BuildContext context) {
