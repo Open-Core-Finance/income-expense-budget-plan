@@ -2,6 +2,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/database_service.dart';
+import 'package:income_expense_budget_plan/service/util.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'currency.dart';
@@ -20,6 +21,11 @@ class SettingModel extends ChangeNotifier {
   List<Color> reportColorPalette;
   double reportChartSizeDefault = 200;
   double reportChartPadding = 10;
+  double reportBarWidth = 20;
+  double reportBarSpace = 10;
+  int reportPieChartPreferCount = 8;
+  double reportPieChartOtherLimitPercentage = 0.1;
+  double reportPieChartPreferItemMinPercentage = 0.05;
 
   SettingModel({
     required String localeKey,
@@ -29,6 +35,11 @@ class SettingModel extends ChangeNotifier {
     required this.reportColorPalette,
     double? reportChartSizeDefault,
     double? reportChartPadding,
+    double? reportBarWidth,
+    double? reportBarSpace,
+    int? reportPieChartPreferCount,
+    double? reportPieChartOtherLimitPercentage,
+    double? reportPieChartPreferItemMinPercentage,
   }) {
     _locale = Locale(localeKey);
     if (darkMode != null) {
@@ -56,6 +67,21 @@ class SettingModel extends ChangeNotifier {
     }
     if (reportChartPadding != null) {
       this.reportChartPadding = reportChartPadding;
+    }
+    if (reportBarWidth != null) {
+      this.reportBarWidth = reportBarWidth;
+    }
+    if (reportBarSpace != null) {
+      this.reportBarSpace = reportBarSpace;
+    }
+    if (reportPieChartPreferCount != null) {
+      this.reportPieChartPreferCount = reportPieChartPreferCount;
+    }
+    if (reportPieChartOtherLimitPercentage != null) {
+      this.reportPieChartOtherLimitPercentage = reportPieChartOtherLimitPercentage;
+    }
+    if (reportPieChartPreferItemMinPercentage != null) {
+      this.reportPieChartOtherLimitPercentage = reportPieChartPreferItemMinPercentage;
     }
   }
 
@@ -92,7 +118,12 @@ class SettingModel extends ChangeNotifier {
       'last_transaction_account_uid': _lastTransactionAccountUid,
       'report_color_palette': reportColorPalette.map((color) => color.value.toRadixString(16)).join(','),
       'report_chart_size_default': reportChartSizeDefault,
-      'report_chart_padding': reportChartPadding
+      'report_chart_padding': reportChartPadding,
+      'report_bar_width': reportBarWidth,
+      'report_bar_space': reportBarSpace,
+      'report_pie_chart_prefer_count': reportPieChartPreferCount,
+      'report_pie_chart_other_limit_percentage': reportPieChartOtherLimitPercentage,
+      'report_pie_chart_prefer_item_min_percentage': reportPieChartPreferItemMinPercentage,
     };
   }
 
@@ -100,7 +131,10 @@ class SettingModel extends ChangeNotifier {
   String toString() {
     return '{"locale": "$_locale", "darkMode": "$darkMode", "defaultCurrencyUid": "$defaultCurrencyUid", '
         '"lastTransactionAccountUid":"$_lastTransactionAccountUid", "reportColorPalette": $reportColorPalette,'
-        '"reportChartSizeDefault": $reportChartSizeDefault, "reportChartPadding": $reportChartPadding}';
+        '"reportChartSizeDefault": $reportChartSizeDefault, "reportChartPadding": $reportChartPadding,'
+        '"reportBarWidth": $reportBarWidth, "reportBarSpace": $reportBarSpace, "reportPieChartPreferCount": $reportPieChartPreferCount,'
+        '"reportPieChartOtherLimitPercentage": $reportPieChartOtherLimitPercentage,'
+        '"reportPieChartPreferItemMinPercentage": $reportPieChartPreferItemMinPercentage}';
   }
 
   factory SettingModel.fromMap(Map<String, dynamic> json) => SettingModel(
@@ -108,11 +142,14 @@ class SettingModel extends ChangeNotifier {
         darkMode: json['dark_mode'],
         defaultCurrencyUid: json['default_currency_uid'],
         lastTransactionAccountUid: json['last_transaction_account_uid'],
-        reportColorPalette: json['report_color_palette'] != null
-            ? json['report_color_palette'].split(',').map((colorHex) => Color(int.parse(colorHex, radix: 16))).toList()
-            : [],
+        reportColorPalette: Util().parseListColor(json['report_color_palette']),
         reportChartSizeDefault: json['report_chart_size_default'],
         reportChartPadding: json['report_chart_padding'],
+        reportBarWidth: json['report_bar_width'],
+        reportBarSpace: json['report_bar_space'],
+        reportPieChartPreferCount: json['report_pie_chart_prefer_count'],
+        reportPieChartOtherLimitPercentage: json['report_pie_chart_other_limit_percentage'],
+        reportPieChartPreferItemMinPercentage: json['report_pie_chart_prefer_item_min_percentage'],
       );
 
   String getDarkModeText(BuildContext context) {

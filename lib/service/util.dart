@@ -542,4 +542,11 @@ class Util {
     }
     return currentAppState.systemSetting.defaultCurrency!;
   }
+
+  List<Color> parseListColor(String? data) {
+    if (data != null) {
+      return data.split(',').map((colorHex) => Color(int.parse(colorHex, radix: 16))).toList();
+    }
+    return [];
+  }
 }

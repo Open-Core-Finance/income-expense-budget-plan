@@ -1,6 +1,8 @@
 CREATE TABLE IF NOT EXISTS setting(id Integer PRIMARY KEY, locale TEXT, dark_mode Integer, default_currency_uid TEXT,
     last_transaction_account_uid TEXT, report_color_palette TEXT, report_chart_size_default REAL DEFAULT 200 NOT NULL,
-    report_chart_padding REAL DEFAULT 10 NOT NULL);
+    report_chart_padding REAL DEFAULT 10 NOT NULL, report_bar_width REAL DEFAULT 20 NOT NULL,
+    report_bar_space REAL DEFAULT 20 NOT NULL, report_pie_chart_prefer_count Integer DEFAULT 8 NOT NULL,
+    report_pie_chart_other_limit_percentage REAL DEFAULT 0.1 NOT NULL, report_pie_chart_prefer_item_min_percentage REAL DEFAULT 0.05 NOT NULL);
 CREATE TABLE IF NOT EXISTS currency(uid TEXT PRIMARY KEY, name TEXT, iso TEXT, deleted Integer, symbol TEXT,
     symbol_position TEXT, main_currency Integer, show Integer, decimal_point Integer, language TEXT);
 CREATE TABLE IF NOT EXISTS asset_category(uid TEXT PRIMARY KEY, name TEXT, icon TEXT, system Integer, localize_names TEXT,

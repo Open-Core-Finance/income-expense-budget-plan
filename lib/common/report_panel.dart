@@ -171,7 +171,8 @@ class _ReportPanelState extends State<ReportPanel> {
       BuildContext context, List<ResourceStatisticMonthly> statistics, double totalExpense) {
     var appLocalizations = AppLocalizations.of(context)!;
     List<ReportChartDataItem> result = [];
-    List<Color> palette = currentAppState.systemSetting.reportColorPalette;
+    var systemSettings = currentAppState.systemSetting;
+    List<Color> palette = systemSettings.reportColorPalette;
     int index = 0;
     statistics.sort((a, b) => (b.totalExpense - a.totalExpense).toInt());
     for (ResourceStatisticMonthly statistic in statistics) {
@@ -185,7 +186,7 @@ class _ReportPanelState extends State<ReportPanel> {
               color: palette[index % palette.length],
               percentage: statistic.totalExpense / totalExpense,
               dataId: statistic.resourceId,
-              dataLabel: category.getTitleText(currentAppState.systemSetting),
+              dataLabel: category.getTitleText(systemSettings),
               value: statistic.totalExpense,
             ),
           );
@@ -206,16 +207,18 @@ class _ReportPanelState extends State<ReportPanel> {
     double removedValue = 0;
     for (index = result.length - 1; index >= 0; index--) {
       var item = result[index];
-      if (result.length > 5 && item.percentage < 0.03 && (removedValue / totalExpense) < 0.1) {
+      if (result.length > systemSettings.reportPieChartPreferCount &&
+          item.percentage < systemSettings.reportPieChartPreferItemMinPercentage &&
+          (removedValue / totalExpense) < systemSettings.reportPieChartOtherLimitPercentage) {
         result.removeAt(index);
         removedValue += item.value;
       }
     }
     if (removedValue > 0.0001) {
-      int colorIndex = (result.length + 1) % currentAppState.systemSetting.reportColorPalette.length;
+      int colorIndex = (result.length + 1) % systemSettings.reportColorPalette.length;
       result.add(ReportChartDataItem(
           icon: Icons.category,
-          color: currentAppState.systemSetting.reportColorPalette[colorIndex],
+          color: systemSettings.reportColorPalette[colorIndex],
           percentage: removedValue / totalExpense,
           dataId: "--",
           dataLabel: appLocalizations.reportOtherCategoryName,
@@ -227,12 +230,12 @@ class _ReportPanelState extends State<ReportPanel> {
   List<BarChartGroupData> _buildExpenseIncomeBarChartData(BuildContext context,
       {required double totalIncome, required double totalExpense}) {
     List<BarChartGroupData> result = [];
-    double barWidth = 20;
+    double barWidth = currentAppState.systemSetting.reportBarWidth;
     List<BarChartRodData> data = [
       BarChartRodData(toY: totalIncome, color: Colors.blue, width: barWidth, fromY: 0),
       BarChartRodData(toY: totalExpense, color: Colors.red, width: barWidth, fromY: 0)
     ];
-    result.add(BarChartGroupData(x: 1, barRods: data, barsSpace: 10));
+    result.add(BarChartGroupData(x: 1, barRods: data, barsSpace: currentAppState.systemSetting.reportBarSpace));
     return result;
   }
 
@@ -325,7 +328,7 @@ class _ReportPanelState extends State<ReportPanel> {
               child: BarChart(
                 BarChartData(
                   barGroups: barChartData,
-                  maxY: totalExpense * 1.2,
+                  maxY: max(totalExpense, totalIncome) * 1.2,
                   barTouchData: BarTouchData(
                     touchTooltipData: BarTouchTooltipData(
                       getTooltipItem: (group, groupIndex, rod, rodIndex) {
