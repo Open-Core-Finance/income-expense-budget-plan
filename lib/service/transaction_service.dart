@@ -5,6 +5,7 @@ import 'package:income_expense_budget_plan/model/transaction.dart';
 import 'package:income_expense_budget_plan/service/account_statistic.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/model/statistic.dart';
+import 'package:income_expense_budget_plan/service/util.dart';
 
 class TransactionService {
   // Singleton pattern
@@ -32,6 +33,7 @@ class TransactionService {
       } else if (transactions is BorrowingTransaction) {
         statistic.totalBorrow += transactions.amount;
       } else if (transactions is ShareBillTransaction) {
+        statistic.totalExpense += transactions.mySplit;
         statistic.totalSharedBillPaid = statistic.totalSharedBillPaid + transactions.amount;
       } else if (transactions is ShareBillReturnTransaction) {
         statistic.totalSharedBillReturn += transactions.amount;
@@ -42,23 +44,13 @@ class TransactionService {
   }
 
   void addTransactionStatisticToCurrency(Map<Currency, CurrencyStatistic> statisticMap, Transactions transactions) {
-    Currency currency = _findTransactionCurrency(transactions);
+    Currency currency = Util().findCurrency(transactions.currencyUid);
     CurrencyStatistic? statisticTmp = statisticMap[currency];
     if (statisticTmp == null) {
       statisticTmp = CurrencyStatistic(currency: currency);
       statisticMap[currency] = statisticTmp;
     }
     addTransactionStatistic([statisticTmp], transactions);
-  }
-
-  Currency _findTransactionCurrency(Transactions transactions) {
-    var currencies = currentAppState.currencies;
-    for (var currency in currencies) {
-      if (currency.id == transactions.currencyUid) {
-        return currency;
-      }
-    }
-    return currentAppState.systemSetting.defaultCurrency!;
   }
 
   IconData getDefaultIconData(Transactions tran) {

@@ -1,6 +1,8 @@
 import 'package:income_expense_budget_plan/model/statistic.dart';
+import 'package:income_expense_budget_plan/service/account_statistic.dart';
+import 'package:income_expense_budget_plan/service/util.dart';
 
-class ResourceStatisticMonthly extends Statistic {
+class ResourceStatisticMonthly extends CurrencyStatistic {
   int year;
   int month;
   String resourceType;
@@ -12,6 +14,7 @@ class ResourceStatisticMonthly extends Statistic {
     required this.year,
     required this.resourceType,
     required this.resourceId,
+    required super.currency,
     super.totalIncome,
     super.totalExpense,
     super.totalTransferOut,
@@ -58,7 +61,12 @@ class ResourceStatisticMonthly extends Statistic {
         totalFeePaid: json['total_fee_paid'],
         totalLend: json['total_lend'],
         totalBorrow: json['total_borrow'],
+        currency: Util().findCurrency(json['currency_uid'] as String),
       );
+
+  @override
+  String toAttrString() =>
+      '"year": $year, "month": $month, "resourceType": "$resourceType", "resourceId": "$resourceId", ${super.toAttrString()}';
 }
 
 class ResourceStatisticDaily extends ResourceStatisticMonthly {
@@ -69,6 +77,7 @@ class ResourceStatisticDaily extends ResourceStatisticMonthly {
     required super.year,
     required super.resourceType,
     required super.resourceId,
+    required super.currency,
     super.totalIncome,
     super.totalExpense,
     super.totalTransferOut,
@@ -95,4 +104,25 @@ class ResourceStatisticDaily extends ResourceStatisticMonthly {
 
   @override
   int get hashCode => resourceType.hashCode + resourceId.hashCode + (year * 365) + (month * 30) + day;
+
+  factory ResourceStatisticDaily.fromMap(Map<String, dynamic> json) => ResourceStatisticDaily(
+        resourceType: json['resource_type'],
+        resourceId: json['resource_uid'],
+        year: json['stat_year'],
+        month: json['stat_month'],
+        day: json['stat_day'],
+        totalIncome: json['total_income'],
+        totalExpense: json['total_expense'],
+        totalTransferOut: json['total_transfer_out'],
+        totalTransferIn: json['total_transfer_in'],
+        totalTransfer: json['total_transfer'],
+        updatedDateTime: DateTime.fromMillisecondsSinceEpoch(json['last_updated']),
+        totalFeePaid: json['total_fee_paid'],
+        totalLend: json['total_lend'],
+        totalBorrow: json['total_borrow'],
+        currency: Util().findCurrency(json['currency_uid'] as String),
+      );
+
+  @override
+  String toAttrString() => '"day": $day, ${super.toAttrString()}';
 }

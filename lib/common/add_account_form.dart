@@ -134,13 +134,14 @@ class _AddAccountFormState extends State<AddAccountForm> {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    AppLocalizations appLocalizations = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(Icons.arrow_back_rounded, color: theme.colorScheme.error),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Text(AppLocalizations.of(context)!.titleAddAccount),
+        title: Text(appLocalizations.titleAddAccount),
       ),
       body: Form(
         child: Padding(
@@ -151,7 +152,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
                 Row(
                   children: [
                     const SizedBox(width: 10),
-                    Text(AppLocalizations.of(context)!.accountActionSelectIcon),
+                    Text(appLocalizations.accountActionSelectIcon),
                     IconButton(
                       onPressed: () {
                         showIconPicker(context).then((IconPickerIcon? iconData) {
@@ -180,7 +181,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
                       Navigator.of(context).pop();
                     }),
                     _isChecking,
-                    AppLocalizations.of(context)!.accountActionSave,
+                    appLocalizations.accountActionSave,
                     () => _validateForm(context, (List<Asset> assets, bool isAddNew) {
                       _initEmptyForm();
                       if (widget.editCallback != null) {
@@ -188,7 +189,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
                         callback(assets, isAddNew);
                       }
                     }),
-                    AppLocalizations.of(context)!.accountActionSaveAddMore,
+                    appLocalizations.accountActionSaveAddMore,
                   ),
                 )
               ],

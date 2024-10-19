@@ -139,5 +139,10 @@
   "transactionSharedBillRemainingLabel": "Remaining",
   "reportSummarizeIncomeExpense": "Income/Expense statistics",
   "reportUnknownCategoryName": "Unknown",
-  "reportOtherCategoryName": "Other"
+  "reportOtherCategoryName": "Other",
+  "reportTotalExpense": "Total expense",
+  "reportTotalIncome": "Total income",
+  "reportViewMoreButton": "View more",
+  "reportViewMoreStatisticFor": "Statistics for {yearAndMonth}",
+  "featureTBD": "This page is under development. Please come back later."
 }

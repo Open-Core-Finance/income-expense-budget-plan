@@ -139,5 +139,10 @@
   "transactionSharedBillRemainingLabel": "Còn lại",
   "reportSummarizeIncomeExpense": "Tình hình thu chi",
   "reportUnknownCategoryName": "Unknown",
-  "reportOtherCategoryName": "Khác"
+  "reportOtherCategoryName": "Khác",
+  "reportTotalExpense": "Tổng chi",
+  "reportTotalIncome": "Tổng thu",
+  "reportViewMoreButton": "Xem thêm",
+  "reportViewMoreStatisticFor": "Thống kê cho tháng {yearAndMonth}",
+  "featureTBD": "Tính năng này đang được phát triển. Xin hãy quay lại sau."
 }

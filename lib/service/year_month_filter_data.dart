@@ -22,6 +22,7 @@ class YearMonthFilterData extends ChangeNotifier {
   Map<Asset, AccountStatistic> accountStatistics = {};
   Map<Currency, CurrencyStatistic> statisticMap = {};
   List<ResourceStatisticMonthly> _resourcesStatisticsMonthlyList = [];
+  Map<Currency, List<ResourceStatisticMonthly>> resourcesStatisticsMonthlyMap = {};
   Function? refreshFunction;
   Function? refreshStatisticFunction;
 
@@ -96,6 +97,16 @@ class YearMonthFilterData extends ChangeNotifier {
     if (kDebugMode) {
       print("Loaded resources statistics");
     }
+    resourcesStatisticsMonthlyMap = {};
+    for (var statistic in _resourcesStatisticsMonthlyList) {
+      var currency = statistic.currency;
+      List<ResourceStatisticMonthly>? tmp = resourcesStatisticsMonthlyMap[currency];
+      if (tmp == null) {
+        tmp = [];
+        resourcesStatisticsMonthlyMap[currency] = tmp;
+      }
+      tmp.add(statistic);
+    }
   }
 
   void refreshFilterTransactions() {
@@ -118,7 +129,7 @@ class YearMonthFilterData extends ChangeNotifier {
     }
     if (supportLoadStatisticMonthly) {
       ResourceStatisticDao().loadMonthlyStatistics(year, month).then((statistic) {
-        _resourcesStatisticsMonthlyList = statistic;
+        resourcesStatisticsMonthly = statistic;
         statisticMonthlyCallback(statistic);
       });
     }

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:income_expense_budget_plan/dao/assets_dao.dart';
 import 'package:income_expense_budget_plan/model/asset_category.dart';
 import 'package:income_expense_budget_plan/model/assets.dart';
+import 'package:income_expense_budget_plan/model/currency.dart';
 import 'package:income_expense_budget_plan/model/generic_model.dart';
 import 'package:income_expense_budget_plan/model/setting.dart';
 import 'package:income_expense_budget_plan/model/transaction_category.dart';
@@ -530,5 +531,15 @@ class Util {
         }
         return assets;
     }
+  }
+
+  Currency findCurrency(String currencyUid) {
+    var currencies = currentAppState.currencies;
+    for (var currency in currencies) {
+      if (currency.id == currencyUid) {
+        return currency;
+      }
+    }
+    return currentAppState.systemSetting.defaultCurrency!;
   }
 }

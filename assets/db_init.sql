@@ -1,5 +1,6 @@
 CREATE TABLE IF NOT EXISTS setting(id Integer PRIMARY KEY, locale TEXT, dark_mode Integer, default_currency_uid TEXT,
-    last_transaction_account_uid TEXT, report_color_palette TEXT);
+    last_transaction_account_uid TEXT, report_color_palette TEXT, report_chart_size_default REAL DEFAULT 200 NOT NULL,
+    report_chart_padding REAL DEFAULT 10 NOT NULL);
 CREATE TABLE IF NOT EXISTS currency(uid TEXT PRIMARY KEY, name TEXT, iso TEXT, deleted Integer, symbol TEXT,
     symbol_position TEXT, main_currency Integer, show Integer, decimal_point Integer, language TEXT);
 CREATE TABLE IF NOT EXISTS asset_category(uid TEXT PRIMARY KEY, name TEXT, icon TEXT, system Integer, localize_names TEXT,
@@ -12,7 +13,7 @@ CREATE TABLE IF NOT EXISTS transaction_category(uid TEXT PRIMARY KEY, name TEXT,
     position_index Integer Integer DEFAULT 0 NOT NULL, last_updated Integer DEFAULT 0);
 CREATE TABLE IF NOT EXISTS transactions(id TEXT PRIMARY KEY, description TEXT, transaction_date Integer DEFAULT 0, transaction_time Integer DEFAULT 0, transaction_category_uid TEXT, transaction_type TEXT,
     with_fee integer NOT NULL DEFAULT 0, fee_amount REAL NOT NULL DEFAULT 0.0, amount REAL NOT NULL DEFAULT 0.0, last_updated Integer NOT NULL DEFAULT 0, account_uid TEXT,
-    currency_uid TEXT, to_account_uid TEXT, my_split REAL NOT NULL default 0.0, remaining_amount REAL NOT NULL default 0.0, shared_bill_id TEXT,
+    currency_uid TEXT NOT NULL, to_account_uid TEXT, my_split REAL NOT NULL default 0.0, remaining_amount REAL NOT NULL default 0.0, shared_bill_id TEXT,
     year_month INTEGER NOT NULL DEFAULT 22800, fee_apply_to_from_account INTEGER NOT NULL DEFAULT 0, adjusted_amount REAL NOT NULL default 0.0,
     not_include_to_report Integer DEFAULT 0,
     FOREIGN KEY (transaction_category_uid) REFERENCES transaction_category (uid),
@@ -182,15 +183,14 @@ INSERT OR IGNORE INTO asset (uid, icon, name, description, available_amount, loa
     'Loyalty point', 'My Loyalty Points', 0.0, 0.0, 0.0, 0.0, '35', 'genericAccount', '20240814-1027-8317-9580-ef12a94c7312',
     '{"en":"Loyalty point","vi":"Điểm thưởng"}', '{"en":"My Loyalty Points","vi":"Điểm thưởng của tôi"}', 3, unixepoch() * 1000);
 
--- TODO statistic must base on currency
 CREATE TABLE IF NOT EXISTS resource_statistic_daily(resource_type TEXT NOT NULL, resource_uid TEXT NOT NULL, stat_year Integer NOT NULL,
-    stat_month Integer NOT NULL, stat_day Integer NOT NULL, total_income REAL NOT NULL DEFAULT 0.0, total_expense REAL NOT NULL DEFAULT 0.0,
+    stat_month Integer NOT NULL, stat_day Integer NOT NULL, currency_uid TEXT NOT NULL, total_income REAL NOT NULL DEFAULT 0.0, total_expense REAL NOT NULL DEFAULT 0.0,
     total_transfer_out REAL NOT NULL DEFAULT 0.0, total_transfer_in REAL NOT NULL DEFAULT 0.0, total_transfer REAL NOT NULL DEFAULT 0.0,
     total_fee_paid REAL NOT NULL DEFAULT 0.0, total_lend REAL NOT NULL DEFAULT 0.0, total_borrow REAL NOT NULL DEFAULT 0.0, last_updated Integer DEFAULT 0,
-    PRIMARY KEY (resource_type, resource_uid, stat_year, stat_month, stat_day));
+    PRIMARY KEY (resource_type, resource_uid, stat_year, stat_month, stat_day, currency_uid));
 
 CREATE TABLE IF NOT EXISTS resource_statistic_monthly(resource_type TEXT NOT NULL, resource_uid TEXT NOT NULL, stat_year Integer NOT NULL,
-    stat_month Integer NOT NULL, total_income REAL NOT NULL DEFAULT 0.0, total_expense REAL NOT NULL DEFAULT 0.0,
+    stat_month Integer NOT NULL, currency_uid TEXT NOT NULL, total_income REAL NOT NULL DEFAULT 0.0, total_expense REAL NOT NULL DEFAULT 0.0,
     total_transfer_out REAL NOT NULL DEFAULT 0.0, total_transfer_in REAL NOT NULL DEFAULT 0.0, total_transfer REAL NOT NULL DEFAULT 0.0,
     total_fee_paid REAL NOT NULL DEFAULT 0.0, total_lend REAL NOT NULL DEFAULT 0.0, total_borrow REAL NOT NULL DEFAULT 0.0, last_updated Integer DEFAULT 0,
-    PRIMARY KEY (resource_type, resource_uid, stat_year, stat_month));
+    PRIMARY KEY (resource_type, resource_uid, stat_year, stat_month, currency_uid));

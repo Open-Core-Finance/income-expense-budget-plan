@@ -90,3 +90,8 @@ INSERT INTO transaction_category (uid,name,icon,parent_uid,transaction_type,"sys
 	 ('20241017-0856-8118-b332-f38f429f6625','Home loan repayment',
 	 '{"codePoint":58313,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}',
 	 '20240818-0924-8159-a073-fd1943976cc7','expense',0,'{"en":"Home loan repayment","vi":"Trả tiền vay mua nhà"}',3,1729155378347);
+
+INSERT OR IGNORE INTO transaction_category (uid,name,icon,parent_uid,transaction_type,"system",localize_names,position_index,last_updated) VALUES
+	 ('20241005-1322-8428-b089-8dbbd3f8ab9f','😈', '{"codePoint":984339,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}','20240818-0918-8b40-9969-ad37185faad9','expense',0,'{}',3,unixepoch() * 1000),
+     ('20241005-1326-8908-b764-fe5cb32434bd','Convenience store','{"codePoint":58892,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}',
+     '20240925-0755-8805-8199-8fdd9ccb635c','expense',0,'{"en":"Convenience store","vi":"Cửa hàng tiện lợi"}',2,unixepoch() * 1000);

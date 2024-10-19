@@ -1,25 +1,19 @@
 import 'dart:math';
 
+import 'package:currency_text_input_formatter/currency_text_input_formatter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:income_expense_budget_plan/common/add_account_form.dart';
-import 'package:income_expense_budget_plan/common/assets_categories_panel.dart';
-import 'package:income_expense_budget_plan/model/asset_category.dart';
-import 'package:income_expense_budget_plan/model/assets.dart';
+import 'package:income_expense_budget_plan/common/report_view_more.dart';
+import 'package:income_expense_budget_plan/model/currency.dart';
 import 'package:income_expense_budget_plan/model/report_chart_data.dart';
 import 'package:income_expense_budget_plan/model/resource_statistic.dart';
 import 'package:income_expense_budget_plan/model/transaction_category.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
-import 'package:income_expense_budget_plan/service/app_state.dart';
-import 'package:income_expense_budget_plan/service/database_service.dart';
 import 'package:income_expense_budget_plan/service/form_util.dart';
 import 'package:income_expense_budget_plan/service/util.dart';
 import 'package:income_expense_budget_plan/service/year_month_filter_data.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 import 'no_data.dart';
@@ -69,7 +63,6 @@ class _ReportPanelState extends State<ReportPanel> {
     }
     // final ThemeData theme = Theme.of(context);
     // final ColorScheme colorScheme = theme.colorScheme;
-    var appLocalizations = AppLocalizations.of(context)!;
 
     YearMonthFilterData? providedYearMonthFilterData = _retrieveProvidedFilter();
     YearMonthFilterData filterData;
@@ -78,142 +71,57 @@ class _ReportPanelState extends State<ReportPanel> {
     } else {
       filterData = yearMonthFilterData!;
     }
-    List<ResourceStatisticMonthly> resourcesStatisticsMonthly = filterData.resourcesStatisticsMonthly;
-    double totalIncome = 0;
-    double totalExpense = 0;
-    for (var statistic in resourcesStatisticsMonthly) {
-      totalIncome += statistic.totalIncome;
-      totalExpense += statistic.totalExpense;
-    }
-    // TODO list and bar data must base on currency
-    List<ReportChartDataItem> list = _buildExpenseCategoryReportChartData(context, resourcesStatisticsMonthly, totalExpense);
-    List<BarChartGroupData> barChartData = _buildExpenseIncomeBarChartData(context, totalIncome: totalIncome, totalExpense: totalExpense);
 
+    Map<Currency, List<ResourceStatisticMonthly>> resourcesStatisticsMonthlyMap = filterData.resourcesStatisticsMonthlyMap;
     Widget body;
-    if (list.isEmpty) {
+    if (resourcesStatisticsMonthlyMap.isEmpty) {
       body = const NoDataCard();
     } else {
       final percentageFormat = NumberFormat.percentPattern()
         ..minimumFractionDigits = 2
         ..maximumFractionDigits = 2;
-      double defaultSize = 200;
-      BoxConstraints constraints = BoxConstraints(maxWidth: defaultSize, maxHeight: defaultSize);
-      double chartPadding = 10;
+      double reportChartDefaultSize = currentAppState.systemSetting.reportChartSizeDefault;
+      BoxConstraints constraints = BoxConstraints(maxWidth: reportChartDefaultSize, maxHeight: reportChartDefaultSize);
+      double chartPadding = currentAppState.systemSetting.reportChartPadding;
       if (widgetSize != null) {
-        double minSize = max(defaultSize, min(widgetSize.width, widgetSize.height) / 2);
-        defaultSize = minSize;
+        double minSize = max(reportChartDefaultSize, min(widgetSize.width, widgetSize.height) / 2);
+        reportChartDefaultSize = minSize;
         constraints = BoxConstraints(maxWidth: minSize, maxHeight: minSize);
       }
+      List<Widget> children = [];
+      for (var entry in resourcesStatisticsMonthlyMap.entries) {
+        var currency = entry.key;
+        List<ResourceStatisticMonthly> resourcesStatisticsMonthly =
+            entry.value.where((statistic) => statistic.resourceType == 'category').toList(growable: false);
+        if (kDebugMode) {
+          print("resourcesStatisticsMonthly $resourcesStatisticsMonthly");
+        }
+        double totalIncome = 0;
+        double totalExpense = 0;
+        for (var statistic in resourcesStatisticsMonthly) {
+          totalIncome += statistic.totalIncome;
+          totalExpense += statistic.totalExpense;
+        }
+        List<ReportChartDataItem> chartDataItems = _buildExpenseCategoryReportChartData(context, resourcesStatisticsMonthly, totalExpense);
+        List<BarChartGroupData> barChartData =
+            _buildExpenseIncomeBarChartData(context, totalIncome: totalIncome, totalExpense: totalExpense);
+        CurrencyTextInputFormatter currencyFormatter = FormUtil().buildFormatter(currency);
+        children.addAll(_buildChartForCurrency(context,
+            currency: currency,
+            chartPadding: chartPadding,
+            reportChartBoxConstraints: constraints,
+            percentageFormat: percentageFormat,
+            chartDataItems: chartDataItems,
+            totalExpense: totalExpense,
+            totalIncome: totalIncome,
+            barChartData: barChartData,
+            reportChartDefaultSize: reportChartDefaultSize,
+            currencyFormatter: currencyFormatter,
+            viewMoreFnc: () => _viewMore(currency, resourcesStatisticsMonthly, totalIncome, totalExpense, filterData)));
+      }
+
       body = SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(appLocalizations.reportSummarizeIncomeExpense, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            SizedBox(height: chartPadding),
-            Row(
-              children: [
-                ConstrainedBox(
-                    constraints: constraints,
-                    child: PieChart(
-                      PieChartData(
-                        pieTouchData: PieTouchData(
-                          touchCallback: (FlTouchEvent event, pieTouchResponse) {
-                            setState(() {
-                              if (!event.isInterestedForInteractions ||
-                                  pieTouchResponse == null ||
-                                  pieTouchResponse.touchedSection == null) {
-                                _chartTouchedIndex = -1;
-                                return;
-                              }
-                              _chartTouchedIndex = pieTouchResponse.touchedSection!.touchedSectionIndex;
-                            });
-                          },
-                        ),
-                        borderData: FlBorderData(
-                          show: false,
-                        ),
-                        sectionsSpace: 0,
-                        centerSpaceRadius: 0,
-                        sections: showingSections(list),
-                      ),
-                      swapAnimationDuration: const Duration(milliseconds: 150),
-                      swapAnimationCurve: Curves.linear,
-                    )),
-                ConstrainedBox(
-                  constraints: constraints,
-                  child: ListView(children: [
-                    for (var item in list)
-                      Row(
-                        children: [
-                          SizedBox(width: 20, height: 20, child: Container(color: item.color)),
-                          const SizedBox(width: 10),
-                          Icon(item.icon),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text('${item.dataLabel} (${percentageFormat.format(item.percentage)})',
-                                overflow: TextOverflow.ellipsis, maxLines: 1),
-                          )
-                        ],
-                      )
-                  ]),
-                )
-              ],
-            ),
-            const SizedBox(height: 10),
-            const Divider(thickness: 1, indent: 0),
-            SizedBox(height: chartPadding),
-            Padding(
-              padding: EdgeInsets.fromLTRB(chartPadding, 0, 0, 0),
-              child: Row(
-                children: [
-                  ConstrainedBox(
-                    constraints: constraints,
-                    child: BarChart(
-                      BarChartData(barGroups: barChartData, maxY: totalExpense * 1.1),
-                      swapAnimationDuration: const Duration(milliseconds: 150),
-                      swapAnimationCurve: Curves.linear,
-                    ),
-                  ),
-                  SizedBox(width: chartPadding),
-                  ConstrainedBox(
-                    constraints: BoxConstraints(maxHeight: defaultSize, maxWidth: defaultSize - (2 * chartPadding)),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        SizedBox(height: chartPadding),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            SizedBox(width: 20, height: 20, child: Container(color: Colors.blue)),
-                            const SizedBox(width: 10),
-                            const Text("Thu:"),
-                            const SizedBox(width: 10),
-                            Text('$totalIncome', overflow: TextOverflow.ellipsis, maxLines: 1),
-                            SizedBox(width: chartPadding)
-                          ],
-                        ),
-                        SizedBox(height: chartPadding),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            SizedBox(width: 20, height: 20, child: Container(color: Colors.red)),
-                            const SizedBox(width: 10),
-                            const Text("Chi:"),
-                            const SizedBox(width: 10),
-                            Text('$totalExpense', overflow: TextOverflow.ellipsis, maxLines: 1),
-                            SizedBox(width: chartPadding)
-                          ],
-                        )
-                      ],
-                    ),
-                  )
-                ],
-              ),
-            ),
-            SizedBox(height: chartPadding),
-          ],
-        ),
+        child: Column(mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start, children: children),
       );
     }
 
@@ -326,6 +234,182 @@ class _ReportPanelState extends State<ReportPanel> {
     ];
     result.add(BarChartGroupData(x: 1, barRods: data, barsSpace: 10));
     return result;
+  }
+
+  List<Widget> _buildChartForCurrency(BuildContext context,
+      {required Currency currency,
+      required double chartPadding,
+      required BoxConstraints reportChartBoxConstraints,
+      required NumberFormat percentageFormat,
+      required List<ReportChartDataItem> chartDataItems,
+      required List<BarChartGroupData> barChartData,
+      required double totalExpense,
+      required double totalIncome,
+      required double reportChartDefaultSize,
+      required CurrencyTextInputFormatter currencyFormatter,
+      required void Function() viewMoreFnc}) {
+    ThemeData theme = Theme.of(context);
+    var appLocalizations = AppLocalizations.of(context)!;
+    double totalDifferences = totalIncome - totalExpense;
+    var viewMoreRow = ConstrainedBox(
+      constraints: const BoxConstraints(maxHeight: 40),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(0, 0, 10, 0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [ElevatedButton(onPressed: viewMoreFnc, child: Text("${appLocalizations.reportViewMoreButton} >>"))],
+        ),
+      ),
+    );
+    List<Widget> result = [
+      const Divider(thickness: 1, indent: 0),
+      Text('${appLocalizations.reportSummarizeIncomeExpense} (${currency.name})',
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+      SizedBox(height: chartPadding),
+      Row(
+        children: [
+          ConstrainedBox(
+            constraints: reportChartBoxConstraints,
+            child: PieChart(
+              PieChartData(
+                pieTouchData: PieTouchData(
+                  touchCallback: (FlTouchEvent event, pieTouchResponse) {
+                    setState(() {
+                      if (!event.isInterestedForInteractions || pieTouchResponse == null || pieTouchResponse.touchedSection == null) {
+                        _chartTouchedIndex = -1;
+                        return;
+                      }
+                      _chartTouchedIndex = pieTouchResponse.touchedSection!.touchedSectionIndex;
+                    });
+                  },
+                ),
+                borderData: FlBorderData(show: false),
+                sectionsSpace: 0,
+                centerSpaceRadius: 0,
+                sections: showingSections(chartDataItems),
+              ),
+              swapAnimationDuration: const Duration(milliseconds: 150),
+              swapAnimationCurve: Curves.linear,
+            ),
+          ),
+          ConstrainedBox(
+            constraints: reportChartBoxConstraints,
+            child: ListView(children: [
+              for (var item in chartDataItems)
+                Row(
+                  children: [
+                    SizedBox(width: 20, height: 20, child: Container(color: item.color)),
+                    const SizedBox(width: 10),
+                    Icon(item.icon),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text('${item.dataLabel} (${percentageFormat.format(item.percentage)})',
+                          overflow: TextOverflow.ellipsis, maxLines: 1),
+                    )
+                  ],
+                )
+            ]),
+          ),
+        ],
+      ),
+      viewMoreRow,
+      const SizedBox(height: 10),
+      const Divider(thickness: 1, indent: 0),
+      SizedBox(height: chartPadding),
+      Padding(
+        padding: EdgeInsets.fromLTRB(chartPadding, 0, 0, 0),
+        child: Row(
+          children: [
+            ConstrainedBox(
+              constraints: reportChartBoxConstraints,
+              child: BarChart(
+                BarChartData(
+                  barGroups: barChartData,
+                  maxY: totalExpense * 1.2,
+                  barTouchData: BarTouchData(
+                    touchTooltipData: BarTouchTooltipData(
+                      getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                        return BarTooltipItem(currencyFormatter.formatDouble(rod.toY), TextStyle(color: rod.color));
+                      },
+                      getTooltipColor: (group) => (theme.brightness == Brightness.light) ? Colors.black : Colors.white,
+                    ),
+                  ),
+                ),
+                swapAnimationDuration: const Duration(milliseconds: 150),
+                swapAnimationCurve: Curves.linear,
+              ),
+            ),
+            SizedBox(width: chartPadding),
+            ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: reportChartDefaultSize, maxWidth: reportChartDefaultSize - (2 * chartPadding)),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  SizedBox(height: chartPadding),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      SizedBox(width: 20, height: 20, child: Container(color: Colors.blue)),
+                      const SizedBox(width: 10),
+                      Text("${appLocalizations.reportTotalIncome}:"),
+                      const Expanded(child: Text("")),
+                      Text(currencyFormatter.formatDouble(totalIncome),
+                          overflow: TextOverflow.fade, style: const TextStyle(color: Colors.blue)),
+                      SizedBox(width: chartPadding)
+                    ],
+                  ),
+                  SizedBox(height: chartPadding),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      SizedBox(width: 20, height: 20, child: Container(color: Colors.red)),
+                      const SizedBox(width: 10),
+                      Text("${appLocalizations.reportTotalExpense}:"),
+                      const Expanded(child: Text("")),
+                      Text('-${currencyFormatter.formatDouble(totalExpense)}',
+                          overflow: TextOverflow.fade, style: const TextStyle(color: Colors.red)),
+                      SizedBox(width: chartPadding),
+                    ],
+                  ),
+                  const Divider(thickness: 1, indent: 0),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      SizedBox(width: 20, height: 20, child: Container()),
+                      const SizedBox(width: 10),
+                      const Expanded(child: Text("")),
+                      Text(
+                        currencyFormatter.formatDouble(totalDifferences),
+                        overflow: TextOverflow.fade,
+                        style: TextStyle(color: totalDifferences < 0 ? Colors.red : Colors.blue),
+                      ),
+                      SizedBox(width: chartPadding),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      viewMoreRow,
+      SizedBox(height: chartPadding),
+    ];
+    return result;
+  }
+
+  void _viewMore(Currency currency, List<ResourceStatisticMonthly> resourcesStatisticsMonthly, double totalIncome, double totalExpense,
+      YearMonthFilterData filterData) {
+    Util().navigateTo(
+      context,
+      ReportViewMore(
+        currency: currency,
+        resourcesStatisticsMonthly: resourcesStatisticsMonthly,
+        totalIncome: totalIncome,
+        totalExpense: totalExpense,
+        filterData: filterData,
+      ),
+    );
   }
 }
 
