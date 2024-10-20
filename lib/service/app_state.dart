@@ -88,9 +88,6 @@ class AppState extends ChangeNotifier {
       for (var cat in cats) {
         categoriesMap[cat.transactionType]!.add(cat);
       }
-      if (kDebugMode) {
-        print("categoriesMap: $categoriesMap");
-      }
     });
   }
 

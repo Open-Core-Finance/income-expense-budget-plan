@@ -93,9 +93,6 @@ class _ReportPanelState extends State<ReportPanel> {
         var currency = entry.key;
         List<ResourceStatisticMonthly> resourcesStatisticsMonthly =
             entry.value.where((statistic) => statistic.resourceType == 'category').toList(growable: false);
-        if (kDebugMode) {
-          print("resourcesStatisticsMonthly $resourcesStatisticsMonthly");
-        }
         double totalIncome = 0;
         double totalExpense = 0;
         for (var statistic in resourcesStatisticsMonthly) {

@@ -7,7 +7,6 @@ class ResourceStatisticMonthly extends CurrencyStatistic {
   int month;
   String resourceType;
   String resourceId;
-  late DateTime lastUpdated;
 
   ResourceStatisticMonthly({
     required this.month,
@@ -25,14 +24,7 @@ class ResourceStatisticMonthly extends CurrencyStatistic {
     super.totalSharedBillReturn,
     super.totalLend,
     super.totalBorrow,
-    DateTime? updatedDateTime,
-  }) {
-    if (updatedDateTime == null) {
-      lastUpdated = DateTime.now();
-    } else {
-      lastUpdated = updatedDateTime;
-    }
-  }
+  });
 
   @override
   bool operator ==(Object other) {
@@ -57,7 +49,6 @@ class ResourceStatisticMonthly extends CurrencyStatistic {
         totalTransferOut: json['total_transfer_out'],
         totalTransferIn: json['total_transfer_in'],
         totalTransfer: json['total_transfer'],
-        updatedDateTime: DateTime.fromMillisecondsSinceEpoch(json['last_updated']),
         totalFeePaid: json['total_fee_paid'],
         totalLend: json['total_lend'],
         totalBorrow: json['total_borrow'],
@@ -71,6 +62,7 @@ class ResourceStatisticMonthly extends CurrencyStatistic {
 
 class ResourceStatisticDaily extends ResourceStatisticMonthly {
   int day;
+  late DateTime lastUpdated;
   ResourceStatisticDaily({
     required this.day,
     required super.month,
@@ -88,8 +80,14 @@ class ResourceStatisticDaily extends ResourceStatisticMonthly {
     super.totalSharedBillReturn,
     super.totalLend,
     super.totalBorrow,
-    super.updatedDateTime,
-  });
+    DateTime? updatedDateTime,
+  }) {
+    if (updatedDateTime == null) {
+      lastUpdated = DateTime.now();
+    } else {
+      lastUpdated = updatedDateTime;
+    }
+  }
 
   @override
   bool operator ==(Object other) {
@@ -125,4 +123,20 @@ class ResourceStatisticDaily extends ResourceStatisticMonthly {
 
   @override
   String toAttrString() => '"day": $day, ${super.toAttrString()}';
+
+  ResourceStatisticMonthly toMonthly() => ResourceStatisticMonthly(
+        resourceType: resourceType,
+        resourceId: resourceId,
+        year: year,
+        month: month,
+        totalIncome: totalIncome,
+        totalExpense: totalExpense,
+        totalTransferOut: totalTransferOut,
+        totalTransferIn: totalTransferIn,
+        totalTransfer: totalTransfer,
+        totalFeePaid: totalFeePaid,
+        totalLend: totalLend,
+        totalBorrow: totalBorrow,
+        currency: currency,
+      );
 }

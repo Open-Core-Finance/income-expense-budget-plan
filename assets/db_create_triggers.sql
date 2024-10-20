@@ -238,37 +238,16 @@ BEGIN
 
 END;
 
-CREATE TRIGGER resource_statistic_daily_after_insert
-AFTER INSERT ON resource_statistic_daily
-FOR EACH ROW
-BEGIN
-   -- Insert monthly statistic if not existed
-   INSERT OR IGNORE INTO resource_statistic_monthly (resource_type, resource_uid, stat_year, stat_month, last_updated,
-        total_income, total_expense, total_transfer_out, total_transfer_in, total_transfer, total_fee_paid, total_lend,
-        total_borrow, currency_uid) VALUES
-       (NEW.resource_type, NEW.resource_uid, NEW.stat_year, NEW.stat_month, unixepoch() * 1000, 0, 0, 0, 0, 0, 0, 0, 0, NEW.currency_uid);
-   -- Update monthly statistic
-   UPDATE resource_statistic_monthly SET last_updated = unixepoch() * 1000, total_income = total_income + NEW.total_income,
-       total_expense = total_expense + NEW.total_expense, total_transfer_out = total_transfer_out + NEW.total_transfer_out,
-       total_transfer_in = total_transfer_in + NEW.total_transfer_in, total_transfer = total_transfer + NEW.total_transfer,
-       total_fee_paid = total_fee_paid + NEW.total_fee_paid, total_lend = total_lend + NEW.total_lend,
-       total_borrow = total_borrow + NEW.total_borrow
-   WHERE resource_type = NEW.resource_type AND resource_uid = NEW.resource_uid AND stat_year = NEW.stat_year AND
-       currency_uid = NEW.currency_uid AND stat_month = NEW.stat_month;
-END;
-
 CREATE TRIGGER resource_statistic_daily_after_update
 AFTER UPDATE ON resource_statistic_daily
 FOR EACH ROW
 BEGIN
-   -- Update monthly statistic
-   UPDATE resource_statistic_monthly SET last_updated = unixepoch() * 1000, total_income = total_income + (NEW.total_income - OLD.total_income),
-       total_expense = total_expense + (NEW.total_expense - OLD.total_expense), total_transfer_out = total_transfer_out + (NEW.total_transfer_out - OLD.total_transfer_out),
-       total_transfer_in = total_transfer_in + (NEW.total_transfer_in - OLD.total_transfer_in), total_transfer = total_transfer + (NEW.total_transfer - OLD.total_transfer),
-       total_fee_paid = total_fee_paid + (NEW.total_fee_paid - OLD.total_fee_paid), total_lend = total_lend + (NEW.total_lend - OLD.total_lend),
-       total_borrow = total_borrow + (NEW.total_borrow - OLD.total_borrow)
-   WHERE resource_type = NEW.resource_type AND resource_uid = NEW.resource_uid AND stat_year = NEW.stat_year AND
-       currency_uid = NEW.currency_uid AND stat_month = NEW.stat_month;
+   INSERT INTO debug_log (message) VALUES ('Updated resource_statistic_daily("resource_type" = ' || NEW.resource_type || ', "resource_uid" = ' || NEW.resource_uid ||
+       ', "stat_year" = ' || NEW.stat_year || ', "stat_month" = ' || NEW.stat_month || ', "stat_day" = ' || NEW.stat_day || ', "currency_uid" = ' || NEW.currency_uid ||
+       ') with total_income += ' || (NEW.total_income - OLD.total_income) || ', total_expense += ' || (NEW.total_expense - OLD.total_expense) ||
+       ', total_transfer_out += ' || (NEW.total_transfer_out - OLD.total_transfer_out) || ', total_transfer_in += ' || (NEW.total_transfer_in - OLD.total_transfer_in) ||
+       ', total_transfer += ' || (NEW.total_transfer - OLD.total_transfer) || ', total_fee_paid += ' || (NEW.total_fee_paid - OLD.total_fee_paid) ||
+       ', total_lend += ' || (NEW.total_lend - OLD.total_lend) || ', total_borrow += ' || (NEW.total_borrow - OLD.total_borrow));
 END;
 
 CREATE TRIGGER resource_statistic_daily_after_delete
@@ -277,13 +256,12 @@ FOR EACH ROW
 BEGIN
     INSERT INTO debug_log (message) VALUES ('Deleted resource_statistic_daily resource_type =' || OLD.resource_type || ' AND resource_uid = ' || OLD.resource_uid || ' AND stat_year = ' ||
        OLD.stat_year || ' AND stat_month = ' || OLD.stat_month || ' AND stat_day = ' || OLD.stat_day);
-    -- Update monthly statistic
-    UPDATE resource_statistic_monthly SET last_updated = unixepoch() * 1000, total_income = total_income - OLD.total_income,
-        total_expense = total_expense - OLD.total_expense, total_transfer_out = total_transfer_out - OLD.total_transfer_out,
-        total_transfer_in = total_transfer_in - OLD.total_transfer_in, total_transfer = total_transfer - OLD.total_transfer,
-        total_fee_paid = total_fee_paid - OLD.total_fee_paid, total_lend = total_lend - OLD.total_lend,
-        total_borrow = total_borrow - OLD.total_borrow
-    WHERE resource_type = OLD.resource_type AND resource_uid = OLD.resource_uid AND stat_year = OLD.stat_year AND
-        currency_uid = OLD.currency_uid AND stat_month = OLD.stat_month;
-    INSERT INTO debug_log (message) VALUES ('Updated resource_statistic_monthly after delete resource_statistic_daily');
+END;
+
+CREATE TRIGGER debug_log_after_insert
+AFTER INSERT ON debug_log
+FOR EACH ROW
+BEGIN
+   -- Only keep 1000 records and clean the old one.
+   DELETE FROM debug_log WHERE id NOT IN ( SELECT id FROM debug_log ORDER BY id DESC LIMIT 500);
 END;

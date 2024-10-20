@@ -86,9 +86,6 @@ class YearMonthFilterData extends ChangeNotifier {
   set transactions(List<Transactions> transactions) {
     _transactions = transactions;
     _buildTransactionByDateMap();
-    if (kDebugMode) {
-      print("Account Statistics: $accountStatistics");
-    }
   }
 
   List<ResourceStatisticMonthly> get resourcesStatisticsMonthly => _resourcesStatisticsMonthlyList;
@@ -129,6 +126,24 @@ class YearMonthFilterData extends ChangeNotifier {
     }
     if (supportLoadStatisticMonthly) {
       ResourceStatisticDao().loadMonthlyStatistics(year, month).then((statistic) {
+        // ResourceStatisticDao().loadDailyStatistics(year, month).then((statistic) {
+        //   List<ResourceStatisticMonthly> monthlyList = [];
+        //   for (var daily in statistic) {
+        //     var tmp = daily.toMonthly();
+        //     ResourceStatisticMonthly? originMonthly;
+        //     for (var monthly in monthlyList) {
+        //       if (monthly == tmp) {
+        //         originMonthly = monthly;
+        //         break;
+        //       }
+        //     }
+        //     if (originMonthly == null) {
+        //       originMonthly = tmp;
+        //       monthlyList.add(originMonthly);
+        //     } else {
+        //       originMonthly.combineWith(tmp);
+        //     }
+        //   }
         resourcesStatisticsMonthly = statistic;
         statisticMonthlyCallback(statistic);
       });
@@ -152,9 +167,6 @@ class YearMonthFilterData extends ChangeNotifier {
       }
       transactionEntry.addTransaction(transactions);
       _addStatistic(transactions);
-    }
-    if (kDebugMode) {
-      print("Statistic: $statisticMap");
     }
   }
 

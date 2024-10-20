@@ -7,6 +7,7 @@ import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/util.dart';
 import 'package:path/path.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:path_provider/path_provider.dart';
 
 late Database database;
 
@@ -29,7 +30,8 @@ class DatabaseService {
 
   Future<Database> _initDatabase() async {
     databaseFactory = databaseFactoryFfi;
-    final databasePath = await getDatabasesPath();
+    // final databasePath = await getDatabasesPath();
+    final String databasePath = (await getApplicationSupportDirectory()).absolute.path;
 
     // Set the path to the database. Note: Using the `join` function from the
     // `path` package is best practice to ensure the path is correctly

@@ -69,11 +69,11 @@ class Util {
   List<TransactionCategory> buildTransactionCategoryTree(List<TransactionCategory> categories) {
     if (kDebugMode) {
       print("********************");
-      print("Categories received $categories");
+      //print("Categories received $categories");
     }
     var result = findChild(categories, null);
     if (kDebugMode) {
-      print("Categories after parsed $result");
+      //print("Categories after parsed $result");
       print("********************");
     }
     return result;
@@ -140,9 +140,6 @@ class Util {
 
   void refreshAssetCategories(Function(List<AssetCategory> c)? callback) {
     AssetsDao().assetCategories().then((categories) {
-      if (kDebugMode) {
-        print("Loaded categories $categories");
-      }
       categories.sort((a, b) => a.positionIndex - b.positionIndex);
       currentAppState.assetCategories = categories;
       if (callback != null) {
@@ -153,9 +150,6 @@ class Util {
 
   void refreshAssets(Function(List<Asset> a)? callback) {
     AssetsDao().assets().then((assets) {
-      if (kDebugMode) {
-        print("Loaded assets $assets");
-      }
       assets.sort((a, b) => a.positionIndex - b.positionIndex);
       currentAppState.assets = assets;
       if (callback != null) {
@@ -187,13 +181,7 @@ class Util {
         category.assets.add(asset);
         asset.category = category;
         assets.removeAt(i--);
-        if (kDebugMode) {
-          print("Asset ${asset.name} with category ${category.name}");
-        }
       }
-    }
-    if (kDebugMode) {
-      print("\nCategories ${category.name} have ${category.assets.length} child!\n${category.assets}");
     }
   }
 
@@ -303,9 +291,6 @@ class Util {
       if (removeInTree(category.child, toRemove)) {
         return true;
       }
-    }
-    if (kDebugMode) {
-      print("Categories after removal $categories");
     }
     return false;
   }
