@@ -11,7 +11,6 @@ const int databaseVersion = 1;
 const String tableNameAssetCategory = "asset_category";
 const String tableNameTransactionCategory = "transaction_category";
 const String tableNameTransaction = "transactions";
-const String tableNameResourceStatisticMonthly = "resource_statistic_monthly";
 const String tableNameResourceStatisticDaily = "resource_statistic_daily";
 const Map<String, String> localeMap = {'en': 'English', 'vi': 'Tiếng Việt'};
 const String defaultLocale = 'en';

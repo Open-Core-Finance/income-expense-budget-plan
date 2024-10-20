@@ -141,9 +141,6 @@ class _TransactionPanelState extends State<TransactionPanel> {
                 if (statisticWidgets.isNotEmpty) {
                   trailingWidget = Column(children: statisticWidgets);
                 }
-                if (kDebugMode) {
-                  print("Statistic $statisticWidgets; Entry: $entry");
-                }
                 Widget widget = ConstrainedBox(
                   constraints:
                       BoxConstraints(minHeight: 0, maxHeight: txns.length * (TransactionItemConfigKey.eachTransactionHeight + 4) + 120),

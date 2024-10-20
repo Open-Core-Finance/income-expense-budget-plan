@@ -190,9 +190,3 @@ CREATE TABLE IF NOT EXISTS resource_statistic_daily(resource_type TEXT NOT NULL,
     total_transfer_out REAL NOT NULL DEFAULT 0.0, total_transfer_in REAL NOT NULL DEFAULT 0.0, total_transfer REAL NOT NULL DEFAULT 0.0,
     total_fee_paid REAL NOT NULL DEFAULT 0.0, total_lend REAL NOT NULL DEFAULT 0.0, total_borrow REAL NOT NULL DEFAULT 0.0, last_updated Integer DEFAULT 0,
     PRIMARY KEY (resource_type, resource_uid, stat_year, stat_month, stat_day, currency_uid));
-
-CREATE TABLE IF NOT EXISTS resource_statistic_monthly(resource_type TEXT NOT NULL, resource_uid TEXT NOT NULL, stat_year Integer NOT NULL,
-    stat_month Integer NOT NULL, currency_uid TEXT NOT NULL, total_income REAL NOT NULL DEFAULT 0.0, total_expense REAL NOT NULL DEFAULT 0.0,
-    total_transfer_out REAL NOT NULL DEFAULT 0.0, total_transfer_in REAL NOT NULL DEFAULT 0.0, total_transfer REAL NOT NULL DEFAULT 0.0,
-    total_fee_paid REAL NOT NULL DEFAULT 0.0, total_lend REAL NOT NULL DEFAULT 0.0, total_borrow REAL NOT NULL DEFAULT 0.0, last_updated Integer DEFAULT 0,
-    PRIMARY KEY (resource_type, resource_uid, stat_year, stat_month, currency_uid));

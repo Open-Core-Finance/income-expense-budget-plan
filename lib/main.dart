@@ -39,9 +39,6 @@ void main() async {
           currentAppState.systemSetting.defaultCurrency = currency;
         }
       }
-      if (kDebugMode) {
-        print("Currencies: $currencies");
-      }
       Util().refreshAssets((List<Asset> assets) {
         runApp(const MyApp());
       });

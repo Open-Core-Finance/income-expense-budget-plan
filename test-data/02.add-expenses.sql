@@ -136,3 +136,7 @@ INSERT OR IGNORE INTO transactions (id,description,transaction_date,transaction_
 ('782d88f2-be65-4a8a-a82f-414ea8d488ba','', 1729209600000,540,'20240818-1108-8b38-a705-88fc5e864150','expense',0, 0,386400,unixepoch() * 1000,'20240824-1557-8718-b097-5d9d1c51ff98','1',NULL,0,0,NULL,0,0,0),
 ('5b7b8ca4-f9b9-479c-b398-1d3d512e3e6b','', 1729123200000,915,'20241005-1322-8428-b089-8dbbd3f8ab9f','expense',0, 0,70000,unixepoch() * 1000,'20240823-1529-8009-a864-e7b9299a07f6','1',NULL,0,0,NULL,0,0,0),
 ('e580d520-d01b-47a2-bf8c-5d07dc875e11','', 1729209600000,790,'20240818-0940-8043-b324-6067248730d1','expense',0, 0,29000,unixepoch() * 1000,'20240824-1557-8718-b097-5d9d1c51ff98','1',NULL,0,0,NULL,0,0,0);
+
+INSERT INTO transactions (id,description,transaction_date,transaction_time,transaction_category_uid,transaction_type,with_fee,fee_amount,amount,last_updated,account_uid,currency_uid,to_account_uid,my_split,remaining_amount,shared_bill_id,year_month,fee_apply_to_from_account,adjusted_amount,not_include_to_report) VALUES
+	 ('20241019-0851-8a06-a921-975968f8c7ef','',1729327834698,840,'20241017-0856-8118-b332-f38f429f6625','expense',0,0.0,14620065,1729327866921,'20240923-1601-8716-a430-c762e2b118f8','1',NULL,0.0,0.0,NULL,24298,0,0.0,0),
+	 ('20241019-0851-8723-8487-44d34376caa1','',1729327870378,951,'20240818-0940-8043-b324-6067248730d1','expense',0,0.0,29000.0,1729327883487,'20240823-1529-8009-a864-e7b9299a07f6','1',NULL,0.0,0.0,NULL,24298,0,0.0,0);

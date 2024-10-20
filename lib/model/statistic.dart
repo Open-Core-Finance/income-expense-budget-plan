@@ -42,4 +42,17 @@ class Statistic {
   String toAttrString() => '"totalIncome": $totalIncome, "totalExpense": $totalExpense,'
       '"totalTransferOut": $totalTransferOut, "totalTransferIn": $totalTransferIn, "totalSharedBillPaid": $totalSharedBillPaid,'
       '"totalSharedBillReturn": $totalSharedBillReturn, "totalFeePaid": $totalFeePaid, "totalLend": $totalLend, "totalBorrow": $totalBorrow';
+
+  void combineWith(Statistic statistic) {
+    totalIncome += statistic.totalIncome;
+    totalExpense += statistic.totalExpense;
+    totalSharedBillReturn += statistic.totalSharedBillReturn;
+    totalSharedBillPaid += statistic.totalSharedBillPaid;
+    totalBorrow += statistic.totalBorrow;
+    totalLend += statistic.totalLend;
+    totalTransferIn += statistic.totalTransferIn;
+    totalTransferOut += statistic.totalTransferOut;
+    totalTransfer += statistic.totalTransfer;
+    totalFeePaid += statistic.totalFeePaid;
+  }
 }
