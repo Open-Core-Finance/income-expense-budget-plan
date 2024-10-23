@@ -8,7 +8,7 @@
 PRODUCT_NAME = income_expense_budget_plan
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.example.incomeExpenseBudgetPlan
+PRODUCT_BUNDLE_IDENTIFIER = com.dbaotrung.incomeExpenseBudgetPlan
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2024 com.example. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2024 com.dbaotrung. All rights reserved.

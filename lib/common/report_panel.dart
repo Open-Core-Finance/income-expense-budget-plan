@@ -35,7 +35,11 @@ class _ReportPanelState extends State<ReportPanel> {
   @override
   void initState() {
     super.initState();
-    yearMonthFilterData = YearMonthFilterData(supportLoadTransactions: false);
+    yearMonthFilterData = YearMonthFilterData(
+      supportLoadTransactions: false,
+      refreshFunction: () => setState(() {}),
+      refreshStatisticFunction: () => setState(() {}),
+    );
   }
 
   YearMonthFilterData? _retrieveProvidedFilter() {
@@ -341,7 +345,7 @@ class _ReportPanelState extends State<ReportPanel> {
             ),
             SizedBox(width: chartPadding),
             ConstrainedBox(
-              constraints: BoxConstraints(maxHeight: reportChartDefaultSize, maxWidth: reportChartDefaultSize - (2 * chartPadding)),
+              constraints: BoxConstraints(maxHeight: reportChartDefaultSize, maxWidth: reportChartDefaultSize - chartPadding),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
@@ -352,10 +356,10 @@ class _ReportPanelState extends State<ReportPanel> {
                       SizedBox(width: 20, height: 20, child: Container(color: Colors.blue)),
                       const SizedBox(width: 10),
                       Text("${appLocalizations.reportTotalIncome}:"),
-                      const Expanded(child: Text("")),
-                      Text(currencyFormatter.formatDouble(totalIncome),
-                          overflow: TextOverflow.fade, style: const TextStyle(color: Colors.blue)),
-                      SizedBox(width: chartPadding)
+                      Expanded(
+                        child: Text(currencyFormatter.formatDouble(totalIncome),
+                            overflow: TextOverflow.fade, style: const TextStyle(color: Colors.blue), textAlign: TextAlign.right),
+                      )
                     ],
                   ),
                   SizedBox(height: chartPadding),
@@ -365,10 +369,9 @@ class _ReportPanelState extends State<ReportPanel> {
                       SizedBox(width: 20, height: 20, child: Container(color: Colors.red)),
                       const SizedBox(width: 10),
                       Text("${appLocalizations.reportTotalExpense}:"),
-                      const Expanded(child: Text("")),
-                      Text('-${currencyFormatter.formatDouble(totalExpense)}',
-                          overflow: TextOverflow.fade, style: const TextStyle(color: Colors.red)),
-                      SizedBox(width: chartPadding),
+                      Expanded(
+                          child: Text('-${currencyFormatter.formatDouble(totalExpense)}',
+                              overflow: TextOverflow.fade, style: const TextStyle(color: Colors.red), textAlign: TextAlign.right))
                     ],
                   ),
                   const Divider(thickness: 1, indent: 0),
@@ -377,13 +380,14 @@ class _ReportPanelState extends State<ReportPanel> {
                     children: [
                       SizedBox(width: 20, height: 20, child: Container()),
                       const SizedBox(width: 10),
-                      const Expanded(child: Text("")),
-                      Text(
-                        currencyFormatter.formatDouble(totalDifferences),
-                        overflow: TextOverflow.fade,
-                        style: TextStyle(color: totalDifferences < 0 ? Colors.red : Colors.blue),
+                      Expanded(
+                        child: Text(
+                          currencyFormatter.formatDouble(totalDifferences),
+                          overflow: TextOverflow.fade,
+                          style: TextStyle(color: totalDifferences < 0 ? Colors.red : Colors.blue),
+                          textAlign: TextAlign.right,
+                        ),
                       ),
-                      SizedBox(width: chartPadding),
                     ],
                   ),
                 ],

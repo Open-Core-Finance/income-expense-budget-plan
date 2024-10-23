@@ -89,11 +89,11 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.example" "\0"
+            VALUE "CompanyName", "com.dbaotrung" "\0"
             VALUE "FileDescription", "income_expense_budget_plan" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "income_expense_budget_plan" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2024 com.example. All rights reserved." "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2024 com.dbaotrung. All rights reserved." "\0"
             VALUE "OriginalFilename", "income_expense_budget_plan.exe" "\0"
             VALUE "ProductName", "income_expense_budget_plan" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"

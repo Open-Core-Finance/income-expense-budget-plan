@@ -58,23 +58,39 @@ class DatabaseService {
     );
   }
 
-  Future<void> _executeSqlFile(Database db, String sqlFilePath) async {
+  Future<bool> _executeSqlFileBundle(Database db, String sqlFilePath) async {
     var sqlContent = await rootBundle.loadString(sqlFilePath);
+    return _executeSqlContent(db, sqlContent);
+  }
+
+  Future<bool> _executeSqlContent(Database db, String sqlContent) async {
     List<String> sqlStatements = sqlContent.split(';');
     // Execute each statement
     for (String statement in sqlStatements) {
       if (statement.trim().isNotEmpty) {
-        var execution = db.execute(statement);
-        if (kDebugMode) {
-          print("SQL $statement...");
+        try {
+          var execution = db.execute(statement);
+          if (kDebugMode) {
+            print("SQL $statement...");
+          }
+          await execution;
+        } catch (e) {
+          if (kDebugMode) {
+            print("SQL $statement executed fail! $e");
+          }
+          return false;
         }
-        await execution;
       }
     }
+    return true;
   }
 
-  Future<void> _executeTriggersSqlFile(Database db, String sqlFilePath) async {
+  Future<bool> _executeTriggersSqlFileBundle(Database db, String sqlFilePath) async {
     var sqlContent = await rootBundle.loadString(sqlFilePath);
+    return _executeTriggersSqlContent(db, sqlContent);
+  }
+
+  Future<bool> _executeTriggersSqlContent(Database db, String sqlContent) async {
     List<String> triggerStatements = sqlContent.split('END;');
     // Execute each statement
     for (String statement in triggerStatements) {
@@ -89,9 +105,19 @@ class DatabaseService {
           if (kDebugMode) {
             print("SQL $statement trigger fail! $e");
           }
+          return false;
         }
       }
     }
+    return true;
+  }
+
+  Future<bool> executeSqlContent(String sqlContent) async {
+    return _executeSqlContent(await database, sqlContent);
+  }
+
+  Future<bool> executeTriggersSqlFile(String sqlContent) async {
+    return _executeTriggersSqlContent(await database, sqlContent);
   }
 
   // When the database is first created
@@ -99,23 +125,23 @@ class DatabaseService {
     // Initialize the completer
     _onCreateCompleter = Completer<void>();
 
-    await _executeSqlFile(db, 'assets/db_init.sql');
+    await _executeSqlFileBundle(db, 'assets/db_init.sql');
     // Complete the completer once the onCreate is done
     _onCreateCompleter?.complete();
 
-    _executeTriggersSqlFile(db, 'assets/db_create_triggers.sql');
+    _executeTriggersSqlFileBundle(db, 'assets/db_create_triggers.sql');
   }
 
   Future<void> _onOpen(Database db) async {
     if (kDebugMode) {
       print("Opening database successful.");
     }
-    _executeSqlFile(db, 'assets/db_validate_and_correct.sql');
+    _executeSqlFileBundle(db, 'assets/db_validate_and_correct.sql');
   }
 
   // When the database version increased
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    _executeSqlFile(db, 'assets/db_upgrade.sql');
+    _executeSqlFileBundle(db, 'assets/db_upgrade.sql');
   }
 
   Future<List<T>> loadListModel<T>(String tableName, T Function(Map<String, dynamic> data) convert) async {

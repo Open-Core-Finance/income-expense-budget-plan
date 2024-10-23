@@ -20,6 +20,7 @@ const int appMinWidthMobile = 375;
 const int appMinHeight = 375;
 const int appMinPortraitHeight = 667;
 const int appMinWidthDesktop = 900;
+const int showHiddenCount = 6;
 
 const tabSelectedColor = Color.fromARGB(255, 237, 202, 113);
 

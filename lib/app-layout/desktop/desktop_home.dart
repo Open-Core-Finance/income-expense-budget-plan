@@ -5,6 +5,7 @@ import 'package:income_expense_budget_plan/common/account_panel.dart';
 import 'package:income_expense_budget_plan/common/assets_categories_panel.dart';
 import 'package:income_expense_budget_plan/common/default_currency_selection.dart';
 import 'package:income_expense_budget_plan/common/report_panel.dart';
+import 'package:income_expense_budget_plan/common/sql_import.dart';
 import 'package:income_expense_budget_plan/common/transaction_categories_panel.dart';
 import 'package:income_expense_budget_plan/common/transaction_panel.dart';
 import 'package:income_expense_budget_plan/dao/transaction_dao.dart';
@@ -30,6 +31,7 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
   List<TransactionCategory> incomeCategories = [];
   List<TransactionCategory> expenseCategories = [];
   late YearMonthFilterData yearMonthFilterData;
+  int _tapCount = 0;
 
   refresh() {
     setState(() {});
@@ -96,13 +98,25 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
                 child: TransactionCategoriesPanel(
                     listPanelTitle: incomeTitle, disableBack: true, key: const Key("desktop-income-category-panel")),
               ),
-            )
-          ][appState.currentHomePageIndex % 3],
+            ),
+            const SqlImport(showBackArrow: false)
+          ][appState.currentHomePageIndex % 4],
           bottomNavigationBar: NavigationBar(
             onDestinationSelected: (int index) {
-              setState(() {
-                currentAppState.currentHomePageIndex = index;
-              });
+              if (currentAppState.currentHomePageIndex != index) {
+                if (index != 3) {
+                  _tapCount = 0;
+                }
+                setState(() {
+                  currentAppState.currentHomePageIndex = index;
+                });
+              } else {
+                if (_tapCount != showHiddenCount - 1) {
+                  _tapCount++;
+                } else {
+                  setState(() => _tapCount++);
+                }
+              }
             },
             indicatorColor: tabSelectedColor,
             selectedIndex: currentAppState.currentHomePageIndex,
@@ -120,6 +134,11 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
                 icon: Icon(Icons.more, color: theme.primaryColor),
                 label: AppLocalizations.of(context)!.navTransactionCategory,
               ),
+              if (_tapCount >= showHiddenCount)
+                NavigationDestination(
+                  icon: Icon(Icons.dataset_linked, color: theme.primaryColor),
+                  label: AppLocalizations.of(context)!.sqlImportMenu,
+                ),
               MouseRegion(
                 cursor: SystemMouseCursors.click, // Changes the cursor to a pointer
                 child: GestureDetector(
@@ -147,7 +166,7 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
                     ]),
                   ),
                 ),
-              ),
+              )
             ],
           ),
         );

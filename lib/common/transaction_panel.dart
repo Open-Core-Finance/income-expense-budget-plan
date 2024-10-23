@@ -55,7 +55,11 @@ class _TransactionPanelState extends State<TransactionPanel> {
     _searchController = TextEditingController();
     YearMonthFilterData? providedYearMonthFilterData = _retrieveProvidedFilter();
     if (providedYearMonthFilterData == null) {
-      yearMonthFilterData = YearMonthFilterData(supportLoadStatisticMonthly: false);
+      yearMonthFilterData = YearMonthFilterData(
+        supportLoadStatisticMonthly: false,
+        refreshFunction: () => setState(() {}),
+        refreshStatisticFunction: () => setState(() {}),
+      );
     }
   }
 

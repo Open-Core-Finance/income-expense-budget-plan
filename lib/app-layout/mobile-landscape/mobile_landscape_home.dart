@@ -4,8 +4,9 @@ import 'package:flutter_iconpicker/extensions/string_extensions.dart';
 import 'package:income_expense_budget_plan/common/account_panel.dart';
 import 'package:income_expense_budget_plan/common/assets_categories_panel.dart';
 import 'package:income_expense_budget_plan/common/default_currency_selection.dart';
-import 'package:income_expense_budget_plan/common/more_panel.dart';
+import 'package:income_expense_budget_plan/app-layout/mobile-portrait/mobile_more_panel.dart';
 import 'package:income_expense_budget_plan/common/report_panel.dart';
+import 'package:income_expense_budget_plan/common/sql_import.dart';
 import 'package:income_expense_budget_plan/common/transaction_panel.dart';
 import 'package:income_expense_budget_plan/model/setting.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
@@ -22,6 +23,8 @@ class HomePageMobileLandscape extends StatefulWidget {
 }
 
 class _HomePageMobileLandscapeState extends State<HomePageMobileLandscape> {
+  int _tapCount = 0;
+
   _HomePageMobileLandscapeState();
 
   refresh() {
@@ -42,6 +45,7 @@ class _HomePageMobileLandscapeState extends State<HomePageMobileLandscape> {
     if (kDebugMode) {
       print("Current screensize ${MediaQuery.of(context).size}");
     }
+    AppLocalizations appLocalizations = AppLocalizations.of(context)!;
     final ThemeData theme = Theme.of(context);
     Size sideButtonSize = const Size(155, 50);
     Size sideSpaceSize = Size(sideButtonSize.width - 8, double.infinity);
@@ -54,46 +58,49 @@ class _HomePageMobileLandscapeState extends State<HomePageMobileLandscape> {
             Column(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
+                SizedBox(
+                    height: 30,
+                    child: ElevatedButton(
+                        onPressed: () {}, style: styleForIndex(theme, -1, sideSpaceSize, sideButtonShape), child: Container())),
                 ElevatedButton.icon(
-                  onPressed: () => setState(() => appState.currentHomePageIndex = 0),
+                  onPressed: () => _switchTap(appState, 0),
                   icon: Icon(Icons.history, color: theme.primaryColor),
-                  label: Text(AppLocalizations.of(context)!.navHistory),
+                  label: Text(appLocalizations.navHistory),
                   style: styleForIndex(theme, 0, sideButtonSize, sideButtonShape),
                 ),
                 const Divider(height: 0.5),
                 ElevatedButton.icon(
-                  onPressed: () => setState(() => appState.currentHomePageIndex = 1),
+                  onPressed: () => _switchTap(appState, 1),
                   icon: Icon(Icons.account_box, color: theme.primaryColor),
-                  label: Text(AppLocalizations.of(context)!.navAccount),
+                  label: Text(appLocalizations.navAccount),
                   style: styleForIndex(theme, 1, sideButtonSize, sideButtonShape),
                 ),
                 const Divider(height: 0.5),
                 ElevatedButton.icon(
-                  onPressed: () => setState(() => appState.currentHomePageIndex = 2),
+                  onPressed: () => _switchTap(appState, 2),
                   icon: Icon(Icons.analytics, color: theme.primaryColor),
-                  label: Text(AppLocalizations.of(context)!.navReport),
+                  label: Text(appLocalizations.navReport),
                   style: styleForIndex(theme, 2, sideButtonSize, sideButtonShape),
                 ),
                 const Divider(height: 0.5),
                 ElevatedButton.icon(
-                  onPressed: () => setState(() => appState.currentHomePageIndex = 3),
+                  onPressed: () => _switchTap(appState, 3),
                   icon: Icon(Icons.manage_accounts, color: theme.primaryColor),
-                  label: Text(AppLocalizations.of(context)!.navAccountCategory),
+                  label: Text(appLocalizations.navAccountCategory),
                   style: styleForIndex(theme, 3, sideButtonSize, sideButtonShape),
                 ),
                 const Divider(height: 0.5),
                 ElevatedButton.icon(
-                  onPressed: () => setState(() => appState.currentHomePageIndex = 4),
+                  onPressed: () => _switchTap(appState, 4),
                   icon: Icon(Icons.more, color: theme.primaryColor),
-                  label: Text(AppLocalizations.of(context)!.navMore),
+                  label: Text(appLocalizations.navMore),
                   style: styleForIndex(theme, 4, sideButtonSize, sideButtonShape),
                 ),
                 const Divider(height: 0.5),
                 ElevatedButton.icon(
                   onPressed: () => Util().chooseBrightnessMode(context),
                   icon: Icon(Icons.brightness_6_outlined, color: theme.primaryColor),
-                  label:
-                      Text("${AppLocalizations.of(context)!.settingsDarkMode}\n${currentAppState.systemSetting.getDarkModeText(context)}"),
+                  label: Text("${appLocalizations.settingsDarkMode}\n${currentAppState.systemSetting.getDarkModeText(context)}"),
                   style: styleForIndex(theme, -1, sideButtonSize, sideButtonShape),
                 ),
                 const Divider(height: 0.5),
@@ -104,6 +111,13 @@ class _HomePageMobileLandscapeState extends State<HomePageMobileLandscape> {
                   style: styleForIndex(theme, -1, sideButtonSize, sideButtonShape),
                 ),
                 const Divider(height: 0.5),
+                if (_tapCount >= showHiddenCount)
+                  ElevatedButton.icon(
+                    onPressed: () => _switchTap(appState, 5),
+                    icon: Icon(Icons.dataset_linked, color: theme.primaryColor),
+                    label: Text(appLocalizations.sqlImportMenu),
+                    style: styleForIndex(theme, 5, sideButtonSize, sideButtonShape),
+                  ),
                 Flexible(
                   child:
                       ElevatedButton(onPressed: () {}, style: styleForIndex(theme, -1, sideSpaceSize, sideButtonShape), child: Container()),
@@ -116,12 +130,30 @@ class _HomePageMobileLandscapeState extends State<HomePageMobileLandscape> {
               const AccountPanel(),
               ReportPanel(),
               const AssetCategoriesPanel(),
-              const Material(child: MorePanel())
-            ][appState.currentHomePageIndex % 5]),
+              const Material(child: MobilePortraitMorePanel()),
+              const SqlImport(showBackArrow: false)
+            ][appState.currentHomePageIndex % 6]),
           ],
         ),
       ),
     );
+  }
+
+  void _switchTap(AppState appState, int index) {
+    if (appState.currentHomePageIndex != index) {
+      if (index != 5) {
+        _tapCount = 0;
+      }
+      setState(() {
+        appState.currentHomePageIndex = index;
+      });
+    } else {
+      if (_tapCount != showHiddenCount - 1) {
+        _tapCount++;
+      } else {
+        setState(() => _tapCount++);
+      }
+    }
   }
 
   Future<void> _startDefaultCurrencyCheck() async {
@@ -135,12 +167,19 @@ class _HomePageMobileLandscapeState extends State<HomePageMobileLandscape> {
   }
 
   ButtonStyle styleForIndex(ThemeData theme, int buttonIndex, Size buttonSize, OutlinedBorder sideButtonShape) {
-    return ElevatedButton.styleFrom(
-        elevation: 0,
-        shape: sideButtonShape,
-        minimumSize: buttonSize,
-        maximumSize: buttonSize,
-        alignment: Alignment.centerLeft,
-        backgroundColor: currentAppState.currentHomePageIndex == buttonIndex ? tabSelectedColor : theme.cardColor);
+    ButtonStyle buttonStyle;
+    if (currentAppState.currentHomePageIndex == buttonIndex) {
+      buttonStyle = ElevatedButton.styleFrom(
+          elevation: 0,
+          shape: sideButtonShape,
+          minimumSize: buttonSize,
+          maximumSize: buttonSize,
+          alignment: Alignment.centerLeft,
+          backgroundColor: tabSelectedColor);
+    } else {
+      buttonStyle = ElevatedButton.styleFrom(
+          elevation: 0, shape: sideButtonShape, minimumSize: buttonSize, maximumSize: buttonSize, alignment: Alignment.centerLeft);
+    }
+    return buttonStyle;
   }
 }
