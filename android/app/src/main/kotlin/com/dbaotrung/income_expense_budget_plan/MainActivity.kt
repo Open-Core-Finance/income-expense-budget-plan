@@ -1,4 +1,4 @@
-package com.example.income_expense_budget_plan
+package com.dbaotrung.income_expense_budget_plan
 
 import io.flutter.embedding.android.FlutterActivity
 

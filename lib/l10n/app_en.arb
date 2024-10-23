@@ -144,5 +144,6 @@
   "reportTotalIncome": "Total income",
   "reportViewMoreButton": "View more",
   "reportViewMoreStatisticFor": "Statistics for {yearAndMonth}",
-  "featureTBD": "This page is under development. Please come back later."
+  "featureTBD": "This page is under development. Please come back later.",
+  "sqlImportMenu": "SQL import"
 }

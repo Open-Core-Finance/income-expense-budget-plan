@@ -4,7 +4,7 @@ import 'package:flutter_iconpicker/extensions/string_extensions.dart';
 import 'package:income_expense_budget_plan/app-layout/desktop/desktop_home.dart';
 import 'package:income_expense_budget_plan/common/account_panel.dart';
 import 'package:income_expense_budget_plan/common/default_currency_selection.dart';
-import 'package:income_expense_budget_plan/common/more_panel.dart';
+import 'package:income_expense_budget_plan/app-layout/mobile-portrait/mobile_more_panel.dart';
 import 'package:income_expense_budget_plan/common/report_panel.dart';
 import 'package:income_expense_budget_plan/common/transaction_panel.dart';
 import 'package:income_expense_budget_plan/model/setting.dart';
@@ -49,7 +49,7 @@ class _HomePageMobilePortraitState extends State<HomePageMobilePortrait> {
             const TransactionPanel(),
             const AccountPanel(),
             ReportPanel(),
-            const MorePanel()
+            const MobilePortraitMorePanel()
           ][appState.currentHomePageIndex % 4],
           bottomNavigationBar: NavigationBar(
             onDestinationSelected: (int index) {

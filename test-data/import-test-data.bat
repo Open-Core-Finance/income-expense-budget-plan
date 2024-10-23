@@ -1,4 +1,4 @@
-set dataFile=%USERPROFILE%\AppData\Roaming\com.example\income_expense_budget_plan\main_database.db
+set dataFile=%USERPROFILE%\AppData\Roaming\com.dbaotrung\income_expense_budget_plan\main_database.db
 sqlite3 "%dataFile%" ".read ..\assets\db_init.sql"
 sqlite3 "%dataFile%" ".read ..\assets\db_create_triggers.sql"
 sqlite3 "%dataFile%" ".read 01.add-accounts.sql"

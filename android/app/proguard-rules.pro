@@ -1,0 +1,2 @@
+-keep class com.dbaotrung.** { *; }
+-keepclassmembers class com.dbaotrung.** { *; }

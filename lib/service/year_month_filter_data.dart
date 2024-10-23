@@ -86,13 +86,14 @@ class YearMonthFilterData extends ChangeNotifier {
   set transactions(List<Transactions> transactions) {
     _transactions = transactions;
     _buildTransactionByDateMap();
+    if (refreshFunction != null) refreshFunction!();
   }
 
   List<ResourceStatisticMonthly> get resourcesStatisticsMonthly => _resourcesStatisticsMonthlyList;
   set resourcesStatisticsMonthly(List<ResourceStatisticMonthly> statistic) {
     _resourcesStatisticsMonthlyList = statistic;
     if (kDebugMode) {
-      print("Loaded resources statistics");
+      print("Loaded resources statistics.");
     }
     resourcesStatisticsMonthlyMap = {};
     for (var statistic in _resourcesStatisticsMonthlyList) {
@@ -104,15 +105,14 @@ class YearMonthFilterData extends ChangeNotifier {
       }
       tmp.add(statistic);
     }
+    if (refreshStatisticFunction != null) refreshStatisticFunction!();
   }
 
   void refreshFilterTransactions() {
     _refreshFilterTransactions((transactions) {
       notifyListeners();
-      if (refreshFunction != null) refreshFunction!();
     }, (statistics) {
       notifyListeners();
-      if (refreshStatisticFunction != null) refreshStatisticFunction!();
     });
   }
 
