@@ -1,3 +1,5 @@
+DROP TRIGGER IF EXISTS transaction_after_insert;
+
 CREATE TRIGGER transaction_after_insert
 AFTER INSERT ON transactions
 FOR EACH ROW
@@ -49,7 +51,7 @@ BEGIN
     update asset set loan_amount = NEW.amount WHERE uid = NEW.account_uid and NEW.transaction_type = 'adjustment' and asset_type = 'loan';
 
 --    INSERT INTO debug_log (message) VALUES (
---        'Inserted a new transaction with ID: ' || NEW.id || ' and datetime ' || NEW.transaction_date || ' with year value ' || ((CAST(strftime('%Y', datetime(NEW.transaction_date / 1000, 'unixepoch')) AS INTEGER) * 12) +
+--        'Inserted a new transaction with ID:' || NEW.id || ' and datetime ' || NEW.transaction_date || ' with year value ' || ((CAST(strftime('%Y', datetime(NEW.transaction_date / 1000, 'unixepoch')) AS INTEGER) * 12) +
 --         CAST(strftime('%m', datetime(NEW.transaction_date / 1000, 'unixepoch')) AS INTEGER))
 --    );
 
@@ -138,6 +140,7 @@ BEGIN
         currency_uid = NEW.currency_uid AND NEW.transaction_type = 'shareBillReturn' AND NEW.not_include_to_report = 0;
 END;
 
+DROP TRIGGER IF EXISTS transaction_year_month_update;
 CREATE TRIGGER transaction_year_month_update
 AFTER UPDATE OF transaction_date ON transactions
 FOR EACH ROW
@@ -154,6 +157,7 @@ BEGIN
     );
 END;
 
+DROP TRIGGER IF EXISTS transaction_deleted;
 CREATE TRIGGER transaction_deleted
 AFTER DELETE ON transactions
 FOR EACH ROW
@@ -238,6 +242,7 @@ BEGIN
 
 END;
 
+DROP TRIGGER IF EXISTS resource_statistic_daily_after_update;
 CREATE TRIGGER resource_statistic_daily_after_update
 AFTER UPDATE ON resource_statistic_daily
 FOR EACH ROW
@@ -250,6 +255,7 @@ BEGIN
        ', total_lend += ' || (NEW.total_lend - OLD.total_lend) || ', total_borrow += ' || (NEW.total_borrow - OLD.total_borrow));
 END;
 
+DROP TRIGGER IF EXISTS resource_statistic_daily_after_delete;
 CREATE TRIGGER resource_statistic_daily_after_delete
 AFTER DELETE ON resource_statistic_daily
 FOR EACH ROW
@@ -258,6 +264,7 @@ BEGIN
        OLD.stat_year || ' AND stat_month = ' || OLD.stat_month || ' AND stat_day = ' || OLD.stat_day);
 END;
 
+DROP TRIGGER IF EXISTS debug_log_after_insert;
 CREATE TRIGGER debug_log_after_insert
 AFTER INSERT ON debug_log
 FOR EACH ROW

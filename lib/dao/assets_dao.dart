@@ -54,4 +54,17 @@ class AssetsDao {
     );
     return result;
   }
+
+  Future<bool> existById(String assetId) async {
+    final db = await databaseService.database;
+    List<Map<String, dynamic>> records =
+        await db.query(tableNameAsset, where: 'uid = ?', whereArgs: [assetId], orderBy: 'last_updated DESC');
+    return (records.isNotEmpty);
+  }
+
+  Future<bool> categoryExistById(String assetCategoryId) async {
+    final db = await databaseService.database;
+    List<Map<String, dynamic>> records = await db.query(tableNameAssetCategory, where: 'uid = ?', whereArgs: [assetCategoryId]);
+    return (records.isNotEmpty);
+  }
 }

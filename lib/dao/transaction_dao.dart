@@ -1,8 +1,10 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:income_expense_budget_plan/model/transaction.dart';
 import 'package:income_expense_budget_plan/model/transaction_category.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/database_service.dart';
+import 'package:intl/intl.dart';
 
 import '../service/util.dart';
 
@@ -47,9 +49,6 @@ class TransactionDao {
 
   Future<Transactions> _transactionFromDb(Map<String, Object?> record) async {
     String txnType = record['transaction_type']! as String;
-    // if (kDebugMode) {
-    //   print("Transaction: $record => ${DateTime.fromMillisecondsSinceEpoch(record['transaction_date'] as int)}");
-    // }
     switch (txnType) {
       case "income":
         return IncomeTransaction.fromMap(record);
@@ -90,5 +89,28 @@ class TransactionDao {
     List<Map<String, dynamic>> records = await db.query(tableNameTransaction,
         where: 'transaction_type = ? AND remaining_amount > 0', whereArgs: ['shareBill'], orderBy: 'transaction_date DESC');
     return [for (Map<String, Object?> record in records) ShareBillTransaction.fromMap(record)];
+  }
+
+  Future<List<Transactions>> transactionsFromDateRange(DateTimeRange range) async {
+    if (kDebugMode) {
+      print("Loading transaction by date range...");
+    }
+    var dateFormat = DateFormat("yyyy-MM-dd");
+    final db = await databaseService.database;
+    List<Map<String, dynamic>> records = await db.query(tableNameTransaction,
+        where: "datetime(transaction_date / 1000, 'unixepoch') >= ? AND datetime(transaction_date / 1000, 'unixepoch') <= ?",
+        whereArgs: ['${dateFormat.format(range.start)} 00:00:00', '${dateFormat.format(range.end)} 23:59:59'],
+        orderBy: 'transaction_date ASC');
+    return [for (Map<String, Object?> record in records) await _transactionFromDb(record)];
+  }
+
+  Future<TransactionCategory?> transactionCategoryById(String id) async {
+    final db = await databaseService.database;
+    List<Map<String, dynamic>> records =
+        await db.query(tableNameTransactionCategory, where: 'uid = ?', whereArgs: [id], orderBy: 'last_updated DESC');
+    if (records.isNotEmpty) {
+      return TransactionCategory.fromMap(records.first);
+    }
+    return null;
   }
 }

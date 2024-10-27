@@ -25,10 +25,15 @@ class AppState extends ChangeNotifier {
   int get currentHomePageIndex => _currentHomePageIndex;
   bool isMobile = true;
   bool isLandscape = false;
+  int lastLayoutStyle = -1;
 
   set currentHomePageIndex(int currentHomePageIndex) {
     _currentHomePageIndex = currentHomePageIndex;
     triggerNotify();
+  }
+
+  void resetIndexNoRepaint() {
+    _currentHomePageIndex = 0;
   }
 
   List<AssetCategory> get assetCategories => _assetCategories;

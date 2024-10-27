@@ -70,7 +70,7 @@ abstract class Transactions extends GenericModel {
 
   String attributeString() {
     return '"${idFieldName()}": "$id", "transactionDate": "$transactionDate", "transactionTime": "$transactionTime", "transactionCategory": $transactionCategory,"description": "$description", '
-        '"withFee": $withFee, "feeAmount": "$feeAmount", "amount": "$amount", '
+        '"withFee": $withFee, "feeAmount": "$feeAmount", "amount": "$amount", "currencyUid": "$currencyUid", "accountId": "${account.id}",'
         '"lastUpdated": "$lastUpdated", "transactionType": "${getType()}", "notIncludeToReport": $notIncludeToReport';
   }
 
@@ -83,6 +83,11 @@ abstract class Transactions extends GenericModel {
   factory Transactions.fromMap(Map<String, dynamic> json) => throw UnimplementedError('fromMap must be implemented in subclasses');
 
   TransactionType getType();
+
+  String asExportDataLine() {
+    return '${getType().name}|$id|${transactionDate.millisecondsSinceEpoch}|${Util().timeOfDayToMinutes(transactionTime)}|${transactionCategory?.id}|$description|'
+        '$withFee|$feeAmount|$amount|${lastUpdated.millisecondsSinceEpoch}|$currencyUid|$notIncludeToReport|${account.id}';
+  }
 }
 
 class IncomeTransaction extends Transactions {
@@ -206,6 +211,11 @@ class TransferTransaction extends Transactions {
       toAccount: currentAppState.retrieveAccount(json['to_account_uid'] as String) ?? currentAppState.assets[0],
       feeApplyTo: json['fee_apply_to_from_account'] == 1,
       skipReport: json['not_include_to_report'] == 1);
+
+  @override
+  String asExportDataLine() {
+    return '${super.asExportDataLine()}|${toAccount.id}|$feeApplyToFromAccount';
+  }
 }
 
 class LendTransaction extends Transactions {
@@ -324,6 +334,11 @@ class AdjustmentTransaction extends Transactions {
   String attributeString() {
     return '${super.attributeString()}, "adjustedAmount":"$adjustedAmount"}';
   }
+
+  @override
+  String asExportDataLine() {
+    return '${super.asExportDataLine()}|$adjustedAmount';
+  }
 }
 
 class ShareBillTransaction extends Transactions {
@@ -381,6 +396,11 @@ class ShareBillTransaction extends Transactions {
       mySplit: json['my_split'],
       remaining: json['remaining_amount'],
       skipReport: json['not_include_to_report'] == 1);
+
+  @override
+  String asExportDataLine() {
+    return '${super.asExportDataLine()}|$mySplit|$remainingAmount';
+  }
 }
 
 class ShareBillReturnTransaction extends Transactions {
@@ -430,4 +450,9 @@ class ShareBillReturnTransaction extends Transactions {
       // sharedBillId: json['shared_bill_id'],
       sharedBill: shareBill,
       skipReport: json['not_include_to_report'] == 1);
+
+  @override
+  String asExportDataLine() {
+    return '${super.asExportDataLine()}|${sharedBill?.id}';
+  }
 }
