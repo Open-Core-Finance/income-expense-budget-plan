@@ -1,7 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:income_expense_budget_plan/app-layout/home.dart';
 import 'package:income_expense_budget_plan/common/assets_categories_panel.dart';
-import 'package:income_expense_budget_plan/common/sql_import.dart';
+import 'package:income_expense_budget_plan/common/file_export.dart';
+import 'package:income_expense_budget_plan/common/file_import.dart';
 import 'package:income_expense_budget_plan/common/transaction_categories_panel.dart';
 import 'package:income_expense_budget_plan/dao/transaction_dao.dart';
 import 'package:income_expense_budget_plan/model/transaction_category.dart';
@@ -18,34 +20,39 @@ class MobilePortraitMorePanel extends StatefulWidget {
 }
 
 class _MobilePortraitMorePanelState extends State<MobilePortraitMorePanel> {
-  int _tapCount = 0;
+  late DeveloperTapCountTriggerSupport developerTriggerSupport;
+
+  @override
+  void initState() {
+    super.initState();
+    developerTriggerSupport = DeveloperTapCountTriggerSupport(updateUiState: setState);
+  }
 
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
+    final AppLocalizations appLocalizations = AppLocalizations.of(context)!;
     return ListView(
       children: <Widget>[
-        if (!currentAppState.isLandscape) ...[
-          ListTile(
-            title: Text(AppLocalizations.of(context)!.settingsDarkMode),
-            subtitle: Text(currentAppState.systemSetting.getDarkModeText(context)),
-            onTap: () => Util().chooseBrightnessMode(context),
-          ),
-          ListTile(
-            title: const Text('Language'),
-            subtitle: Text(currentAppState.systemSetting.currentLanguageText),
-            onTap: () => Util().chooseLanguage(context),
-            iconColor: colorScheme.primary,
-          ),
-          ListTile(
-            title: Text(AppLocalizations.of(context)!.menuAccountCategory),
-            onTap: () => Util().navigateTo(context, const AssetCategoriesPanel()),
-            iconColor: colorScheme.primary,
-          )
-        ],
         ListTile(
-          title: Text(AppLocalizations.of(context)!.menuExpenseCategory),
+          title: Text(appLocalizations.settingsDarkMode),
+          subtitle: Text(currentAppState.systemSetting.getDarkModeText(context)),
+          onTap: () => Util().chooseBrightnessMode(context),
+        ),
+        ListTile(
+          title: const Text('Language'),
+          subtitle: Text(currentAppState.systemSetting.currentLanguageText),
+          onTap: () => Util().chooseLanguage(context),
+          iconColor: colorScheme.primary,
+        ),
+        ListTile(
+          title: Text(appLocalizations.menuAccountCategory),
+          onTap: () => Util().navigateTo(context, const AssetCategoriesPanel()),
+          iconColor: colorScheme.primary,
+        ),
+        ListTile(
+          title: Text(appLocalizations.menuExpenseCategory),
           onTap: () {
             var txnType = TransactionType.expense;
             int startTime = DateTime.now().millisecondsSinceEpoch;
@@ -63,7 +70,7 @@ class _MobilePortraitMorePanelState extends State<MobilePortraitMorePanel> {
                   ChangeNotifierProvider(
                     create: (context) => model,
                     builder: (context, child) => child!,
-                    child: TransactionCategoriesPanel(listPanelTitle: AppLocalizations.of(context)!.menuExpenseCategory),
+                    child: TransactionCategoriesPanel(listPanelTitle: appLocalizations.menuExpenseCategory),
                   ),
                 );
               }
@@ -72,7 +79,7 @@ class _MobilePortraitMorePanelState extends State<MobilePortraitMorePanel> {
           iconColor: colorScheme.primary,
         ),
         ListTile(
-          title: Text(AppLocalizations.of(context)!.menuIncomeCategory),
+          title: Text(appLocalizations.menuIncomeCategory),
           onTap: () {
             var txnType = TransactionType.income;
             TransactionDao().transactionCategoryByType(txnType).then((List<TransactionCategory> loadCats) {
@@ -87,7 +94,7 @@ class _MobilePortraitMorePanelState extends State<MobilePortraitMorePanel> {
                   ChangeNotifierProvider(
                     create: (context) => model,
                     builder: (context, child) => child!,
-                    child: TransactionCategoriesPanel(listPanelTitle: AppLocalizations.of(context)!.menuIncomeCategory),
+                    child: TransactionCategoriesPanel(listPanelTitle: appLocalizations.menuIncomeCategory),
                   ),
                 );
               }
@@ -95,25 +102,29 @@ class _MobilePortraitMorePanelState extends State<MobilePortraitMorePanel> {
           },
           iconColor: colorScheme.primary,
         ),
-        if (_tapCount >= showHiddenCount)
+        ListTile(
+          title: Text(appLocalizations.dataExportFileMenu),
+          onTap: () => Util().navigateTo(context, const DataFileExport(showBackArrow: true)),
+          iconColor: colorScheme.primary,
+        ),
+        ListTile(
+          title: Text(appLocalizations.dataImportFileMenu),
+          onTap: () => Util().navigateTo(context, const DataFileImport(showBackArrow: true)),
+          iconColor: colorScheme.primary,
+        ),
+        if (developerTriggerSupport.canShowDeveloperMenu())
           ListTile(
-            title: Text(AppLocalizations.of(context)!.sqlImportMenu),
+            title: Text(appLocalizations.sqlImportMenu),
             onTap: () {
               Util().navigateTo(context, const SqlImport(showBackArrow: true));
-              setState(() => _tapCount = 0);
+              developerTriggerSupport.resetTapCount();
             },
             iconColor: colorScheme.primary,
           ),
         MouseRegion(
           cursor: SystemMouseCursors.click, // Changes the cursor to a pointer
           child: GestureDetector(
-            onTap: () {
-              if (_tapCount != showHiddenCount - 1) {
-                _tapCount++;
-              } else {
-                setState(() => _tapCount++);
-              }
-            },
+            onTap: developerTriggerSupport.increaseTap,
             child: SizedBox(height: 100, child: Text("")),
           ),
         ),

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
+import 'package:income_expense_budget_plan/service/data_export_import.dart';
 import 'package:income_expense_budget_plan/service/form_util.dart';
 import 'package:income_expense_budget_plan/service/util.dart';
 
@@ -56,6 +57,7 @@ abstract class Asset extends AssetTreeNode {
       'last_updated': lastUpdated.millisecondsSinceEpoch,
       'category_uid': categoryUid,
       'available_amount': availableAmount,
+      'asset_type': getAssetType()
     };
   }
 
@@ -69,7 +71,8 @@ abstract class Asset extends AssetTreeNode {
   String attributeString() {
     return '"${idFieldName()}": "$id", "name": "$name", "icon": ${Util().iconDataToJSONString(icon)},"description": "$description", '
         '"positionIndex": $positionIndex, "lastUpdated": "${lastUpdated.toIso8601String()}", "currencyUid": "$currencyUid", '
-        '"categoryUid": "$categoryUid","localizeNames": ${jsonEncode(localizeNames)}, "localizeDescriptions": ${jsonEncode(localizeDescriptions)},"availableAmount": "$availableAmount"';
+        '"categoryUid": "$categoryUid","localizeNames": ${jsonEncode(localizeNames)}, "localizeDescriptions": ${jsonEncode(localizeDescriptions)},"availableAmount": "$availableAmount",'
+        '"assetType": "${getAssetType()}"';
   }
 
   @override
@@ -94,6 +97,11 @@ abstract class Asset extends AssetTreeNode {
   }
 
   String getAssetType();
+
+  String asExportDataLine() {
+    return '$id|$name|${Util().iconDataToJSONString(icon)}|$description|$positionIndex|${lastUpdated.millisecondsSinceEpoch}|'
+        '$currencyUid|$categoryUid|${jsonEncode(localizeNames)}|${jsonEncode(localizeDescriptions)}|$availableAmount|${getAssetType()}';
+  }
 }
 
 enum AssetType { genericAccount, bankCasa, loan, eWallet, creditCard, payLaterAccount }
@@ -112,13 +120,6 @@ class GenericAccount extends Asset {
     required super.categoryUid,
     required super.availableAmount,
   });
-
-  @override
-  Map<String, Object?> toMap() {
-    var result = super.toMap();
-    result.addAll({'asset_type': AssetType.genericAccount.name});
-    return result;
-  }
 
   factory GenericAccount.fromMap(Map<String, dynamic> json) => GenericAccount(
         id: json['uid'],
@@ -152,13 +153,6 @@ class BankCasaAccount extends Asset {
     required super.categoryUid,
     required super.availableAmount,
   });
-
-  @override
-  Map<String, Object?> toMap() {
-    var result = super.toMap();
-    result.addAll({'asset_type': AssetType.bankCasa.name});
-    return result;
-  }
 
   factory BankCasaAccount.fromMap(Map<String, dynamic> json) => BankCasaAccount(
         id: json['uid'],
@@ -197,7 +191,7 @@ class LoanAccount extends Asset {
   @override
   Map<String, Object?> toMap() {
     var result = super.toMap();
-    result.addAll({'loan_amount': loanAmount, 'asset_type': AssetType.loan.name});
+    result.addAll({'loan_amount': loanAmount});
     return result;
   }
 
@@ -229,6 +223,11 @@ class LoanAccount extends Asset {
 
   @override
   String getAssetType() => AssetType.loan.name;
+
+  @override
+  String asExportDataLine() {
+    return '${super.asExportDataLine()}|$loanAmount';
+  }
 }
 
 class EWallet extends Asset {
@@ -245,13 +244,6 @@ class EWallet extends Asset {
     required super.categoryUid,
     required super.availableAmount,
   });
-
-  @override
-  Map<String, Object?> toMap() {
-    var result = super.toMap();
-    result.addAll({'asset_type': AssetType.eWallet.name});
-    return result;
-  }
 
   factory EWallet.fromMap(Map<String, dynamic> json) => EWallet(
         id: json['uid'],
@@ -290,7 +282,7 @@ class CreditCard extends Asset {
   @override
   Map<String, Object?> toMap() {
     var result = super.toMap();
-    result.addAll({'credit_limit': creditLimit, 'asset_type': AssetType.creditCard.name});
+    result.addAll({'credit_limit': creditLimit});
     return result;
   }
 
@@ -323,6 +315,11 @@ class CreditCard extends Asset {
 
   @override
   String getAssetType() => AssetType.creditCard.name;
+
+  @override
+  String asExportDataLine() {
+    return '${super.asExportDataLine()}|$creditLimit';
+  }
 }
 
 class PayLaterAccount extends Asset {
@@ -344,7 +341,7 @@ class PayLaterAccount extends Asset {
   @override
   Map<String, Object?> toMap() {
     var result = super.toMap();
-    result.addAll({'payment_limit': paymentLimit, 'asset_type': AssetType.creditCard.name});
+    result.addAll({'payment_limit': paymentLimit});
     return result;
   }
 
@@ -370,4 +367,9 @@ class PayLaterAccount extends Asset {
 
   @override
   String getAssetType() => AssetType.payLaterAccount.name;
+
+  @override
+  String asExportDataLine() {
+    return '${super.asExportDataLine()}|$paymentLimit';
+  }
 }

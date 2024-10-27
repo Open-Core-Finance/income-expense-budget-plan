@@ -12,6 +12,8 @@ import 'package:path_provider/path_provider.dart';
 late Database database;
 
 class DatabaseService {
+  static final String execMapSuccessKey = "success";
+  static final String execMapErrDetailsKey = "errDetails";
   // Singleton pattern
   static final DatabaseService _databaseService = DatabaseService._internal();
   factory DatabaseService() => _databaseService;
@@ -20,6 +22,7 @@ class DatabaseService {
   static Completer<void>? _onCreateCompleter;
   Future<void>? get onCreateComplete => _onCreateCompleter?.future;
 
+  late String databasePath;
   static Database? _database;
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -31,24 +34,24 @@ class DatabaseService {
   Future<Database> _initDatabase() async {
     databaseFactory = databaseFactoryFfi;
     // final databasePath = await getDatabasesPath();
-    final String databasePath = (await getApplicationSupportDirectory()).absolute.path;
+    String databasePrefix = (await getApplicationSupportDirectory()).absolute.path;
 
     // Set the path to the database. Note: Using the `join` function from the
     // `path` package is best practice to ensure the path is correctly
     // constructed for each platform.
-    final path = join(databasePath, databaseNameMain);
+    databasePath = join(databasePrefix, databaseNameMain);
 
     // Initialize FFI
     sqfliteFfiInit();
 
     if (kDebugMode) {
-      print("Opening database $path...");
+      print("Opening database $databasePath...");
     }
 
     // Set the version. This executes the onCreate function and provides a
     // path to perform database upgrades and downgrades.
     return openDatabase(
-      path,
+      databasePath,
       onCreate: _onCreate,
       version: databaseVersion,
       singleInstance: true,
@@ -58,66 +61,56 @@ class DatabaseService {
     );
   }
 
-  Future<bool> _executeSqlFileBundle(Database db, String sqlFilePath) async {
-    var sqlContent = await rootBundle.loadString(sqlFilePath);
-    return _executeSqlContent(db, sqlContent);
-  }
+  // Internal file execution call
+  Future<Map<String, dynamic>> _executeSqlFileBundle(Database db, String sqlFilePath) async =>
+      _executeSqlContent(db, await rootBundle.loadString(sqlFilePath));
+  Future<Map<String, dynamic>> _executeTriggersSqlFileBundle(Database db, String sqlFilePath) async =>
+      _executeTriggersSqlContent(db, await rootBundle.loadString(sqlFilePath));
 
-  Future<bool> _executeSqlContent(Database db, String sqlContent) async {
-    List<String> sqlStatements = sqlContent.split(';');
+  // Internal execution call
+  Future<Map<String, dynamic>> _executeSqlContent(Database db, String sqlContent) async =>
+      _executeStatements(db, sqlContent.split(';'), ";");
+  Future<Map<String, dynamic>> _executeTriggersSqlContent(Database db, String sqlContent) async =>
+      _executeStatements(db, sqlContent.split('END;'), "\nEND;");
+
+  // External execution call
+  Future<Map<String, dynamic>> executeSqlContent(String sqlContent) async => _executeSqlContent(await database, sqlContent);
+  Future<Map<String, dynamic>> executeTriggersSqlFile(String sqlContent) async => _executeTriggersSqlContent(await database, sqlContent);
+
+  // Common full content execution logic
+  Future<Map<String, dynamic>> _executeStatements(Database db, List<String> statements, String statementSuffix) async {
+    Map<String, dynamic> resultMap = {};
     // Execute each statement
-    for (String statement in sqlStatements) {
-      if (statement.trim().isNotEmpty) {
-        try {
-          var execution = db.execute(statement);
-          if (kDebugMode) {
-            print("SQL $statement...");
-          }
-          await execution;
-        } catch (e) {
-          if (kDebugMode) {
-            print("SQL $statement executed fail! $e");
-          }
-          return false;
-        }
+    for (String statement in statements) {
+      var statementResult = await _executeSingleStatement(db, statement, statementSuffix);
+      if (statementResult != null) {
+        return statementResult;
       }
     }
-    return true;
+    resultMap[execMapSuccessKey] = true;
+    return resultMap;
   }
 
-  Future<bool> _executeTriggersSqlFileBundle(Database db, String sqlFilePath) async {
-    var sqlContent = await rootBundle.loadString(sqlFilePath);
-    return _executeTriggersSqlContent(db, sqlContent);
-  }
-
-  Future<bool> _executeTriggersSqlContent(Database db, String sqlContent) async {
-    List<String> triggerStatements = sqlContent.split('END;');
-    // Execute each statement
-    for (String statement in triggerStatements) {
-      if (statement.trim().isNotEmpty) {
-        try {
-          var execution = db.execute("$statement\nEND;");
-          if (kDebugMode) {
-            print("SQL $statement...");
-          }
-          await execution;
-        } catch (e) {
-          if (kDebugMode) {
-            print("SQL $statement trigger fail! $e");
-          }
-          return false;
+  // Single statement execution logic
+  Future<Map<String, dynamic>?> _executeSingleStatement(Database db, String statement, String statementSuffix) async {
+    if (statement.trim().isNotEmpty) {
+      try {
+        var execution = db.execute("${statement.trim()}$statementSuffix");
+        if (kDebugMode) {
+          print("SQL [$statement]...");
         }
+        await execution;
+        if (kDebugMode) {
+          print("Executed SQL [$statement]!");
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          print("SQL [$statement] trigger fail! $e");
+        }
+        return {execMapSuccessKey: false, execMapErrDetailsKey: e};
       }
     }
-    return true;
-  }
-
-  Future<bool> executeSqlContent(String sqlContent) async {
-    return _executeSqlContent(await database, sqlContent);
-  }
-
-  Future<bool> executeTriggersSqlFile(String sqlContent) async {
-    return _executeTriggersSqlContent(await database, sqlContent);
+    return null;
   }
 
   // When the database is first created
@@ -175,7 +168,7 @@ class DatabaseService {
         if (kDebugMode) {
           print("Deleted $deletedCount records in table $tableName");
         }
-        if (retrieveItemDisplay != null) {
+        if (retrieveItemDisplay != null && context.mounted) {
           if (deletedCount <= 0) {
             Util().showErrorDialog(context, errorLocalize(retrieveItemDisplay()), closeSuccessCallback);
           } else {
@@ -187,7 +180,7 @@ class DatabaseService {
         throw e;
       }).catchError((e, f) {
         if (onComplete != null) onComplete();
-        if (retrieveItemDisplay != null) {
+        if (retrieveItemDisplay != null && context.mounted) {
           Util().showErrorDialog(context, errorLocalize(retrieveItemDisplay()), closeErrorCallback);
         }
         if (onError != null) onError(e, f);

@@ -63,7 +63,7 @@ class Currency extends GenericModel {
       name: json['name'],
       deleted: json['deleted'] == 1,
       symbol: json['symbol'],
-      symbolPosition: SymbolPosition.values.firstWhere((txnType) => txnType.toString().split('.').last == json['symbol_position']),
+      symbolPosition: SymbolPosition.values.firstWhere((symbol) => symbol.toString().split('.').last == json['symbol_position']),
       mainCurrency: json['main_currency'] == 1,
       show: json['show'] == 1,
       decimalPoint: json['decimal_point'],

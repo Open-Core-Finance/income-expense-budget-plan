@@ -218,8 +218,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
     await future;
     if (!_isValidAssetName) {
       _formKey.currentState?.validate();
-    } else {
-      _formKey.currentState?.validate();
+    } else if (_formKey.currentState?.validate() ?? false) {
       Map<String, String> localizeMap = (!_enableMultiLanguage) ? {} : _localizeNamesMap.map((key, value) => MapEntry(key, value.text));
       Map<String, String> localizeDesc =
           (!_enableMultiLanguage) ? {} : _localizeDescriptionMap.map((key, value) => MapEntry(key, value.text));

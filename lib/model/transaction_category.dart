@@ -60,7 +60,7 @@ class TransactionCategory extends NameLocalizedModel<String> {
 
   @override
   String toString() {
-    return '{"${idFieldName()}": "$id", "name": "$name", "icon": ${Util().iconDataToJSONString(icon)},"parentUid": "$parentUid"${child.isNotEmpty ? ', '
+    return '{"${idFieldName()}": "$id", "name": "$name", "icon": ${Util().iconDataToJSONString(icon)},"parentUid": ${parentUid == null ? null : "$parentUid"}${child.isNotEmpty ? ', '
             '"child": $child' : ''}, "transactionType": "${transactionType.name}", "localizeNames": ${jsonEncode(localizeNames)},"system": $system,'
         '"positionIndex": $positionIndex, "lastUpdated": "${lastUpdated.toIso8601String()}"}';
   }

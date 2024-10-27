@@ -88,7 +88,7 @@ class _ReportPanelState extends State<ReportPanel> {
       BoxConstraints constraints = BoxConstraints(maxWidth: reportChartDefaultSize, maxHeight: reportChartDefaultSize);
       double chartPadding = currentAppState.systemSetting.reportChartPadding;
       if (widgetSize != null) {
-        double minSize = max(reportChartDefaultSize, min(widgetSize.width, widgetSize.height) / 2);
+        double minSize = max(reportChartDefaultSize, (min(widgetSize.width, widgetSize.height) - 10) / 2);
         reportChartDefaultSize = minSize;
         constraints = BoxConstraints(maxWidth: minSize, maxHeight: minSize);
       }

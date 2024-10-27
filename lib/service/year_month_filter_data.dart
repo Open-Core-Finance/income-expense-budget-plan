@@ -119,31 +119,13 @@ class YearMonthFilterData extends ChangeNotifier {
   void _refreshFilterTransactions(
       void Function(List<Transactions>) callback, void Function(List<ResourceStatisticMonthly>) statisticMonthlyCallback) {
     if (supportLoadTransactions) {
-      TransactionDao().transactionsByYearAndMonth(year, month).then((txns) {
-        transactions = txns;
-        callback(txns);
+      TransactionDao().transactionsByYearAndMonth(year, month).then((txnList) {
+        transactions = txnList;
+        callback(txnList);
       });
     }
     if (supportLoadStatisticMonthly) {
       ResourceStatisticDao().loadMonthlyStatistics(year, month).then((statistic) {
-        // ResourceStatisticDao().loadDailyStatistics(year, month).then((statistic) {
-        //   List<ResourceStatisticMonthly> monthlyList = [];
-        //   for (var daily in statistic) {
-        //     var tmp = daily.toMonthly();
-        //     ResourceStatisticMonthly? originMonthly;
-        //     for (var monthly in monthlyList) {
-        //       if (monthly == tmp) {
-        //         originMonthly = monthly;
-        //         break;
-        //       }
-        //     }
-        //     if (originMonthly == null) {
-        //       originMonthly = tmp;
-        //       monthlyList.add(originMonthly);
-        //     } else {
-        //       originMonthly.combineWith(tmp);
-        //     }
-        //   }
         resourcesStatisticsMonthly = statistic;
         statisticMonthlyCallback(statistic);
       });
