@@ -102,6 +102,12 @@
   "transactionDeleteError": "Deleting transaction fail!",
   "transactionDeleteSuccess": "Deleting transaction success!",
   "transactionUpdateError": "Updating transaction fail!",
+  "transactionHaveFee": "Have fee",
+  "transactionFee": "Fee",
+  "transactionInvalidFee": "Fee must be larger than 0",
+  "transactionInvalidAmount": "Value must be larger than 0",
+  "transactionTotalIncome": "Total incomes",
+  "transactionTotalExpense": "Total expenses",
   "date": "Date",
   "time": "Time",
   "selectDateEmpty": "Please select a date",
@@ -114,12 +120,6 @@
   "adjustmentNewAmount": "New amount",
   "adjustmentCurrentAmount": "Current amount",
   "sharedBillReturnForBill": "Return for bill",
-  "transactionHaveFee": "Have fee",
-  "transactionFee": "Fee",
-  "transactionInvalidFee": "Fee must be larger than 0",
-  "transactionInvalidAmount": "Value must be larger than 0",
-  "transactionTotalIncome": "Total incomes",
-  "transactionTotalExpense": "Total expenses",
   "weekDay1": "Monday",
   "weekDay2": "Tuesday",
   "weekDay3": "Wednesday",
@@ -166,5 +166,6 @@
   "dataImportFileLabel": "Data file",
   "dataImportFileButton": "Import",
   "dataImportFileSuccess": "Import data successfully!",
-  "dataImportFileFail": "Import data fail!"
+  "dataImportFileFail": "Import data fail!",
+  "clickToSelect": "Tab here to select"
 }

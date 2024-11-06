@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:income_expense_budget_plan/model/currency.dart';
 import 'package:income_expense_budget_plan/model/transaction.dart';
+import 'package:income_expense_budget_plan/model/transaction_category.dart';
 import 'package:income_expense_budget_plan/service/account_statistic.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/model/statistic.dart';
@@ -70,5 +71,24 @@ class TransactionService {
       }
     }
     return defaultIconData;
+  }
+
+  DropdownMenuItem<TransactionCategory> buildTransactionCategoryDropdownItem(BuildContext context, TransactionCategory cat, bool isChild) {
+    final ThemeData theme = Theme.of(context);
+    List<Widget> widgets = [];
+    if (isChild) {
+      widgets.addAll([
+        SizedBox(width: 10),
+        SizedBox(height: 20, width: 8, child: VerticalDivider(thickness: 2, color: theme.dividerColor, endIndent: 0, indent: 0)),
+        const Text("---", style: TextStyle(fontSize: 10), textAlign: TextAlign.left)
+      ]);
+    }
+    widgets.addAll([SizedBox(width: 5), Icon(cat.icon, color: theme.iconTheme.color), SizedBox(width: 5)]);
+    String tileText = cat.getTitleText(currentAppState.systemSetting);
+    if (cat.child.isNotEmpty) {
+      tileText += '(${cat.child.length})';
+    }
+    widgets.add(Text(tileText));
+    return DropdownMenuItem<TransactionCategory>(value: cat, child: Row(children: widgets));
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:income_expense_budget_plan/service/app_state.dart';
@@ -16,10 +18,6 @@ const Map<String, String> localeMap = {'en': 'English', 'vi': 'Tiếng Việ
 const String defaultLocale = 'en';
 const IconData defaultIconData = Icons.collections;
 
-const int appMinWidthMobile = 375;
-const int appMinHeight = 375;
-const int appMinPortraitHeight = 667;
-const int appMinWidthDesktop = 1500;
 const int showHiddenCount = 6;
 const int layoutStyleMobilePortrait = 1;
 const int layoutStyleMobileLandscape = 2;
@@ -37,3 +35,24 @@ const incomeIconData = IconData(0xe147, fontFamily: 'MaterialSymbolsIcons');
 const expenseIconData = IconData(0xe644, fontFamily: 'MaterialSymbolsIcons');
 const lendIconData = IconData(0xf52c, fontFamily: 'MaterialSymbolsIcons');
 const genericCategoryIconData = IconData(0xe65b, fontFamily: 'MaterialSymbolsIcons');
+
+class PlatformConst {
+  late int appMinWidthMobile;
+  late int appMinHeight;
+  late int appMinPortraitHeight;
+  late int appMinWidthDesktop;
+
+  PlatformConst() {
+    if (Platform.isIOS || Platform.isAndroid) {
+      appMinWidthMobile = 480;
+      appMinHeight = 480;
+      appMinPortraitHeight = 854;
+      appMinWidthDesktop = 1500;
+    } else {
+      appMinWidthMobile = 375;
+      appMinHeight = 375;
+      appMinPortraitHeight = 667;
+      appMinWidthDesktop = 900;
+    }
+  }
+}
