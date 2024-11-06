@@ -26,6 +26,7 @@ class AppState extends ChangeNotifier {
   bool isMobile = true;
   bool isLandscape = false;
   int lastLayoutStyle = -1;
+  PlatformConst platformConst = PlatformConst();
 
   set currentHomePageIndex(int currentHomePageIndex) {
     _currentHomePageIndex = currentHomePageIndex;

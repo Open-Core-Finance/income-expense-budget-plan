@@ -67,13 +67,14 @@ class FormUtil {
 
   Widget buildCheckboxFormField(BuildContext context, ThemeData theme,
       {required bool value, required String title, void Function(bool? value)? onChanged}) {
+    // return widget;
     return FormField<bool>(
       initialValue: value,
       builder: (FormFieldState<bool> state) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            CheckboxListTile(
+            SwitchListTile(
               title: Text(title),
               value: value,
               onChanged: (value) {

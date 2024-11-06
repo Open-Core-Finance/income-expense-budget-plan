@@ -102,6 +102,12 @@
   "transactionDeleteError": "Xóa giao dịch thất bại!",
   "transactionDeleteSuccess": "Xóa giao dịch thành công!",
   "transactionUpdateError": "Cập nhật giao dịch thất bại!",
+  "transactionHaveFee": "Có phí",
+  "transactionFee": "Phí",
+  "transactionInvalidFee": "Phí phải lớn hơn 0",
+  "transactionInvalidAmount": "Giá trị phải lớn hơn 0",
+  "transactionTotalIncome": "Tổng thu",
+  "transactionTotalExpense": "Tổng chi",
   "date": "Ngày",
   "time": "Giờ",
   "selectDateEmpty": "Xin hãy chọn ngày tháng",
@@ -114,12 +120,6 @@
   "adjustmentNewAmount": "Giá trị mới",
   "adjustmentCurrentAmount": "Giá trị hiện tại",
   "sharedBillReturnForBill": "Tiền trả cho hoá đơn",
-  "transactionHaveFee": "Có phí",
-  "transactionFee": "Phí",
-  "transactionInvalidFee": "Phí phải lớn hơn 0",
-  "transactionInvalidAmount": "Giá trị phải lớn hơn 0",
-  "transactionTotalIncome": "Tổng thu",
-  "transactionTotalExpense": "Tổng chi",
   "weekDay1": "Thứ hai",
   "weekDay2": "Thứ ba",
   "weekDay3": "Thứ tư",
@@ -166,5 +166,6 @@
   "dataImportFileLabel": "Data file",
   "dataImportFileButton": "Nhập",
   "dataImportFileSuccess": "Nhập dữ liệu thành công!",
-  "dataImportFileFail": "Nhập dữ liệu thất bại!"
+  "dataImportFileFail": "Nhập dữ liệu thất bại!",
+  "clickToSelect": "Bấm vào đây để chọn"
 }
