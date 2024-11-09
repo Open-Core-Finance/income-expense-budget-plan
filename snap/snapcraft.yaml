@@ -21,6 +21,11 @@ apps:
     #  - network
     slots:
       - income-expense-budget-plan
+
+architectures:
+  - build-on: [amd64, arm64]
+    run-on: [amd64, arm64]
+
 parts:
   income-expense-budget-plan:
     source: .
