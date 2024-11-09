@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:income_expense_budget_plan/dao/transaction_dao.dart';
+import 'package:income_expense_budget_plan/model/transaction_category.dart';
 import 'package:income_expense_budget_plan/ui-app-layout/desktop/desktop_home.dart';
 import 'package:income_expense_budget_plan/ui-app-layout/mobile-landscape/mobile_landscape_home.dart';
 import 'package:income_expense_budget_plan/ui-app-layout/mobile-portrait/mobile_portrait_home.dart';
@@ -38,9 +40,8 @@ void main() async {
           currentAppState.systemSetting.defaultCurrency = currency;
         }
       }
-      Util().refreshAssets((List<Asset> assets) {
-        runApp(const MyApp());
-      });
+      TransactionDao().transactionCategories();
+      Util().refreshAssets((List<Asset> assets) => runApp(const MyApp()));
     });
   });
 }

@@ -40,7 +40,8 @@ abstract class AccountPanelState<T extends AccountPanel> extends State<T> {
 
     util.refreshAssets((List<Asset> assets) {
       if (kDebugMode) {
-        print("Assets loaded: $assets");
+        // print("Assets loaded: $assets");
+        print("All Assets loaded!");
       }
     });
   }
@@ -73,13 +74,13 @@ abstract class AccountPanelState<T extends AccountPanel> extends State<T> {
         return a.positionIndex - b.positionIndex;
       }
     });
-    if (kDebugMode) {
-      if (categories.isNotEmpty) {
-        print("\nCategories: $categories\n Child: ${categories[0].assets}\n");
-      } else {
-        print("\nCategories: $categories\n");
-      }
-    }
+    // if (kDebugMode) {
+    // if (categories.isNotEmpty) {
+    //   print("\nCategories: $categories\n Child: ${categories[0].assets}\n");
+    // } else {
+    //   print("\nCategories: $categories\n");
+    // }
+    // }
     Widget floatingButton;
     if (widget.floatingButton != null) {
       floatingButton = widget.floatingButton!;

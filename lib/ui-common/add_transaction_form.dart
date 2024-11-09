@@ -703,34 +703,35 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
     }
   }
 
-  Map<TransactionType, List<TransactionCategory>> retrieveCategoriesMap(BuildContext context, TransactionType type) {
+  Future<Map<TransactionType, List<TransactionCategory>>> retrieveCategoriesMap(BuildContext context, TransactionType type) async {
     Map<TransactionType, List<TransactionCategory>> categoriesMap;
     if (type == TransactionType.income || type == TransactionType.expense) {
-      categoriesMap = {type: currentAppState.categoriesMap[type] ?? []};
+      var list = await TransactionDao().transactionCategoryByType(type);
+      return {type: list};
     } else {
+      var list = await TransactionDao().transactionCategories();
       categoriesMap = {};
-      for (var entry in currentAppState.categoriesMap.entries) {
-        if (entry.value.isNotEmpty) {
-          categoriesMap[entry.key] = entry.value;
+      for (var cat in list) {
+        var val = categoriesMap[cat.transactionType];
+        if (val == null) {
+          val = [cat];
+          categoriesMap[cat.transactionType] = val;
+        } else {
+          val.add(cat);
         }
       }
     }
     return categoriesMap;
   }
 
-  void _chooseCategory(BuildContext context, TransactionType type) {
+  void _chooseCategory(BuildContext context, TransactionType type) async {
     final ThemeData theme = Theme.of(context);
-    // Get the current screen size
-    final Size screenSize = MediaQuery.of(context).size;
-    // Set min and max size based on the screen size
-    final double maxWidth = screenSize.width * 0.9; // 80% of screen width
-    final double maxHeight = screenSize.height * 0.9; // 50% of screen height
 
     AppLocalizations apLocalizations = AppLocalizations.of(context)!;
     String expenseTitle = apLocalizations.menuExpenseCategory;
     String incomeTitle = apLocalizations.menuIncomeCategory;
     String dialogTitle;
-    Map<TransactionType, List<TransactionCategory>> categoriesMap = retrieveCategoriesMap(context, type);
+    Map<TransactionType, List<TransactionCategory>> categoriesMap = await retrieveCategoriesMap(context, type);
     if (type == TransactionType.income || type == TransactionType.expense) {
       if (type == TransactionType.income) {
         dialogTitle = incomeTitle;
@@ -746,7 +747,7 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
       shape: const CircleBorder(),
       onPressed: () => Navigator.of(context).pop(),
       heroTag: "select-category-Button",
-      child: Text(AppLocalizations.of(context)!.actionClose),
+      child: Text(apLocalizations.actionClose),
     );
 
     TransactionCategoriesPanel listPanel;
@@ -779,13 +780,15 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
         floatingActionButton: floatingActionButton,
       );
     }
-    showDialog(
-      context: context,
-      builder: (BuildContext context) => ChangeNotifierProvider(
-        create: (context) => TransactionCategoriesListenable(categoriesMap: categoriesMap),
-        builder: (BuildContext context, Widget? child) => listPanel,
-      ),
-    );
+    if (context.mounted) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) => ChangeNotifierProvider(
+          create: (context) => TransactionCategoriesListenable(categoriesMap: categoriesMap),
+          builder: (BuildContext context, Widget? child) => listPanel,
+        ),
+      );
+    }
   }
 
   void _chooseAccount(BuildContext context, bool fromAccount) {

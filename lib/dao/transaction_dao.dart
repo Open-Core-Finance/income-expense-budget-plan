@@ -28,6 +28,23 @@ class TransactionDao {
     return resultObjectList;
   }
 
+  Future<List<TransactionCategory>> transactionCategories() async {
+    final db = await databaseService.database;
+    List<Map<String, dynamic>> result = await db.query(tableNameTransactionCategory);
+    List<TransactionCategory> resultObjectList = [for (Map<String, Object?> record in result) TransactionCategory.fromMap(record)];
+    resultObjectList = Util().buildTransactionCategoryTree(resultObjectList);
+    for (var cat in resultObjectList) {
+      List<TransactionCategory>? list = currentAppState.categoriesMap[cat.transactionType];
+      if (list == null) {
+        list = [cat];
+        currentAppState.categoriesMap[cat.transactionType] = list;
+      } else {
+        list.add(cat);
+      }
+    }
+    return resultObjectList;
+  }
+
   Future<List<Map<String, dynamic>>> loadCategoryByTransactionTypeAndNameAndIgnoreSpecificCategory(
       TransactionType transactionType, String name, String? uuidToIgnore) async {
     final db = await databaseService.database;
