@@ -277,6 +277,14 @@ class _TransactionPanelState extends State<TransactionPanel> {
     ]);
   }
 
-  void transactionUpdated(Transactions transaction, Transactions? deletedTran) =>
-      setState(() => _retrieveProvidedFilter()?.refreshFilterTransactions());
+  void transactionUpdated(Transactions transaction, Transactions? deletedTran) => setState(() {
+        YearMonthFilterData? providedYearMonthFilterData = _retrieveProvidedFilter();
+        YearMonthFilterData filterData;
+        if (providedYearMonthFilterData != null) {
+          filterData = providedYearMonthFilterData;
+        } else {
+          filterData = yearMonthFilterData!;
+        }
+        filterData.refreshFilterTransactions();
+      });
 }

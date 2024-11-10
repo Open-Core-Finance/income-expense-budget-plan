@@ -4,8 +4,9 @@ class VerticalSplitView extends StatefulWidget {
   final Widget left;
   final Widget right;
   final double ratio;
+  final double? dividerWidth;
 
-  const VerticalSplitView({required super.key, required this.left, required this.right, this.ratio = 0.5})
+  const VerticalSplitView({required super.key, required this.left, required this.right, this.ratio = 0.5, this.dividerWidth})
       : assert(ratio >= 0),
         assert(ratio <= 1);
 
@@ -14,7 +15,7 @@ class VerticalSplitView extends StatefulWidget {
 }
 
 class _VerticalSplitViewState extends State<VerticalSplitView> {
-  final _dividerWidth = 12.0;
+  late final double _dividerWidth;
 
   //from 0-1
   late double _ratio;
@@ -28,6 +29,11 @@ class _VerticalSplitViewState extends State<VerticalSplitView> {
   void initState() {
     super.initState();
     _ratio = widget.ratio;
+    if (widget.dividerWidth != null) {
+      _dividerWidth = widget.dividerWidth!;
+    } else {
+      _dividerWidth = 10.0;
+    }
   }
 
   @override

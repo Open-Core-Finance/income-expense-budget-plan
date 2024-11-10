@@ -62,10 +62,19 @@ class DatabaseService {
   }
 
   // Internal file execution call
-  Future<Map<String, dynamic>> _executeSqlFileBundle(Database db, String sqlFilePath) async =>
-      _executeSqlContent(db, await rootBundle.loadString(sqlFilePath));
-  Future<Map<String, dynamic>> _executeTriggersSqlFileBundle(Database db, String sqlFilePath) async =>
-      _executeTriggersSqlContent(db, await rootBundle.loadString(sqlFilePath));
+  Future<Map<String, dynamic>> _executeSqlFileBundle(Database db, String sqlFilePath) async {
+    if (kDebugMode) {
+      print('Executed SQL file "$sqlFilePath"!!');
+    }
+    return _executeSqlContent(db, await rootBundle.loadString(sqlFilePath));
+  }
+
+  Future<Map<String, dynamic>> _executeTriggersSqlFileBundle(Database db, String sqlFilePath) async {
+    if (kDebugMode) {
+      print('Executed SQL Trigger file "$sqlFilePath"!!');
+    }
+    return _executeTriggersSqlContent(db, await rootBundle.loadString(sqlFilePath));
+  }
 
   // Internal execution call
   Future<Map<String, dynamic>> _executeSqlContent(Database db, String sqlContent) async =>
@@ -93,19 +102,25 @@ class DatabaseService {
 
   // Single statement execution logic
   Future<Map<String, dynamic>?> _executeSingleStatement(Database db, String statement, String statementSuffix) async {
-    if (statement.trim().isNotEmpty) {
+    var statementTrim = statement.trim();
+    if (statementTrim.isNotEmpty) {
       try {
-        var execution = db.execute("${statement.trim()}$statementSuffix");
-        if (kDebugMode) {
-          print("SQL [$statement]...");
-        }
+        var execution = db.execute("$statementTrim$statementSuffix");
         await execution;
         if (kDebugMode) {
-          print("Executed SQL [$statement]!");
+          if (statementSuffix == ";") {
+            print("Executed SQL [$statementTrim]!");
+          } else {
+            print("Executed SQL Trigger!");
+          }
         }
       } catch (e) {
         if (kDebugMode) {
-          print("SQL [$statement] trigger fail! $e");
+          if (statementSuffix == ";") {
+            print("SQL [$statementTrim] trigger fail! $e");
+          } else {
+            print("Executed SQL Trigger fail!!");
+          }
         }
         return {execMapSuccessKey: false, execMapErrDetailsKey: e};
       }
@@ -115,6 +130,10 @@ class DatabaseService {
 
   // When the database is first created
   Future<void> _onCreate(Database db, int version) async {
+    if (kDebugMode) {
+      print("Creating database with version $version...");
+    }
+
     // Initialize the completer
     _onCreateCompleter = Completer<void>();
 
@@ -122,19 +141,34 @@ class DatabaseService {
     // Complete the completer once the onCreate is done
     _onCreateCompleter?.complete();
 
+    await _executeSqlFileBundle(db, 'assets/db_clean_triggers.sql');
     _executeTriggersSqlFileBundle(db, 'assets/db_create_triggers.sql');
   }
 
   Future<void> _onOpen(Database db) async {
+    await _executeSqlFileBundle(db, 'assets/db_clean_triggers.sql');
+    await _executeTriggersSqlFileBundle(db, 'assets/db_create_triggers.sql');
+    await _executeSqlFileBundle(db, 'assets/db_validate_and_correct.sql');
     if (kDebugMode) {
-      print("Opening database successful.");
+      print("Opening database successful. Current version $databaseVersion");
     }
-    _executeSqlFileBundle(db, 'assets/db_validate_and_correct.sql');
   }
 
   // When the database version increased
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    _executeSqlFileBundle(db, 'assets/db_upgrade.sql');
+    if (kDebugMode) {
+      print("Upgrading database version from $oldVersion to $newVersion...");
+    }
+    await _executeSqlFileBundle(db, 'assets/db_clean_triggers.sql');
+    await _executeTriggersSqlFileBundle(db, 'assets/db_create_triggers.sql');
+    await _executeSqlFileBundle(db, 'assets/db_upgrade_all.sql');
+    if (oldVersion < 2) {
+      await _executeSqlFileBundle(db, 'assets/db_upgrade_2.sql');
+    }
+    // if (oldVersion < 3) {
+    //   _executeSqlFileBundle(db, 'assets/db_upgrade_3.sql');
+    // }
+    // add more version specific sql
   }
 
   Future<List<T>> loadListModel<T>(String tableName, T Function(Map<String, dynamic> data) convert) async {

@@ -4,20 +4,21 @@ CREATE TABLE IF NOT EXISTS setting(id Integer PRIMARY KEY, locale TEXT, dark_mod
     report_bar_space REAL DEFAULT 20 NOT NULL, report_pie_chart_prefer_count Integer DEFAULT 8 NOT NULL,
     report_pie_chart_other_limit_percentage REAL DEFAULT 0.1 NOT NULL, report_pie_chart_prefer_item_min_percentage REAL DEFAULT 0.05 NOT NULL);
 CREATE TABLE IF NOT EXISTS currency(uid TEXT PRIMARY KEY, name TEXT, iso TEXT, deleted Integer, symbol TEXT,
-    symbol_position TEXT, main_currency Integer, show Integer, decimal_point Integer, language TEXT);
+    symbol_position TEXT, main_currency Integer, show Integer, decimal_point Integer, language TEXT, last_sync Integer NULL);
 CREATE TABLE IF NOT EXISTS asset_category(uid TEXT PRIMARY KEY, name TEXT, icon TEXT, system Integer, localize_names TEXT,
-    position_index Integer DEFAULT 0 NOT NULL, last_updated Integer DEFAULT 0);
+    position_index Integer DEFAULT 0 NOT NULL, last_updated Integer DEFAULT 0, last_sync Integer NULL);
 CREATE TABLE IF NOT EXISTS asset(uid TEXT PRIMARY KEY, icon TEXT, name TEXT, description TEXT, available_amount REAL DEFAULT 0.0,
     loan_amount REAL DEFAULT 0.0, credit_limit REAL DEFAULT 0.0, payment_limit REAL DEFAULT 0.0, currency_uid TEXT,
     asset_type TEXT, category_uid TEXT, localize_names TEXT, localize_descriptions TEXT, position_index Integer DEFAULT 0 NOT NULL,
-    last_updated Integer DEFAULT 0, FOREIGN KEY (category_uid) REFERENCES asset_category (uid), FOREIGN KEY (currency_uid) REFERENCES currency (uid) );
+    last_updated Integer DEFAULT 0, last_sync Integer NULL,
+    FOREIGN KEY (category_uid) REFERENCES asset_category (uid), FOREIGN KEY (currency_uid) REFERENCES currency (uid));
 CREATE TABLE IF NOT EXISTS transaction_category(uid TEXT PRIMARY KEY, name TEXT, icon TEXT, parent_uid TEXT, transaction_type TEXT, system Integer, localize_names TEXT,
-    position_index Integer Integer DEFAULT 0 NOT NULL, last_updated Integer DEFAULT 0);
+    position_index Integer Integer DEFAULT 0 NOT NULL, last_updated Integer DEFAULT 0, last_sync Integer NULL);
 CREATE TABLE IF NOT EXISTS transactions(id TEXT PRIMARY KEY, description TEXT, transaction_date Integer DEFAULT 0, transaction_time Integer DEFAULT 0, transaction_category_uid TEXT, transaction_type TEXT,
     with_fee integer NOT NULL DEFAULT 0, fee_amount REAL NOT NULL DEFAULT 0.0, amount REAL NOT NULL DEFAULT 0.0, last_updated Integer NOT NULL DEFAULT 0, account_uid TEXT,
     currency_uid TEXT NOT NULL, to_account_uid TEXT, my_split REAL NOT NULL default 0.0, remaining_amount REAL NOT NULL default 0.0, shared_bill_id TEXT,
     year_month INTEGER NOT NULL DEFAULT 22800, fee_apply_to_from_account INTEGER NOT NULL DEFAULT 0, adjusted_amount REAL NOT NULL default 0.0,
-    not_include_to_report Integer DEFAULT 0,
+    not_include_to_report Integer DEFAULT 0, last_sync Integer NULL,
     FOREIGN KEY (transaction_category_uid) REFERENCES transaction_category (uid),
     FOREIGN KEY (account_uid) REFERENCES asset (uid),
     FOREIGN KEY (currency_uid) REFERENCES currency (uid));

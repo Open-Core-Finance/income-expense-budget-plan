@@ -27,12 +27,10 @@ class _HomePageDesktopState extends HomePageState<HomePageDesktop> {
   List<TransactionCategory> incomeCategories = [];
   List<TransactionCategory> expenseCategories = [];
   late YearMonthFilterData yearMonthFilterData;
-  late DeveloperTapCountTriggerSupport developerTriggerSupport;
 
   @override
   void initState() {
     super.initState();
-    developerTriggerSupport = DeveloperTapCountTriggerSupport(updateUiState: setState);
 
     TransactionDao().transactionCategoryByType(TransactionType.income).then((loadCats) => setState(() => incomeCategories = loadCats));
     TransactionDao().transactionCategoryByType(TransactionType.expense).then((loadCats) => setState(() => expenseCategories = loadCats));

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:income_expense_budget_plan/dao/transaction_dao.dart';
-import 'package:income_expense_budget_plan/model/transaction_category.dart';
+// import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'package:income_expense_budget_plan/ui-app-layout/desktop/desktop_home.dart';
 import 'package:income_expense_budget_plan/ui-app-layout/mobile-landscape/mobile_landscape_home.dart';
 import 'package:income_expense_budget_plan/ui-app-layout/mobile-portrait/mobile_portrait_home.dart';
@@ -28,6 +29,10 @@ void main() async {
   if (createCompletion != null) {
     await createCompletion;
   }
+
+  // await Firebase.initializeApp(
+  //   options: DefaultFirebaseOptions.currentPlatform,
+  // );
 
   currentAppState.reloadTransactionCategories();
   SettingDao().loadSettings().then((SettingModel settings) {

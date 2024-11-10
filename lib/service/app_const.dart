@@ -9,7 +9,7 @@ const String tableNameCurrency = "currency";
 const String tableNameSetting = "setting";
 const String tableNameAsset = "asset";
 const String databaseNameMain = "main_database.db";
-const int databaseVersion = 1;
+const int databaseVersion = 2;
 const String tableNameAssetCategory = "asset_category";
 const String tableNameTransactionCategory = "transaction_category";
 const String tableNameTransaction = "transactions";
@@ -41,8 +41,10 @@ class PlatformConst {
   late int appMinHeight;
   late int appMinPortraitHeight;
   late int appMinWidthDesktop;
+  late int reportVerticalSplitViewMinWidth;
 
   PlatformConst() {
+    reportVerticalSplitViewMinWidth = 600;
     if (Platform.isIOS || Platform.isAndroid) {
       appMinWidthMobile = 480;
       appMinHeight = 480;

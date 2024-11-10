@@ -18,10 +18,12 @@ abstract class HomePage extends StatefulWidget {
 abstract class HomePageState<T extends HomePage> extends State<T> {
   MediaQueryData? lastMediaData;
   Util util = Util();
+  late DeveloperTapCountTriggerSupport developerTriggerSupport;
 
   @override
   void initState() {
     super.initState();
+    developerTriggerSupport = DeveloperTapCountTriggerSupport(updateUiState: setState);
     // Show the dialog when the app starts
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _startDefaultCurrencyCheck();
@@ -38,7 +40,7 @@ abstract class HomePageState<T extends HomePage> extends State<T> {
       if (kDebugMode) {
         print("Default currency [$currencyId] and isBlank [${currencyId?.isBlank}]");
       }
-      showDialog(context: context, builder: (BuildContext context) => const DefaultCurrencySelectionDialog());
+      util.navigateTo(context, const DefaultCurrencySelectionDialog());
     }
   }
 
@@ -46,11 +48,13 @@ abstract class HomePageState<T extends HomePage> extends State<T> {
   Widget build(BuildContext context) {
     // Media query
     MediaQueryData tmp = MediaQuery.of(context);
-    if (lastMediaData != null) {
-      if (kDebugMode) {
+    if (kDebugMode) {
+      if (lastMediaData != null) {
         if (tmp.size != lastMediaData?.size) {
           print("Switched to screen size ${MediaQuery.of(context).size}");
         }
+      } else {
+        print("Started with screen size $lastMediaData");
       }
     }
     lastMediaData = tmp;
