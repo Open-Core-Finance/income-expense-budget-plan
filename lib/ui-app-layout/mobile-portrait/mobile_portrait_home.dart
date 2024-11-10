@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:income_expense_budget_plan/ui-app-layout/home.dart';
-import 'package:income_expense_budget_plan/ui-app-layout/mobile-portrait/portrait_more_panel.dart';
-import 'package:income_expense_budget_plan/ui-common/account_panel.dart';
-import 'package:income_expense_budget_plan/ui-common/report_panel.dart';
-import 'package:income_expense_budget_plan/ui-common/transaction_panel.dart';
 import 'package:income_expense_budget_plan/model/setting.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/app_state.dart';
+import 'package:income_expense_budget_plan/ui-app-layout/home.dart';
+import 'package:income_expense_budget_plan/ui-app-layout/mobile-portrait/portrait_more_panel.dart';
+import 'package:income_expense_budget_plan/ui-common/report_panel.dart';
+import 'package:income_expense_budget_plan/ui-common/transaction_panel.dart';
 import 'package:income_expense_budget_plan/ui-platform-based/portrait/account_panel.dart';
 
 class HomePageMobilePortrait extends HomePage {
@@ -29,11 +28,7 @@ class _HomePageMobilePortraitState extends HomePageState<HomePageMobilePortrait>
     return Scaffold(
       body: body,
       bottomNavigationBar: NavigationBar(
-        onDestinationSelected: (int index) {
-          setState(() {
-            appState.currentHomePageIndex = index;
-          });
-        },
+        onDestinationSelected: (int index) => setState(() => appState.currentHomePageIndex = index),
         indicatorColor: tabSelectedColor,
         selectedIndex: appState.currentHomePageIndex,
         destinations: <Widget>[

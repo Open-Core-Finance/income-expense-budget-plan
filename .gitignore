@@ -53,3 +53,5 @@ app.*.map.json
 
 # My code generated
 /**/*.iebp
+
+android/.kotlin/sessions/

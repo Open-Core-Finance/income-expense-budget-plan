@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:income_expense_budget_plan/ui-app-layout/home.dart';
-import 'package:income_expense_budget_plan/ui-app-layout/mobile-landscape/landscape_more_panel.dart';
-import 'package:income_expense_budget_plan/ui-common/account_panel.dart';
-import 'package:income_expense_budget_plan/ui-common/assets_categories_panel.dart';
-import 'package:income_expense_budget_plan/ui-common/report_panel.dart';
-import 'package:income_expense_budget_plan/ui-common/transaction_panel.dart';
 import 'package:income_expense_budget_plan/model/setting.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/app_state.dart';
+import 'package:income_expense_budget_plan/ui-app-layout/home.dart';
+import 'package:income_expense_budget_plan/ui-app-layout/mobile-landscape/landscape_more_panel.dart';
+import 'package:income_expense_budget_plan/ui-common/assets_categories_panel.dart';
+import 'package:income_expense_budget_plan/ui-common/report_panel.dart';
+import 'package:income_expense_budget_plan/ui-common/transaction_panel.dart';
 import 'package:income_expense_budget_plan/ui-platform-based/landscape/account_panel.dart';
 
 class HomePageMobileLandscape extends HomePage {
@@ -19,14 +18,6 @@ class HomePageMobileLandscape extends HomePage {
 }
 
 class _HomePageMobileLandscapeState extends HomePageState<HomePageMobileLandscape> {
-  late DeveloperTapCountTriggerSupport developerTriggerSupport;
-
-  @override
-  void initState() {
-    super.initState();
-    developerTriggerSupport = DeveloperTapCountTriggerSupport(updateUiState: setState);
-  }
-
   @override
   Widget homePageBuild({
     required BuildContext context,

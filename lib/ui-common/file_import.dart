@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/data_export_import.dart';
 import 'package:income_expense_budget_plan/service/database_service.dart';
 import 'package:income_expense_budget_plan/service/util.dart';
@@ -96,25 +97,39 @@ class _SqlImportState extends _FileImportState<SqlImport> {
             Text(databaseService.databasePath),
             buildFileSelectionRow(
                 context, appLocalizations, appLocalizations.sqlImportFileLabel, appLocalizations.sqlImportSelectFile, false),
-            SizedBox(height: 20),
-            if (_filePath != null)
-              Row(children: [
-                ElevatedButton.icon(
-                  onPressed: () => _executeSqlContent(context, _filePath!),
-                  icon: Icon(Icons.play_arrow, color: theme.primaryColor),
-                  label: Text(appLocalizations.sqlImportFileButtonSqlExe),
-                ),
-                SizedBox(width: 10),
-                ElevatedButton.icon(
-                  onPressed: () => _executeSqlTriggerContent(context, _filePath!),
-                  icon: Icon(Icons.play_arrow, color: theme.primaryColor),
-                  label: Text(appLocalizations.sqlImportFileButtonTriggerExe),
-                ),
-              ]),
+            ..._buildButtonBar(context)
           ],
         ),
       ),
     );
+  }
+
+  List<Widget> _buildButtonBar(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    AppLocalizations appLocalizations = AppLocalizations.of(context)!;
+    List<Widget> result = [SizedBox(height: 20)];
+    if (_filePath != null) {
+      var execSqlButton = ElevatedButton.icon(
+        onPressed: () => _executeSqlContent(context, _filePath!),
+        icon: Icon(Icons.play_arrow, color: theme.primaryColor),
+        label: Text(appLocalizations.sqlImportFileButtonSqlExe),
+      );
+      var execProcedureButton = ElevatedButton.icon(
+        onPressed: () => _executeSqlTriggerContent(context, _filePath!),
+        icon: Icon(Icons.play_arrow, color: theme.primaryColor),
+        label: Text(appLocalizations.sqlImportFileButtonTriggerExe),
+      );
+      if (currentAppState.isMobile) {
+        result.add(execSqlButton);
+        result.add(SizedBox(height: 10));
+        result.add(execProcedureButton);
+      } else {
+        result.add(
+          Row(children: [execSqlButton, SizedBox(width: 10), execProcedureButton]),
+        );
+      }
+    }
+    return result;
   }
 
   void _executeSqlContent(BuildContext context, String filePath) async {

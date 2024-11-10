@@ -221,7 +221,7 @@ BEGIN
     WHERE resource_type = 'category' AND stat_year = CAST(strftime('%Y', datetime(OLD.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
        stat_month = CAST(strftime('%m', datetime(OLD.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND
        stat_day = CAST(strftime('%d', datetime(OLD.transaction_date / 1000, 'unixepoch')) AS INTEGER) AND OLD.transaction_type = 'transfer' AND
-       resource_uid = NEW.transaction_category_uid AND
+       resource_uid = OLD.transaction_category_uid AND
        currency_uid = OLD.currency_uid AND OLD.not_include_to_report = 0;
 
     -- Update statistic for Shared bill paid
