@@ -182,20 +182,26 @@ class SharedBillTransactionTileForDialog extends SharedBillTransactionTile {
   SharedBillTransactionTileForDialog({super.key, required super.transaction, super.onTap});
 
   @override
-  Widget amountDisplay(BuildContext context) {
+  Widget nameDisplay(BuildContext context) {
     AppLocalizations appLocalizations = AppLocalizations.of(context)!;
     var formatter = FormUtil().buildFormatter(currentAppState.currencies
         .firstWhere((element) => element.id == transaction.currencyUid, orElse: () => currentAppState.systemSetting.defaultCurrency!));
-    const double size = TransactionItemConfigKey.amountSize;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text('${appLocalizations.transactionSharedBillRemainingLabel} "', style: const TextStyle(fontSize: size, color: Colors.black)),
-        Text(formatter.formatDouble(transaction.remainingAmount), style: const TextStyle(fontSize: size, color: Colors.red)),
-        const Text('"', style: TextStyle(fontSize: TransactionItemConfigKey.amountSize - 4, color: Colors.black)),
-      ],
+    String text = appLocalizations.transactionSharedBillTitle(
+        formatter.formatDouble(transaction.amount), transaction.transactionCategory?.getTitleText(currentAppState.systemSetting) ?? "");
+    var descriptionTextStyle = const TextStyle(fontSize: TransactionItemConfigKey.transactionDescriptionSize);
+    var description =
+        '${appLocalizations.transactionSharedBillRemainingLabel} "${formatter.formatDouble(transaction.remainingAmount)}".${transaction.description}';
+    return Expanded(
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(text, textAlign: TextAlign.left, style: const TextStyle(fontSize: TransactionItemConfigKey.categoryNameSize)),
+        Text(description, textAlign: TextAlign.left, style: descriptionTextStyle)
+      ]),
     );
+  }
+
+  @override
+  Widget amountDisplay(BuildContext context) {
+    return Container();
   }
 
   @override

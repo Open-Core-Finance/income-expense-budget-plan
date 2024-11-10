@@ -61,7 +61,7 @@ abstract class _FileImportState<T extends FileImport> extends State<T> {
         }
       });
     } else {
-      FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: getAllowedFileTypes()).then((FilePickerResult? pickedFile) {
+      FilePicker.platform.pickFiles().then((FilePickerResult? pickedFile) {
         if (pickedFile != null) {
           setState(() {
             _filePath = pickedFile.files.first.path;

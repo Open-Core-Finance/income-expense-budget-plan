@@ -232,6 +232,8 @@ abstract class DataImport {
     }
     int dataRowIndex = 1;
     int currentDataType = -1;
+    DatabaseService databaseService = DatabaseService();
+    var db = await databaseService.database;
     for (; dataRowIndex < lines.length; dataRowIndex++) {
       var line = lines[dataRowIndex];
       if (line == DataExport.currenciesHeaderLine) {
@@ -259,55 +261,37 @@ abstract class DataImport {
       }
       if (currentDataType == DataImport.dataTypeCurrency) {
         Currency currency = lineToCurrency(line);
-        CurrencyDao().existById(currency.id!).then((existed) {
-          if (!existed) {
-            DatabaseService().database.then((db) {
-              db.insert(tableNameAsset, currency.toMap(), conflictAlgorithm: ConflictAlgorithm.ignore).then((_) {
-                currentAppState.currencies.add(currency);
-              });
-            });
-          }
-        });
+        bool existed = await CurrencyDao().existById(currency.id!);
+        if (!existed) {
+          await db.insert(tableNameAsset, currency.toMap(), conflictAlgorithm: ConflictAlgorithm.ignore);
+          currentAppState.currencies.add(currency);
+        }
       } else if (currentDataType == DataImport.dataTypeAccountCategory) {
         AssetCategory category = lineToAccountCategory(line);
-        AssetsDao().categoryExistById(category.id!).then((bool existed) {
-          if (!existed) {
-            DatabaseService().database.then((db) {
-              db.insert(tableNameAssetCategory, category.toMap(), conflictAlgorithm: ConflictAlgorithm.ignore).then((_) {
-                currentAppState.assetCategories.add(category);
-              });
-            });
-          }
-        });
+        bool existed = await AssetsDao().categoryExistById(category.id!);
+        if (!existed) {
+          await db.insert(tableNameAssetCategory, category.toMap(), conflictAlgorithm: ConflictAlgorithm.ignore);
+          currentAppState.assetCategories.add(category);
+        }
       } else if (currentDataType == DataImport.dataTypeAccount) {
         Asset account = lineToAccount(line);
-        AssetsDao().existById(account.id!).then((bool existed) {
-          if (!existed) {
-            DatabaseService().database.then((db) {
-              db.insert(tableNameAsset, account.toMap(), conflictAlgorithm: ConflictAlgorithm.ignore).then((_) {
-                currentAppState.assets.add(account);
-              });
-            });
-          }
-        });
+        bool existed = await AssetsDao().existById(account.id!);
+        if (!existed) {
+          await db.insert(tableNameAsset, account.toMap(), conflictAlgorithm: ConflictAlgorithm.ignore);
+          currentAppState.assets.add(account);
+        }
       } else if (currentDataType == DataImport.dataTypeTransactionCategory) {
         TransactionCategory category = lineToTransactionCategory(line);
-        TransactionDao().transactionCategoryById(category.id!).then((TransactionCategory? cat) {
-          if (cat == null) {
-            DatabaseService().database.then((db) {
-              db.insert(tableNameTransactionCategory, category.toMap(), conflictAlgorithm: ConflictAlgorithm.ignore);
-            });
-          }
-        });
+        var cat = await TransactionDao().transactionCategoryById(category.id!);
+        if (cat == null) {
+          db.insert(tableNameTransactionCategory, category.toMap(), conflictAlgorithm: ConflictAlgorithm.ignore);
+        }
       } else if (currentDataType == DataImport.dataTypeTransaction) {
         Transactions transaction = lineToTransaction(line);
-        TransactionDao().transactionById(transaction.id!).then((Transactions? txn) {
-          if (txn != null) {
-            DatabaseService().database.then((db) {
-              db.insert(tableNameTransaction, txn.toMap(), conflictAlgorithm: ConflictAlgorithm.ignore);
-            });
-          }
-        });
+        Transactions? txn = await TransactionDao().transactionById(transaction.id!);
+        if (txn == null) {
+          db.insert(tableNameTransaction, transaction.toMap(), conflictAlgorithm: ConflictAlgorithm.ignore);
+        }
       }
     }
   }

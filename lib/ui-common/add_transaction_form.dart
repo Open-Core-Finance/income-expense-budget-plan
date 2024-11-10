@@ -2,11 +2,6 @@ import 'package:currency_text_input_formatter/currency_text_input_formatter.dart
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:income_expense_budget_plan/ui-common/account_panel.dart';
-import 'package:income_expense_budget_plan/ui-common/date_time_form_field.dart';
-import 'package:income_expense_budget_plan/ui-common/no_data.dart';
-import 'package:income_expense_budget_plan/ui-common/transaction_categories_panel.dart';
-import 'package:income_expense_budget_plan/ui-common/transaction_item_display.dart';
 import 'package:income_expense_budget_plan/dao/transaction_dao.dart';
 import 'package:income_expense_budget_plan/model/assets.dart';
 import 'package:income_expense_budget_plan/model/currency.dart';
@@ -17,6 +12,11 @@ import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/database_service.dart';
 import 'package:income_expense_budget_plan/service/form_util.dart';
 import 'package:income_expense_budget_plan/service/util.dart';
+import 'package:income_expense_budget_plan/ui-common/account_panel.dart';
+import 'package:income_expense_budget_plan/ui-common/date_time_form_field.dart';
+import 'package:income_expense_budget_plan/ui-common/no_data.dart';
+import 'package:income_expense_budget_plan/ui-common/transaction_categories_panel.dart';
+import 'package:income_expense_budget_plan/ui-common/transaction_item_display.dart';
 import 'package:income_expense_budget_plan/ui-platform-based/landscape/account_panel.dart';
 import 'package:income_expense_budget_plan/ui-platform-based/landscape/transaction_categories_panel.dart';
 import 'package:income_expense_budget_plan/ui-platform-based/portrait/account_panel.dart';
@@ -75,15 +75,19 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
     super.initState();
     if (widget.editingTransaction != null) {
       var transaction = widget.editingTransaction!;
+      _selectedAccount = transaction.account;
+      _selectedCurrency = currentAppState.currencies.firstWhere((currency) => currency.id == _selectedAccount?.currencyUid);
+      _currencyTextInputFormatter = FormUtil().buildFormatter(_selectedCurrency);
+
       _selectedTransactionType = transaction.getType();
       _editingTransaction = transaction;
       _transactionDescriptionController = TextEditingController(text: transaction.description);
-      _transactionAmountController = TextEditingController(text: '${transaction.amount}');
-      _transactionFeeController = TextEditingController(text: '${transaction.feeAmount}');
+      _transactionAmountController = TextEditingController(text: _currencyTextInputFormatter.formatDouble(transaction.amount));
+      _transactionFeeController = TextEditingController(text: _currencyTextInputFormatter.formatDouble(transaction.feeAmount));
 
       _isChecking = false;
       _selectedCategory = transaction.transactionCategory;
-      _selectedAccount = transaction.account;
+
       _selectedTxnDate = transaction.transactionDate;
       _selectedTxnTime = transaction.transactionTime;
       _selectedToAccount = null;
@@ -94,7 +98,8 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
         _selectedToAccount = (_editingTransaction as TransferTransaction).toAccount;
         _feeApplyToFromAccount = (_editingTransaction as TransferTransaction).feeApplyToFromAccount;
       } else if (_editingTransaction is ShareBillTransaction) {
-        _transactionMySplitAmountController.text = '${(_editingTransaction as ShareBillTransaction).mySplit}';
+        _transactionMySplitAmountController.text =
+            _currencyTextInputFormatter.formatDouble((_editingTransaction as ShareBillTransaction).mySplit);
       } else if (_editingTransaction is ShareBillReturnTransaction) {
         _selectedBillToReturn = (_editingTransaction as ShareBillReturnTransaction).sharedBill;
       }
@@ -104,12 +109,6 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
     } else {
       _initEmptyForm();
     }
-    if (_selectedAccount != null) {
-      _selectedCurrency = currentAppState.currencies.firstWhere((currency) => currency.id == _selectedAccount?.currencyUid);
-    } else {
-      _selectedCurrency = currentAppState.systemSetting.defaultCurrency!;
-    }
-    _currencyTextInputFormatter = FormUtil().buildFormatter(_selectedCurrency);
   }
 
   _initEmptyForm() {
@@ -130,6 +129,14 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
     _feeApplyToFromAccount = true;
     _skipReport = false;
     _selectedTransactionType = TransactionType.expense;
+
+    if (_selectedAccount != null) {
+      _selectedCurrency = currentAppState.currencies.firstWhere((currency) => currency.id == _selectedAccount?.currencyUid);
+    } else {
+      _selectedCurrency = currentAppState.systemSetting.defaultCurrency!;
+    }
+    _currencyTextInputFormatter = FormUtil().buildFormatter(_selectedCurrency);
+
     reloadInCompleteSharedBills();
   }
 
@@ -732,7 +739,7 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
     String incomeTitle = apLocalizations.menuIncomeCategory;
     String dialogTitle;
     Map<TransactionType, List<TransactionCategory>> categoriesMap = await retrieveCategoriesMap(context, type);
-    if (type == TransactionType.income || type == TransactionType.expense) {
+    if (type == TransactionType.income || type == TransactionType.expense || type == TransactionType.shareBill) {
       if (type == TransactionType.income) {
         dialogTitle = incomeTitle;
       } else {
@@ -858,39 +865,32 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
 
   void _chooseSharedBill(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    // Get the current screen size
-    final Size screenSize = MediaQuery.of(context).size;
+    AppLocalizations appLocalizations = AppLocalizations.of(context)!;
 
     FloatingActionButton floatingActionButton = FloatingActionButton(
       foregroundColor: theme.colorScheme.error,
       shape: const CircleBorder(),
       onPressed: () => Navigator.of(context).pop(),
       heroTag: "select-category-Button",
-      child: Text(AppLocalizations.of(context)!.actionClose),
+      child: Text(appLocalizations.actionClose),
     );
 
     Widget dialogBody;
     if (_inCompletedSharedBills.isEmpty) {
       dialogBody = const NoDataCard();
     } else {
-      dialogBody = SingleChildScrollView(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-              minHeight: 0, maxHeight: TransactionItemConfigKey.eachTransactionHeight + 4, maxWidth: screenSize.width * 0.85),
-          child: ListView(
-            children: <Widget>[
-              for (var item in _inCompletedSharedBills)
-                SharedBillTransactionTileForDialog(
-                  transaction: item,
-                  onTap: (Transactions transaction) {
-                    _selectedBillToReturn = transaction as ShareBillTransaction;
-                    Navigator.of(context).pop();
-                    setState(() {});
-                  },
-                ),
-            ],
-          ),
-        ),
+      dialogBody = ListView(
+        children: <Widget>[
+          for (var item in _inCompletedSharedBills)
+            SharedBillTransactionTileForDialog(
+              transaction: item,
+              onTap: (Transactions transaction) {
+                _selectedBillToReturn = transaction as ShareBillTransaction;
+                Navigator.of(context).pop();
+                setState(() {});
+              },
+            ),
+        ],
       );
     }
 
@@ -898,6 +898,7 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
       context: context,
       builder: (BuildContext context) {
         return Scaffold(
+          appBar: AppBar(title: Text(appLocalizations.sharedBillReturnForBill), automaticallyImplyLeading: false),
           body: dialogBody,
           floatingActionButton: floatingActionButton,
           floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
