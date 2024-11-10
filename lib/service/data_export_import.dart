@@ -639,7 +639,21 @@ class DataImportV1 extends DataImport {
         );
         txn = tmp;
         if (sharedBillId != null) {
-          TransactionDao().transactionById(sharedBillId).then((txn) => tmp.sharedBill = txn as ShareBillTransaction);
+          TransactionDao().transactionById(sharedBillId).then((txn) {
+            if (txn != null) {
+              if (txn is ShareBillTransaction) {
+                tmp.sharedBill = txn;
+              } else {
+                if (kDebugMode) {
+                  print('Transaction with ID [$sharedBillId] is not a share bill.');
+                }
+              }
+            } else {
+              if (kDebugMode) {
+                print("Cannot find share bill for ID [$sharedBillId]");
+              }
+            }
+          });
         }
         break;
     }
