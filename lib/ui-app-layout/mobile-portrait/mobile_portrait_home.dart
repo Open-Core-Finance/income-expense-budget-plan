@@ -33,12 +33,12 @@ class _HomePageMobilePortraitState extends HomePageState<HomePageMobilePortrait>
         selectedIndex: appState.currentHomePageIndex,
         destinations: <Widget>[
           NavigationDestination(icon: Icon(Icons.history, color: theme.primaryColor), label: appLocalizations.navHistory),
+          NavigationDestination(icon: Icon(Icons.analytics, color: theme.primaryColor), label: appLocalizations.navReport),
           NavigationDestination(
             selectedIcon: Icon(Icons.home, color: theme.primaryColor),
             icon: Icon(Icons.account_box, color: theme.primaryColor),
             label: appLocalizations.navAccount,
           ),
-          NavigationDestination(icon: Icon(Icons.analytics, color: theme.primaryColor), label: appLocalizations.navReport),
           NavigationDestination(icon: Icon(Icons.more, color: theme.primaryColor), label: appLocalizations.navMore),
         ],
       ),

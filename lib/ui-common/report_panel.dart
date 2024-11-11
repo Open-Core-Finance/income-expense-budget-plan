@@ -323,38 +323,33 @@ class _ReportPanelState extends State<ReportPanel> {
       swapAnimationDuration: const Duration(milliseconds: 150),
       swapAnimationCurve: Curves.linear,
     );
-    Widget categoriesView = ListView(
-      children: [
-        for (var item in chartDataItems)
-          Row(
-            children: [
-              SizedBox(width: 20, height: 20, child: Container(color: item.color)),
-              const SizedBox(width: 10),
-              Icon(item.icon),
-              const SizedBox(width: 10),
-              Expanded(
-                child:
-                    Text('${item.dataLabel} (${percentageFormat.format(item.percentage)})', overflow: TextOverflow.ellipsis, maxLines: 1),
-              )
-            ],
-          )
-      ],
-    );
+    List<Widget> categoriesView = [
+      for (var item in chartDataItems)
+        Row(
+          children: [
+            SizedBox(width: 20, height: 20, child: Container(color: item.color)),
+            const SizedBox(width: 10),
+            Icon(item.icon),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text('${item.dataLabel} (${percentageFormat.format(item.percentage)})', overflow: TextOverflow.ellipsis, maxLines: 1),
+            )
+          ],
+        )
+    ];
     if (panelBoxConstraints.maxWidth < currentAppState.platformConst.reportVerticalSplitViewMinWidth) {
       var maxSize = min(panelBoxConstraints.maxWidth, reportChartBoxConstraints.maxHeight);
-      var constraints = BoxConstraints(maxWidth: panelBoxConstraints.maxWidth - 20, maxHeight: maxSize);
       return [
-        ConstrainedBox(constraints: constraints, child: chart),
-        ConstrainedBox(constraints: constraints, child: Padding(padding: EdgeInsets.fromLTRB(10, 0, 0, 0), child: categoriesView)),
+        ConstrainedBox(constraints: BoxConstraints(maxWidth: panelBoxConstraints.maxWidth - 20, maxHeight: maxSize), child: chart),
+        const SizedBox(height: 10),
+        ...categoriesView
       ];
     }
     return [
-      Row(
-        children: [
-          ConstrainedBox(constraints: reportChartBoxConstraints, child: chart),
-          ConstrainedBox(constraints: reportChartBoxConstraints, child: categoriesView),
-        ],
-      )
+      Row(children: [
+        ConstrainedBox(constraints: reportChartBoxConstraints, child: chart),
+        ConstrainedBox(constraints: reportChartBoxConstraints, child: ListView(children: categoriesView)),
+      ])
     ];
   }
 
