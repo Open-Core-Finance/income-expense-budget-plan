@@ -167,5 +167,14 @@
   "dataImportFileButton": "Import",
   "dataImportFileSuccess": "Import data successfully!",
   "dataImportFileFail": "Import data fail!",
-  "clickToSelect": "Tab here to select"
+  "clickToSelect": "Tab here to select",
+  "dataImportOverrideSkip": "Skip override if existed",
+  "dataImportOverrideIfNewer": "Override if newer",
+  "dataImportOverrideAlways": "Always override",
+  "dataImportOverrideMode": "Override mode",
+  "dataImportDataLabelCurrency": "Currencies",
+  "dataImportDataLabelAccountCategory": "Account categories",
+  "dataImportDataLabelAccount": "Accounts",
+  "dataImportDataLabelTransactionCategory": "Transaction categories",
+  "dataImportDataLabelTransaction": "Transactions"
 }

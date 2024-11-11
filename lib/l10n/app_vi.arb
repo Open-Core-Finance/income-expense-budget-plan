@@ -167,5 +167,14 @@
   "dataImportFileButton": "Nhập",
   "dataImportFileSuccess": "Nhập dữ liệu thành công!",
   "dataImportFileFail": "Nhập dữ liệu thất bại!",
-  "clickToSelect": "Bấm vào đây để chọn"
+  "clickToSelect": "Bấm vào đây để chọn",
+  "dataImportOverrideSkip": "Bỏ qua nếu tồn tại",
+  "dataImportOverrideIfNewer": "Ghi đè dữ liệu mới hơn",
+  "dataImportOverrideAlways": "Ghi đè tất cả",
+  "dataImportOverrideMode": "Chế độ ghi đè",
+  "dataImportDataLabelCurrency": "Tiền tệ",
+  "dataImportDataLabelAccountCategory": "Nhóm tài khoản",
+  "dataImportDataLabelAccount": "Tài khoản",
+  "dataImportDataLabelTransactionCategory": "Hạng mục giao dịch",
+  "dataImportDataLabelTransaction": "Giao dịch"
 }

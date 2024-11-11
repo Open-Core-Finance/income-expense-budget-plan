@@ -173,19 +173,46 @@ class DataFileImport extends FileImport {
 }
 
 class _DataFileImportState extends _FileImportState<DataFileImport> {
+  /// 0: skip if existed.
+  /// 1: force override.
+  /// 2: override if newer.
+  int _overrideMode = 0;
+
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     AppLocalizations appLocalizations = AppLocalizations.of(context)!;
+    var dataPadding = EdgeInsets.fromLTRB(10, 0, 10, 0);
     return Scaffold(
       appBar: buildAppBar(context, appLocalizations, appLocalizations.dataImportFileMenu),
       body: Padding(
-        padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+        padding: dataPadding,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             buildFileSelectionRow(
                 context, appLocalizations, appLocalizations.dataImportFileLabel, appLocalizations.dataImportSelectFile, false),
+            SizedBox(height: 20),
+            DropdownButtonFormField<int>(
+                value: _overrideMode,
+                icon: const Icon(Icons.arrow_downward),
+                elevation: 16,
+                style: TextStyle(color: theme.primaryColor),
+                onChanged: (int? value) {
+                  if (value != null) setState(() => _overrideMode = value);
+                },
+                items: [
+                  DropdownMenuItem<int>(
+                      value: DataImport.dataOverrideModeSkip,
+                      child: Padding(padding: dataPadding, child: Text(appLocalizations.dataImportOverrideSkip))),
+                  DropdownMenuItem<int>(
+                      value: DataImport.dataOverrideModeOverrideNewer,
+                      child: Padding(padding: dataPadding, child: Text(appLocalizations.dataImportOverrideIfNewer))),
+                  DropdownMenuItem<int>(
+                      value: DataImport.dataOverrideModeOverrideAlways,
+                      child: Padding(padding: dataPadding, child: Text(appLocalizations.dataImportOverrideAlways)))
+                ],
+                decoration: InputDecoration(labelText: appLocalizations.dataImportOverrideMode, border: OutlineInputBorder())),
             SizedBox(height: 20),
             if (_filePath != null)
               Row(children: [
@@ -203,16 +230,18 @@ class _DataFileImportState extends _FileImportState<DataFileImport> {
 
   void _importData(BuildContext context, String filePath) async {
     File(filePath).readAsString().then((content) {
-      DataImportV1().readFileData(File(filePath)).then((success) {
-        setState(() => _filePath = null);
-        if (context.mounted) {
-          util.showSuccessDialog(context, AppLocalizations.of(context)!.dataImportFileSuccess, () {});
-        }
-      }, onError: (e) {
-        if (context.mounted) {
-          util.showErrorDialog(context, '${AppLocalizations.of(context)!.dataImportFileFail}. Error: $e', () {});
-        }
-      });
+      if (context.mounted) {
+        DataImportV1().readFileData(context, File(filePath), _overrideMode).then((success) {
+          setState(() => _filePath = null);
+          if (context.mounted) {
+            util.showSuccessDialog(context, AppLocalizations.of(context)!.dataImportFileSuccess, () {});
+          }
+        }, onError: (e) {
+          if (context.mounted) {
+            util.showErrorDialog(context, '${AppLocalizations.of(context)!.dataImportFileFail}. Error: $e', () {});
+          }
+        });
+      }
     });
   }
 

@@ -10,12 +10,15 @@ import 'package:income_expense_budget_plan/dao/transaction_dao.dart';
 import 'package:income_expense_budget_plan/model/asset_category.dart';
 import 'package:income_expense_budget_plan/model/assets.dart';
 import 'package:income_expense_budget_plan/model/currency.dart';
+import 'package:income_expense_budget_plan/model/data_import_result.dart';
+import 'package:income_expense_budget_plan/model/generic_model.dart';
 import 'package:income_expense_budget_plan/model/transaction.dart';
 import 'package:income_expense_budget_plan/model/transaction_category.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/database_service.dart';
 import 'package:income_expense_budget_plan/service/util.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 abstract class DataSink {
   void write(Uint8List data);
@@ -207,6 +210,9 @@ abstract class DataImport {
   static int dataTypeAccount = 2;
   static int dataTypeTransactionCategory = 3;
   static int dataTypeTransaction = 4;
+  static int dataOverrideModeSkip = 0;
+  static int dataOverrideModeOverrideNewer = 1;
+  static int dataOverrideModeOverrideAlways = 2;
   String dataSeparator = "|";
   int version;
 
@@ -225,11 +231,13 @@ abstract class DataImport {
   TransactionCategory lineToTransactionCategory(String line);
   Transactions lineToTransaction(String line);
 
-  Future<void> readFileData(File file) async {
+  Future<Map<int, DataImportResult>> readFileData(BuildContext context, File file, int overrideMode) async {
     List<String> lines = file.readAsLinesSync(encoding: utf8);
     if (!checkVersion(lines.first)) {
       throw Exception("Incorrect version");
     }
+    Map<int, DataImportResult> result = {};
+    AppLocalizations appLocalizations = AppLocalizations.of(context)!;
     int dataRowIndex = 1;
     int currentDataType = -1;
     DatabaseService databaseService = DatabaseService();
@@ -259,38 +267,120 @@ abstract class DataImport {
       if (line == DataExport.endFileFooter) {
         break;
       }
+
       if (currentDataType == DataImport.dataTypeCurrency) {
+        var importResult = retrieveResult(appLocalizations, currentDataType, result);
         Currency currency = lineToCurrency(line);
-        bool existed = await CurrencyDao().existById(currency.id!);
-        if (!existed) {
-          await db.insert(tableNameAsset, currency.toMap(), conflictAlgorithm: ConflictAlgorithm.ignore);
+        Currency? existed = await CurrencyDao().loadById(currency.id!);
+        var importDoneMode =
+            await dataImport(existed, overrideMode, db, currency, importResult, tableNameCurrency, (oldItem, newItem) => true);
+        if (importDoneMode == 1) {
           currentAppState.currencies.add(currency);
         }
       } else if (currentDataType == DataImport.dataTypeAccountCategory) {
+        var importResult = retrieveResult(appLocalizations, currentDataType, result);
         AssetCategory category = lineToAccountCategory(line);
-        bool existed = await AssetsDao().categoryExistById(category.id!);
-        if (!existed) {
-          await db.insert(tableNameAssetCategory, category.toMap(), conflictAlgorithm: ConflictAlgorithm.ignore);
+        AssetCategory? existed = await AssetsDao().categoryById(category.id!);
+        var importDoneMode = await dataImport(existed, overrideMode, db, category, importResult, tableNameAssetCategory,
+            (oldItem, newItem) => oldItem.lastUpdated.millisecondsSinceEpoch > newItem.lastUpdated.millisecondsSinceEpoch);
+        if (importDoneMode == 1) {
           currentAppState.assetCategories.add(category);
         }
       } else if (currentDataType == DataImport.dataTypeAccount) {
+        var importResult = retrieveResult(appLocalizations, currentDataType, result);
         Asset account = lineToAccount(line);
-        bool existed = await AssetsDao().existById(account.id!);
-        if (!existed) {
-          await db.insert(tableNameAsset, account.toMap(), conflictAlgorithm: ConflictAlgorithm.ignore);
+        Asset? existed = await AssetsDao().loadById(account.id!);
+        var importDoneMode = await dataImport(existed, overrideMode, db, account, importResult, tableNameAsset,
+            (oldItem, newItem) => oldItem.lastUpdated.millisecondsSinceEpoch > newItem.lastUpdated.millisecondsSinceEpoch);
+        if (importDoneMode == 1) {
           currentAppState.assets.add(account);
         }
       } else if (currentDataType == DataImport.dataTypeTransactionCategory) {
+        var importResult = retrieveResult(appLocalizations, currentDataType, result);
         TransactionCategory category = lineToTransactionCategory(line);
-        var cat = await TransactionDao().transactionCategoryById(category.id!);
-        if (cat == null) {
-          db.insert(tableNameTransactionCategory, category.toMap(), conflictAlgorithm: ConflictAlgorithm.ignore);
-        }
+        var existed = await TransactionDao().transactionCategoryById(category.id!);
+        await dataImport(existed, overrideMode, db, category, importResult, tableNameTransactionCategory,
+            (oldItem, newItem) => oldItem.lastUpdated.millisecondsSinceEpoch > newItem.lastUpdated.millisecondsSinceEpoch);
       } else if (currentDataType == DataImport.dataTypeTransaction) {
+        var importResult = retrieveResult(appLocalizations, currentDataType, result);
         Transactions transaction = lineToTransaction(line);
-        Transactions? txn = await TransactionDao().transactionById(transaction.id!);
-        if (txn == null) {
-          db.insert(tableNameTransaction, transaction.toMap(), conflictAlgorithm: ConflictAlgorithm.ignore);
+        Transactions? existed = await TransactionDao().transactionById(transaction.id!);
+        await dataImport(existed, overrideMode, db, transaction, importResult, tableNameTransaction,
+            (oldItem, newItem) => oldItem.lastUpdated.millisecondsSinceEpoch > newItem.lastUpdated.millisecondsSinceEpoch);
+      }
+    }
+    // Return
+    return result;
+  }
+
+  DataImportResult retrieveResult(AppLocalizations appLocalizations, int dataType, Map<int, DataImportResult> data) {
+    DataImportResult? value = data[dataType];
+    if (value == null) {
+      String dataLabel;
+      if (dataType == dataTypeCurrency) {
+        dataLabel = appLocalizations.dataImportDataLabelCurrency;
+      } else if (dataType == dataTypeAccountCategory) {
+        dataLabel = appLocalizations.dataImportDataLabelAccountCategory;
+      } else if (dataType == dataTypeAccount) {
+        dataLabel = appLocalizations.dataImportDataLabelAccount;
+      } else if (dataType == dataTypeTransactionCategory) {
+        dataLabel = appLocalizations.dataImportDataLabelTransactionCategory;
+      } else if (dataType == dataTypeTransaction) {
+        dataLabel = appLocalizations.dataImportDataLabelTransaction;
+      } else {
+        throw Exception("Unknown data type");
+      }
+      value = DataImportResult(dataLabel: dataLabel);
+      data[dataType] = value;
+      return value;
+    } else {
+      return value;
+    }
+  }
+
+  Future<int> dataImport<T extends GenericModel>(T? existed, int overrideMode, Database db, T data, DataImportResult resultRecorder,
+      String tableName, bool Function(T dbItem, T importItem) isNewer) async {
+    if (existed == null || overrideMode == dataOverrideModeOverrideAlways) {
+      int successCount = 0;
+      try {
+        successCount = await db.insert(tableNameAsset, data.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+      } catch (e) {
+        if (kDebugMode) {
+          print("Import error for [${resultRecorder.dataLabel}] with ID [${data.id}]");
+        }
+      }
+
+      if (successCount > 0) {
+        resultRecorder.countSuccess += successCount;
+        return 1;
+      } else {
+        resultRecorder.countError += 1;
+        return -1;
+      }
+    } else {
+      if (overrideMode == dataOverrideModeSkip) {
+        resultRecorder.countSkipped += 1;
+        return 0;
+      } else {
+        if (!isNewer(existed, data)) {
+          int successCount = 0;
+          try {
+            successCount = await db.insert(tableNameAsset, data.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+          } catch (e) {
+            if (kDebugMode) {
+              print("Import error for [${resultRecorder.dataLabel}] with ID [${data.id}]");
+            }
+          }
+          if (successCount > 0) {
+            resultRecorder.countOverride += successCount;
+            return 2;
+          } else {
+            resultRecorder.countError += 1;
+            return -1;
+          }
+        } else {
+          resultRecorder.countSkipped += 1;
+          return 0;
         }
       }
     }
