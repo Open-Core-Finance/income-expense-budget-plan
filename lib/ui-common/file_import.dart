@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:income_expense_budget_plan/model/data_import_result.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/data_export_import.dart';
 import 'package:income_expense_budget_plan/service/database_service.dart';
@@ -85,7 +86,6 @@ class _SqlImportState extends _FileImportState<SqlImport> {
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
     AppLocalizations appLocalizations = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: buildAppBar(context, appLocalizations, appLocalizations.sqlImportMenu),
@@ -231,10 +231,9 @@ class _DataFileImportState extends _FileImportState<DataFileImport> {
   void _importData(BuildContext context, String filePath) async {
     File(filePath).readAsString().then((content) {
       if (context.mounted) {
-        DataImportV1().readFileData(context, File(filePath), _overrideMode).then((success) {
-          setState(() => _filePath = null);
+        DataImportV1().readFileData(context, File(filePath), _overrideMode).then((result) {
           if (context.mounted) {
-            util.showSuccessDialog(context, AppLocalizations.of(context)!.dataImportFileSuccess, () {});
+            showDialog(context: context, builder: (BuildContext context) => _resultDialogContent(context, result, () {}));
           }
         }, onError: (e) {
           if (context.mounted) {
@@ -248,5 +247,49 @@ class _DataFileImportState extends _FileImportState<DataFileImport> {
   @override
   List<String>? getAllowedFileTypes() {
     return null;
+  }
+
+  List<Widget> _buildImportResultListDisplay(BuildContext context, DataImportResult dataImportResult) {
+    AppLocalizations appLocalizations = AppLocalizations.of(context)!;
+    return [
+      Divider(height: 1),
+      ListTile(title: Text(dataImportResult.dataLabel, style: TextStyle(fontWeight: FontWeight.bold))),
+      if (dataImportResult.countSuccess != 0)
+        ListTile(title: Text('--> ${appLocalizations.dataImportResultCountSuccess(dataImportResult.countSuccess)}')),
+      if (dataImportResult.countError != 0)
+        ListTile(title: Text('--> ${appLocalizations.dataImportResultCountFail(dataImportResult.countError)}')),
+      if (dataImportResult.countSkipped != 0)
+        ListTile(title: Text('--> ${appLocalizations.dataImportResultCountSkip(dataImportResult.countSkipped)}')),
+      if (dataImportResult.countOverride != 0)
+        ListTile(title: Text('--> ${appLocalizations.dataImportResultCountOverride(dataImportResult.countOverride)}'))
+    ];
+  }
+
+  Widget _resultDialogContent(BuildContext context, Map<int, DataImportResult> result, Function()? callback) {
+    AppLocalizations appLocalizations = AppLocalizations.of(context)!;
+    List<Widget> body = [];
+    for (var entry in result.entries) {
+      body.addAll(_buildImportResultListDisplay(context, entry.value));
+    }
+    return Scaffold(
+      appBar: AppBar(title: Text(appLocalizations.dataImportResultDialogTitle), automaticallyImplyLeading: false),
+      body: ListView(children: body),
+      bottomNavigationBar: BottomAppBar(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextButton(
+              child: Text(appLocalizations.actionConfirm),
+              onPressed: () {
+                Navigator.of(context).pop();
+                if (callback != null) {
+                  callback();
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

@@ -343,10 +343,10 @@ abstract class DataImport {
     if (existed == null || overrideMode == dataOverrideModeOverrideAlways) {
       int successCount = 0;
       try {
-        successCount = await db.insert(tableNameAsset, data.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+        successCount = await db.insert(tableName, data.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
       } catch (e) {
         if (kDebugMode) {
-          print("Import error for [${resultRecorder.dataLabel}] with ID [${data.id}]");
+          print("Import error for [${resultRecorder.dataLabel}] with ID [${data.id}]. $e");
         }
       }
 
@@ -365,10 +365,10 @@ abstract class DataImport {
         if (!isNewer(existed, data)) {
           int successCount = 0;
           try {
-            successCount = await db.insert(tableNameAsset, data.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+            successCount = await db.insert(tableName, data.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
           } catch (e) {
             if (kDebugMode) {
-              print("Import error for [${resultRecorder.dataLabel}] with ID [${data.id}]");
+              print("Import error for [${resultRecorder.dataLabel}] with ID [${data.id}]. $e");
             }
           }
           if (successCount > 0) {

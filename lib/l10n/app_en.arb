@@ -176,5 +176,10 @@
   "dataImportDataLabelAccountCategory": "Account categories",
   "dataImportDataLabelAccount": "Accounts",
   "dataImportDataLabelTransactionCategory": "Transaction categories",
-  "dataImportDataLabelTransaction": "Transactions"
+  "dataImportDataLabelTransaction": "Transactions",
+  "dataImportResultDialogTitle": "Import statistics",
+  "dataImportResultCountSuccess": "Import success \"{successCount}\" records.",
+  "dataImportResultCountFail": "Import fail \"{errorCount}\" records.",
+  "dataImportResultCountSkip": "Skipped \"{skipCount}\" records.",
+  "dataImportResultCountOverride": "Override \"{overrideCount}\" records."
 }

@@ -176,5 +176,10 @@
   "dataImportDataLabelAccountCategory": "Nhóm tài khoản",
   "dataImportDataLabelAccount": "Tài khoản",
   "dataImportDataLabelTransactionCategory": "Hạng mục giao dịch",
-  "dataImportDataLabelTransaction": "Giao dịch"
+  "dataImportDataLabelTransaction": "Giao dịch",
+  "dataImportResultDialogTitle": "Thống kê nhập dữ liệu",
+  "dataImportResultCountSuccess": "Nhập thành công \"{successCount}\" dữ liệu.",
+  "dataImportResultCountFail": "Nhập lỗi \"{errorCount}\" dữ liệu.",
+  "dataImportResultCountSkip": "Đã bỏ qua \"{skipCount}\" dữ liệu.",
+  "dataImportResultCountOverride": "Đã ghi đè \"{overrideCount}\" dữ liệu."
 }
