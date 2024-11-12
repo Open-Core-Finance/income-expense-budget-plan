@@ -104,7 +104,9 @@ class TransactionDao {
   Future<List<ShareBillTransaction>> inCompleteSharedBills() async {
     final db = await databaseService.database;
     List<Map<String, dynamic>> records = await db.query(tableNameTransaction,
-        where: 'transaction_type = ? AND remaining_amount > 0', whereArgs: ['shareBill'], orderBy: 'transaction_date DESC');
+        where: 'transaction_type = ? AND remaining_amount > 0',
+        whereArgs: [TransactionType.shareBill.name],
+        orderBy: 'transaction_date DESC');
     return [for (Map<String, Object?> record in records) ShareBillTransaction.fromMap(record)];
   }
 

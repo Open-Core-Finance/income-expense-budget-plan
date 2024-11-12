@@ -1,5 +1,3 @@
-DROP TRIGGER IF EXISTS transaction_after_insert;
-
 CREATE TRIGGER transaction_after_insert
 AFTER INSERT ON transactions
 FOR EACH ROW
@@ -14,8 +12,19 @@ BEGIN
     UPDATE transactions SET remaining_amount = amount - my_split where NEW.transaction_type = 'shareBill' AND id=NEW.id;
 
     -- Reduce shared bill remaining amount by the amount returned
-    UPDATE transactions SET remaining_amount = remaining_amount - NEW.fee_amount
-    where transaction_type = 'shareBill' AND id=NEW.shared_bill_id AND NEW.transaction_type = 'shareBillReturn';
+    UPDATE transactions SET remaining_amount = remaining_amount - NEW.amount, fee_amount = fee_amount - NEW.fee_amount
+       where transaction_type = 'shareBill' AND id=NEW.shared_bill_id AND NEW.transaction_type = 'shareBillReturn';
+
+    INSERT INTO debug_log (func_name, message) VALUES ('transaction_after_insert',
+        CASE
+            WHEN (NEW.transaction_type = "shareBillReturn") THEN
+                'Running SQL to update  remaining_amount of bill [' || NEW.shared_bill_id || '] as follow ['
+                    || 'UPDATE transactions SET remaining_amount = remaining_amount -  ' || NEW.amount || ', fee_amount = fee_amount - ' || NEW.fee_amount
+                    || 'where transaction_type = "shareBill" AND id=' || NEW.shared_bill_id || ' AND NEW.transaction_type = "shareBillReturn"]'
+            ELSE
+                'to-be-delete'
+        END
+    );
 
     -- Set shared bill return category id by shared bill category id
     UPDATE transactions SET transaction_category_uid = (select transaction_category_uid from transactions WHERE id=NEW.shared_bill_id) where transaction_type = 'shareBillReturn' AND id=NEW.id;
@@ -49,11 +58,6 @@ BEGIN
     -- Adjustment
     update asset set available_amount = NEW.amount WHERE uid = NEW.account_uid and NEW.transaction_type = 'adjustment' and asset_type <> 'loan';
     update asset set loan_amount = NEW.amount WHERE uid = NEW.account_uid and NEW.transaction_type = 'adjustment' and asset_type = 'loan';
-
---    INSERT INTO debug_log (message) VALUES (
---        'Inserted a new transaction with ID:' || NEW.id || ' and datetime ' || NEW.transaction_date || ' with year value ' || ((CAST(strftime('%Y', datetime(NEW.transaction_date / 1000, 'unixepoch')) AS INTEGER) * 12) +
---         CAST(strftime('%m', datetime(NEW.transaction_date / 1000, 'unixepoch')) AS INTEGER))
---    );
 
     -- Insert statistic if not existed
     INSERT OR IGNORE INTO resource_statistic_daily (resource_type, resource_uid, stat_year,
@@ -140,7 +144,6 @@ BEGIN
         currency_uid = NEW.currency_uid AND NEW.transaction_type = 'shareBillReturn' AND NEW.not_include_to_report = 0;
 END;
 
-DROP TRIGGER IF EXISTS transaction_year_month_update;
 CREATE TRIGGER transaction_year_month_update
 AFTER UPDATE OF transaction_date ON transactions
 FOR EACH ROW
@@ -151,13 +154,12 @@ BEGIN
     WHERE id = NEW.id;
 
     -- Not support to update other attributes. For update we call delete and then insert.
-    INSERT INTO debug_log (message) VALUES (
+    INSERT INTO debug_log (func_name, message) VALUES ('transaction_year_month_update',
         'Update a transaction with ID: ' || NEW.id || ' and datetime ' || NEW.transaction_date || ' with year value ' || ((CAST(strftime('%Y', datetime(NEW.transaction_date / 1000, 'unixepoch')) AS INTEGER) * 12) +
          CAST(strftime('%m', datetime(NEW.transaction_date / 1000, 'unixepoch')) AS INTEGER))
     );
 END;
 
-DROP TRIGGER IF EXISTS transaction_deleted;
 CREATE TRIGGER transaction_deleted
 AFTER DELETE ON transactions
 FOR EACH ROW
@@ -242,12 +244,12 @@ BEGIN
 
 END;
 
-DROP TRIGGER IF EXISTS resource_statistic_daily_after_update;
 CREATE TRIGGER resource_statistic_daily_after_update
 AFTER UPDATE ON resource_statistic_daily
 FOR EACH ROW
 BEGIN
-   INSERT INTO debug_log (message) VALUES ('Updated resource_statistic_daily("resource_type" = ' || NEW.resource_type || ', "resource_uid" = ' || NEW.resource_uid ||
+   INSERT INTO debug_log (func_name, message) VALUES ( 'resource_statistic_daily_after_update',
+       'Updated resource_statistic_daily("resource_type" = ' || NEW.resource_type || ', "resource_uid" = ' || NEW.resource_uid ||
        ', "stat_year" = ' || NEW.stat_year || ', "stat_month" = ' || NEW.stat_month || ', "stat_day" = ' || NEW.stat_day || ', "currency_uid" = ' || NEW.currency_uid ||
        ') with total_income += ' || (NEW.total_income - OLD.total_income) || ', total_expense += ' || (NEW.total_expense - OLD.total_expense) ||
        ', total_transfer_out += ' || (NEW.total_transfer_out - OLD.total_transfer_out) || ', total_transfer_in += ' || (NEW.total_transfer_in - OLD.total_transfer_in) ||
@@ -255,20 +257,27 @@ BEGIN
        ', total_lend += ' || (NEW.total_lend - OLD.total_lend) || ', total_borrow += ' || (NEW.total_borrow - OLD.total_borrow));
 END;
 
-DROP TRIGGER IF EXISTS resource_statistic_daily_after_delete;
 CREATE TRIGGER resource_statistic_daily_after_delete
 AFTER DELETE ON resource_statistic_daily
 FOR EACH ROW
 BEGIN
-    INSERT INTO debug_log (message) VALUES ('Deleted resource_statistic_daily resource_type =' || OLD.resource_type || ' AND resource_uid = ' || OLD.resource_uid || ' AND stat_year = ' ||
+    INSERT INTO debug_log (func_name, message) VALUES ('resource_statistic_daily_after_delete',
+       'Deleted resource_statistic_daily resource_type =' || OLD.resource_type || ' AND resource_uid = ' || OLD.resource_uid || ' AND stat_year = ' ||
        OLD.stat_year || ' AND stat_month = ' || OLD.stat_month || ' AND stat_day = ' || OLD.stat_day);
 END;
 
-DROP TRIGGER IF EXISTS debug_log_after_insert;
 CREATE TRIGGER debug_log_after_insert
 AFTER INSERT ON debug_log
 FOR EACH ROW
 BEGIN
-   -- Only keep 1000 records and clean the old one.
-   DELETE FROM debug_log WHERE id NOT IN ( SELECT id FROM debug_log ORDER BY id DESC LIMIT 500);
+   -- Clean up 'to-be-delete' logs.
+   DELETE FROM debug_log WHERE id IN ( SELECT id FROM debug_log WHERE message = 'to-be-delete');
+
+   -- Only keep 200 logs for func_type 0 (0 is trigger) and clean the old one.
+   DELETE FROM debug_log WHERE id NOT IN ( SELECT id FROM debug_log WHERE func_type = 0 ORDER BY id DESC LIMIT 200);
+
+   -- Only keep 100 logs for log_level 0 and 1 (0 is debug, 1 is info) and clean the old one.
+   DELETE FROM debug_log WHERE id NOT IN ( SELECT id FROM debug_log WHERE log_level = 0 OR log_level = 1 ORDER BY id DESC LIMIT 100);
+   -- Only keep 300 logs for log_level 2 (2 is error) and clean the old one.
+   DELETE FROM debug_log WHERE id NOT IN ( SELECT id FROM debug_log WHERE log_level = 0 OR log_level = 1 ORDER BY id DESC LIMIT 300);
 END;

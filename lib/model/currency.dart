@@ -1,6 +1,6 @@
 import 'package:income_expense_budget_plan/model/generic_model.dart';
 
-class Currency extends GenericModel {
+class Currency extends GenericModel<String> {
   String name;
   String iso;
   late bool deleted;

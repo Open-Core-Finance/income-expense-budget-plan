@@ -236,11 +236,11 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
                 ],
                 if (_selectedTransactionType != TransactionType.adjustment || _selectedAccount != null) ...[
                   ..._moneyInputField(true, amountLabel, _transactionAmountController, theme, validator: (String? value) {
-                    if (kDebugMode) {
-                      print("Value: $value");
-                    }
                     if (_isValidAmount != true) {
-                      return AppLocalizations.of(context)!.transactionInvalidAmount;
+                      if (kDebugMode) {
+                        print("Invalid amount [${appLocalizations.transactionInvalidAmount}]");
+                      }
+                      return appLocalizations.transactionInvalidAmount;
                     }
                     return null;
                   }),
@@ -317,7 +317,10 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
                   const SizedBox(height: 10),
                   ..._moneyInputField(true, appLocalizations.transactionFee, _transactionFeeController, theme, validator: (String? value) {
                     if (_isValidFeeAmount != true) {
-                      return AppLocalizations.of(context)!.transactionInvalidFee;
+                      if (kDebugMode) {
+                        print("Invalid fee amount [${appLocalizations.transactionInvalidFee}]");
+                      }
+                      return appLocalizations.transactionInvalidFee;
                     }
                     return null;
                   }),
@@ -458,9 +461,27 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
     }
     _formValidatedPassed = _isValidFeeAmount && _isValidAmount;
     if (!_formValidatedPassed) {
-      _formKey.currentState?.validate();
-      _isChecking = false;
+      var validateResult = _formKey.currentState?.validate();
+      setState(() {
+        _isChecking = false;
+      });
+      if (validateResult != null && validateResult != true) {
+        if (kDebugMode) {
+          print("Form validate fail!. [$validateResult]");
+        }
+        return;
+      }
     } else {
+      var validateResult = _formKey.currentState?.validate();
+      if (validateResult != null && validateResult != true) {
+        if (kDebugMode) {
+          print("Form validate fail again!. [$validateResult]");
+        }
+        setState(() {
+          _isChecking = false;
+        });
+        return;
+      }
       String tableName = tableNameTransaction;
       DatabaseService().database.then((db) {
         if (_editingTransaction != null) {
@@ -475,6 +496,15 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
                 Util().showErrorDialog(context, errorMessage, null);
               }
             }
+          }).catchError((e) {
+            DatabaseService().recordCodingError(
+              e,
+              'delete old transaction for update',
+              (e) => setState(() {
+                _isChecking = false;
+                callback(_editingTransaction!, _editingTransaction);
+              }),
+            );
           });
         } else {
           _proceedSave(db, tableName, amount!, feeAmount, null, callback);
@@ -494,11 +524,14 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
         _isChecking = false;
         callback(transaction, deletedTran);
       });
+    }).catchError((e) {
+      DatabaseService().recordCodingError(e, 'add new transaction', null);
     });
   }
 
   Transactions _createTransaction(double amount, double feeAmount) {
     var moneyFormat = _currencyTextInputFormatter.numberFormat;
+    String currencyId = _selectedCurrency.id!;
     switch (_selectedTransactionType) {
       case TransactionType.income:
         return IncomeTransaction(
@@ -511,7 +544,7 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
             feeAmount: feeAmount,
             amount: amount,
             account: _selectedAccount!,
-            currencyUid: _selectedCurrency.id,
+            currencyUid: currencyId,
             updatedDateTime: DateTime.now(),
             skipReport: _skipReport);
       case TransactionType.expense:
@@ -525,7 +558,7 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
             feeAmount: feeAmount,
             amount: amount,
             account: _selectedAccount!,
-            currencyUid: _selectedCurrency.id,
+            currencyUid: currencyId,
             updatedDateTime: DateTime.now(),
             skipReport: _skipReport);
       case TransactionType.transfer:
@@ -539,7 +572,7 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
             feeAmount: feeAmount,
             amount: amount,
             account: _selectedAccount!,
-            currencyUid: _selectedCurrency.id,
+            currencyUid: currencyId,
             toAccount: _selectedToAccount!,
             updatedDateTime: DateTime.now(),
             feeApplyTo: _feeApplyToFromAccount,
@@ -555,7 +588,7 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
             feeAmount: feeAmount,
             amount: amount,
             account: _selectedAccount!,
-            currencyUid: _selectedCurrency.id,
+            currencyUid: currencyId,
             updatedDateTime: DateTime.now(),
             skipReport: _skipReport);
       case TransactionType.borrowing:
@@ -569,7 +602,7 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
             feeAmount: feeAmount,
             amount: amount,
             account: _selectedAccount!,
-            currencyUid: _selectedCurrency.id,
+            currencyUid: currencyId,
             updatedDateTime: DateTime.now(),
             skipReport: _skipReport);
       case TransactionType.adjustment:
@@ -589,7 +622,7 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
             feeAmount: feeAmount,
             amount: amount,
             account: _selectedAccount!,
-            currencyUid: _selectedCurrency.id,
+            currencyUid: currencyId,
             updatedDateTime: DateTime.now(),
             adjustedAmount: adjustedAmount,
             skipReport: _skipReport);
@@ -605,7 +638,7 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
             feeAmount: feeAmount,
             amount: amount,
             account: _selectedAccount!,
-            currencyUid: _selectedCurrency.id,
+            currencyUid: currencyId,
             mySplit: mySplit,
             updatedDateTime: DateTime.now(),
             skipReport: _skipReport);
@@ -620,7 +653,7 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
           feeAmount: feeAmount,
           amount: amount,
           account: _selectedAccount!,
-          currencyUid: _selectedCurrency.id,
+          currencyUid: currencyId,
           updatedDateTime: DateTime.now(),
           skipReport: _skipReport,
           sharedBill: _selectedBillToReturn,

@@ -201,6 +201,9 @@ class _AddAccountFormState extends State<AddAccountForm> {
   }
 
   void _validateForm(BuildContext context, Function(List<Asset> assets, bool isAddNew) callback) async {
+    if (kDebugMode) {
+      print("Calling form validation...");
+    }
     final appState = Provider.of<AppState>(context, listen: false);
     var formUtil = FormUtil();
     setState(() {
@@ -217,8 +220,21 @@ class _AddAccountFormState extends State<AddAccountForm> {
 
     await future;
     if (!_isValidAssetName) {
-      _formKey.currentState?.validate();
-    } else if (_formKey.currentState?.validate() ?? false) {
+      var validateResult = _formKey.currentState?.validate();
+      if (validateResult != null && validateResult != true) {
+        if (kDebugMode) {
+          print("Form validate fail!. [$validateResult]");
+        }
+        return;
+      }
+    } else {
+      var validateResult = _formKey.currentState?.validate();
+      if (validateResult != null && validateResult != true) {
+        if (kDebugMode) {
+          print("Form validate fail again!. [$validateResult]");
+        }
+        return;
+      }
       Map<String, String> localizeMap = (!_enableMultiLanguage) ? {} : _localizeNamesMap.map((key, value) => MapEntry(key, value.text));
       Map<String, String> localizeDesc =
           (!_enableMultiLanguage) ? {} : _localizeDescriptionMap.map((key, value) => MapEntry(key, value.text));
@@ -236,9 +252,14 @@ class _AddAccountFormState extends State<AddAccountForm> {
       double? loanAmountNumber = formUtil.parseAmount(_loanAmountController.text, moneyFormat);
       double? creditLimitNumber = formUtil.parseAmount(_creditLimitController.text, moneyFormat);
 
+      var dbService = DatabaseService();
       if (_editingAsset != null) {
+        if (kDebugMode) {
+          print("Updating asset info to DB...");
+        }
         _editingAsset = Util().changeAssetType(_editingAsset!, _selectedAccountType);
-        DatabaseService().database.then((db) {
+
+        dbService.database.then((db) {
           _editingAsset?.icon = _selectedIcon;
           _editingAsset?.name = _assetNameController.text;
           _editingAsset?.localizeNames = localizeMap;
@@ -255,14 +276,19 @@ class _AddAccountFormState extends State<AddAccountForm> {
           }
           _editingAsset?.lastUpdated = DateTime.now();
 
-          db.update(tableNameAsset, _editingAsset!.toMap(),
-              where: "uid = ?", whereArgs: [_editingAsset!.id], conflictAlgorithm: ConflictAlgorithm.replace);
+          db
+              .update(tableNameAsset, _editingAsset!.toMap(),
+                  where: "uid = ?", whereArgs: [_editingAsset!.id], conflictAlgorithm: ConflictAlgorithm.replace)
+              .catchError((e) => dbService.recordCodingError(e, 'update account', null));
           setState(() {
             appState.triggerNotify();
             callback(appState.assets, false);
           });
         });
       } else {
+        if (kDebugMode) {
+          print("Saving new asset info to DB...");
+        }
         Asset assets;
         switch (_selectedAccountType) {
           case "genericAccount":
@@ -274,7 +300,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
                 index: appState.assets.length,
                 localizeDescriptions: localizeDesc,
                 description: _assetDescriptionController.text,
-                currencyUid: _selectedCurrency.id,
+                currencyUid: _selectedCurrency.id!,
                 categoryUid: _selectedCategory.id!,
                 availableAmount: availableAmountNumber!);
             break;
@@ -287,7 +313,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
                 index: appState.assets.length,
                 localizeDescriptions: localizeDesc,
                 description: _assetDescriptionController.text,
-                currencyUid: _selectedCurrency.id,
+                currencyUid: _selectedCurrency.id!,
                 categoryUid: _selectedCategory.id!,
                 availableAmount: availableAmountNumber!);
             break;
@@ -300,7 +326,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
                 index: appState.assets.length,
                 localizeDescriptions: localizeDesc,
                 description: _assetDescriptionController.text,
-                currencyUid: _selectedCurrency.id,
+                currencyUid: _selectedCurrency.id!,
                 categoryUid: _selectedCategory.id!,
                 loanAmount: loanAmountNumber!);
             break;
@@ -313,7 +339,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
                 index: appState.assets.length,
                 localizeDescriptions: localizeDesc,
                 description: _assetDescriptionController.text,
-                currencyUid: _selectedCurrency.id,
+                currencyUid: _selectedCurrency.id!,
                 categoryUid: _selectedCategory.id!,
                 availableAmount: availableAmountNumber!);
             break;
@@ -326,7 +352,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
                 index: appState.assets.length,
                 localizeDescriptions: localizeDesc,
                 description: _assetDescriptionController.text,
-                currencyUid: _selectedCurrency.id,
+                currencyUid: _selectedCurrency.id!,
                 categoryUid: _selectedCategory.id!,
                 availableAmount: availableAmountNumber!,
                 paymentLimit: creditLimitNumber!);
@@ -340,18 +366,20 @@ class _AddAccountFormState extends State<AddAccountForm> {
                 index: appState.assets.length,
                 localizeDescriptions: localizeDesc,
                 description: _assetDescriptionController.text,
-                currencyUid: _selectedCurrency.id,
+                currencyUid: _selectedCurrency.id!,
                 categoryUid: _selectedCategory.id!,
                 availableAmount: availableAmountNumber!,
                 creditLimit: creditLimitNumber!);
             break;
         }
-        DatabaseService().database.then((db) {
+        dbService.database.then((db) {
           db.insert(tableNameAsset, assets.toMap(), conflictAlgorithm: ConflictAlgorithm.replace).then((_) {
             setState(() {
               appState.triggerNotify();
               callback(appState.assets, true);
             });
+          }).catchError((e) {
+            dbService.recordCodingError(e, 'add new account', null);
           });
         });
       }
@@ -527,11 +555,12 @@ class _AddAccountFormState extends State<AddAccountForm> {
   }
 
   List<Widget> _formFields(BuildContext context, ThemeData theme) {
+    AppLocalizations appLocalizations = AppLocalizations.of(context)!;
     List<Widget> result = [];
     result.addAll(_dropdownButtonFormField(
       context,
       value: _selectedAccountType,
-      label: AppLocalizations.of(context)!.accountType,
+      label: appLocalizations.accountType,
       items: AssetType.values
           .map<DropdownMenuItem<String>>(
             (AssetType t) => _buildDropdownMenuItem(context, t.name, FormUtil().resolveAccountTypeLocalize(context, t.name)),
@@ -543,7 +572,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
     result.addAll(_dropdownButtonFormField(
       context,
       value: _selectedCategory,
-      label: AppLocalizations.of(context)!.accountCategorySelect,
+      label: appLocalizations.accountCategorySelect,
       items: _buildListCategoriesDropdown(),
       onChange: (AssetCategory? value) => setState(() => _selectedCategory = value!),
     ));
@@ -551,7 +580,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
     result.addAll(_dropdownButtonFormField(
       context,
       value: _selectedCurrency,
-      label: AppLocalizations.of(context)!.accountCurrencySelect,
+      label: appLocalizations.accountCurrencySelect,
       items: _buildListCurrenciesDropdown(),
       onChange: (Currency? value) => setState(
         () {
@@ -566,11 +595,17 @@ class _AddAccountFormState extends State<AddAccountForm> {
     ));
 
     assetsNameValidator(value) {
+      if (kDebugMode) {
+        print("Invalid name [${appLocalizations.accountValidateNameEmpty}]");
+      }
       if (value == null || value.isEmpty) {
-        return AppLocalizations.of(context)!.accountValidateNameEmpty;
+        return appLocalizations.accountValidateNameEmpty;
       }
       if (!_isValidAssetName) {
-        return AppLocalizations.of(context)!.accountValidateNameExisted;
+        if (kDebugMode) {
+          print("Invalid name [${appLocalizations.accountValidateNameExisted}]");
+        }
+        return appLocalizations.accountValidateNameExisted;
       }
       return null;
     }

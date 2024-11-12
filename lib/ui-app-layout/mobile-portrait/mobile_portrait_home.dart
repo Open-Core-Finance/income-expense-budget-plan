@@ -48,5 +48,5 @@ class _HomePageMobilePortraitState extends HomePageState<HomePageMobilePortrait>
 
   @override
   List<Widget> allIndexesWidgets(BuildContext context, AppLocalizations appLocalizations) =>
-      [const TransactionPanel(), const AccountPanelPortrait(), ReportPanel(), const MobilePortraitMorePanel()];
+      [const TransactionPanel(), ReportPanel(), const AccountPanelPortrait(), const MobilePortraitMorePanel()];
 }

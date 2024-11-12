@@ -113,8 +113,8 @@ class _HomePageMobileLandscapeState extends HomePageState<HomePageMobileLandscap
   @override
   List<Widget> allIndexesWidgets(BuildContext context, AppLocalizations appLocalizations) => [
         const TransactionPanel(),
-        const AccountPanelLandscape(),
         ReportPanel(),
+        const AccountPanelLandscape(),
         const AssetCategoriesPanel(),
         const Material(child: LandscapeMorePanel())
       ];

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:income_expense_budget_plan/model/debug_log.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/util.dart';
 import 'package:path/path.dart';
@@ -117,9 +118,9 @@ class DatabaseService {
       } catch (e) {
         if (kDebugMode) {
           if (statementSuffix == ";") {
-            print("SQL [$statementTrim] trigger fail! $e");
+            print("Executed SQL [$statementTrim] fail! $e");
           } else {
-            print("Executed SQL Trigger fail!!");
+            print("Executed SQL Trigger fail! [$statementTrim]! $e");
           }
         }
         return {execMapSuccessKey: false, execMapErrDetailsKey: e};
@@ -147,8 +148,8 @@ class DatabaseService {
 
   Future<void> _onOpen(Database db) async {
     await _executeSqlFileBundle(db, 'assets/db_clean_triggers.sql');
-    await _executeTriggersSqlFileBundle(db, 'assets/db_create_triggers.sql');
     await _executeSqlFileBundle(db, 'assets/db_validate_and_correct.sql');
+    await _executeTriggersSqlFileBundle(db, 'assets/db_create_triggers.sql');
     if (kDebugMode) {
       print("Opening database successful. Current version $databaseVersion");
     }
@@ -160,14 +161,14 @@ class DatabaseService {
       print("Upgrading database version from $oldVersion to $newVersion...");
     }
     await _executeSqlFileBundle(db, 'assets/db_clean_triggers.sql');
-    await _executeTriggersSqlFileBundle(db, 'assets/db_create_triggers.sql');
     await _executeSqlFileBundle(db, 'assets/db_upgrade_all.sql');
     if (oldVersion < 2) {
       await _executeSqlFileBundle(db, 'assets/db_upgrade_2.sql');
     }
-    // if (oldVersion < 3) {
-    //   _executeSqlFileBundle(db, 'assets/db_upgrade_3.sql');
-    // }
+    if (oldVersion < 3) {
+      _executeSqlFileBundle(db, 'assets/db_upgrade_3.sql');
+    }
+    await _executeTriggersSqlFileBundle(db, 'assets/db_create_triggers.sql');
     // add more version specific sql
   }
 
@@ -220,5 +221,22 @@ class DatabaseService {
         if (onError != null) onError(e, f);
       });
     });
+  }
+
+  FutureOr<int> recordCodingError(dynamic e, String functionName, Function(Exception e)? callback) async {
+    if (kDebugMode) {
+      print("Saving error $e");
+    }
+    DebugLog debugLog = DebugLog(
+      id: null,
+      funcName: functionName,
+      funcType: DebugLogFuncType.coding,
+      logLevel: DebugLogLevel.error,
+      message: '$e',
+      createdAt: DateTime.now(),
+    );
+    database.then((db) => db.insert(tableNameDebugLog, debugLog.toMap(), conflictAlgorithm: ConflictAlgorithm.replace));
+    if (callback != null) callback(e);
+    return 0;
   }
 }

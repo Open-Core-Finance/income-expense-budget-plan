@@ -260,15 +260,28 @@ class _AddTransactionCategoryPanelState extends State<AddTransactionCategoryPane
 
     await future;
     if (!_isValidCategoryName) {
-      _formKey.currentState?.validate();
+      var validateResult = _formKey.currentState?.validate();
+      if (validateResult != null && validateResult != true) {
+        if (kDebugMode) {
+          print("Form validate fail!. [$validateResult]");
+        }
+        return;
+      }
     } else {
-      _formKey.currentState?.validate();
+      var validateResult = _formKey.currentState?.validate();
+      if (validateResult != null && validateResult != true) {
+        if (kDebugMode) {
+          print("Form validate fail again!. [$validateResult]");
+        }
+        return;
+      }
       Map<String, String> localizeMap = (!_enableMultiLanguage) ? {} : _localizeNamesMap.map((key, value) => MapEntry(key, value.text));
       if (kDebugMode) {
         print("Enable language: $_enableMultiLanguage, Localize map: $localizeMap, _localizeNamesMap: $_localizeNamesMap");
       }
+      var dbService = DatabaseService();
       if (_editingCategory != null) {
-        DatabaseService().database.then((db) {
+        dbService.database.then((db) {
           var olParentUid = _editingCategory?.parentUid;
           var newParentUid = _selectedParentCategory?.id;
           _editingCategory!.icon = _selectedIcon;
@@ -276,14 +289,16 @@ class _AddTransactionCategoryPanelState extends State<AddTransactionCategoryPane
           _editingCategory!.localizeNames = localizeMap;
           _editingCategory!.parentUid = newParentUid;
           _editingCategory?.lastUpdated = DateTime.now();
-          var updateFuture = db.update(
-            tableNameTransactionCategory,
-            _editingCategory!.toMap(),
-            where: "uid = ?",
-            whereArgs: [_editingCategory!.id],
-            conflictAlgorithm: ConflictAlgorithm.replace,
-          );
-          updateFuture.then((_) => transactionCategoriesListenable.refreshItem(_editingCategory!, olParentUid, newParentUid, callback));
+          db
+              .update(
+                tableNameTransactionCategory,
+                _editingCategory!.toMap(),
+                where: "uid = ?",
+                whereArgs: [_editingCategory!.id],
+                conflictAlgorithm: ConflictAlgorithm.replace,
+              )
+              .then((_) => transactionCategoriesListenable.refreshItem(_editingCategory!, olParentUid, newParentUid, callback))
+              .catchError((e) => dbService.recordCodingError(e, 'update transaction category', null));
         });
       } else {
         var categories = transactionCategoriesListenable.categoriesMap[widget.transactionType] ?? [];
@@ -297,11 +312,14 @@ class _AddTransactionCategoryPanelState extends State<AddTransactionCategoryPane
             localizeNames: localizeMap,
             index: sibling.length,
             transactionType: widget.transactionType);
-        DatabaseService().database.then((db) {
-          db.insert(tableNameTransactionCategory, transactionCategory.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
-          setState(() {
-            transactionCategoriesListenable.addItem(transactionCategory);
-            callback(categories);
+        dbService.database.then((db) {
+          db.insert(tableNameTransactionCategory, transactionCategory.toMap(), conflictAlgorithm: ConflictAlgorithm.replace).then((_) {
+            setState(() {
+              transactionCategoriesListenable.addItem(transactionCategory);
+              callback(categories);
+            });
+          }).catchError((e) {
+            dbService.recordCodingError(e, 'add new transaction category', null);
           });
         });
       }

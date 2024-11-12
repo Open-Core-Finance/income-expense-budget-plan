@@ -5,15 +5,17 @@ import 'package:flutter/material.dart';
 import 'package:income_expense_budget_plan/service/app_state.dart';
 
 // Const
+const String databaseNameMain = "main_database.db";
+const int databaseVersion = 3;
+
 const String tableNameCurrency = "currency";
 const String tableNameSetting = "setting";
 const String tableNameAsset = "asset";
-const String databaseNameMain = "main_database.db";
-const int databaseVersion = 2;
 const String tableNameAssetCategory = "asset_category";
 const String tableNameTransactionCategory = "transaction_category";
 const String tableNameTransaction = "transactions";
 const String tableNameResourceStatisticDaily = "resource_statistic_daily";
+const String tableNameDebugLog = "debug_log";
 const Map<String, String> localeMap = {'en': 'English', 'vi': 'Tiếng Việt'};
 const String defaultLocale = 'en';
 const IconData defaultIconData = Icons.collections;
