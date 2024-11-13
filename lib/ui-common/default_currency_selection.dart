@@ -30,11 +30,13 @@ class _DefaultCurrencySelectionDialog extends State<DefaultCurrencySelectionDial
               child: Text(appLocalizations.actionConfirm),
               onPressed: () {
                 if (_selectedCurrency != null) {
-                  currentAppState.systemSetting.defaultCurrencyUid = _selectedCurrency?.id;
+                  var selectedCurrencyId = _selectedCurrency!.id!;
+                  currentAppState.systemSetting.defaultCurrencyUid = selectedCurrencyId;
                   currentAppState.systemSetting.defaultCurrency = _selectedCurrency;
                   DatabaseService().database.then((db) {
                     db.update(tableNameSetting, currentAppState.systemSetting.toMap(),
                         where: "id = ?", whereArgs: ["1"], conflictAlgorithm: ConflictAlgorithm.replace);
+                    db.execute("update $tableNameAsset set currency_uid=$selectedCurrencyId").then((_) => Util().refreshAssets(null));
                   });
                   Navigator.of(context).pop();
                 } else {
