@@ -132,6 +132,8 @@
   "weekDayTomorrow": "Tomorrow",
   "transactionTransferTitle": "Transferred to \"{assetName}\"",
   "transactionSharedBillTitle": "Paid \"{amount}\" for \"{categoryName}\"",
+  "transactionSharedBillSelectionTitleTotal": "Total",
+  "transactionSharedBillSelectionTitleRemaining": "Remaining",
   "transactionSharedBillReturnedTitle": "Received return for \"{categoryName}\"",
   "transactionAdjustedFrom": "Adjusted to \"{amountTo}\"",
   "transactionSkipReport": "Do not include to report",

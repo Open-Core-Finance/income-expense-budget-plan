@@ -17,7 +17,7 @@ BEGIN
 
     INSERT INTO debug_log (func_name, message) VALUES ('transaction_after_insert',
         CASE
-            WHEN (NEW.transaction_type = "shareBillReturn") THEN
+            WHEN (NEW.transaction_type = 'shareBillReturn') THEN
                 'Running SQL to update  remaining_amount of bill [' || NEW.shared_bill_id || '] as follow ['
                     || 'UPDATE transactions SET remaining_amount = remaining_amount -  ' || NEW.amount || ', fee_amount = fee_amount - ' || NEW.fee_amount
                     || 'where transaction_type = "shareBill" AND id=' || NEW.shared_bill_id || ' AND NEW.transaction_type = "shareBillReturn"]'

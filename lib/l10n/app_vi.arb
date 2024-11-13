@@ -132,6 +132,8 @@
   "weekDayTomorrow": "Ngày mai",
   "transactionTransferTitle": "Chuyển khoản đến \"{assetName}\"",
   "transactionSharedBillTitle": "Thanh toán \"{categoryName}\" với giá trị \"{amount}\"",
+  "transactionSharedBillSelectionTitleTotal": "Tổng tiền",
+  "transactionSharedBillSelectionTitleRemaining": "Còn lại",
   "transactionSharedBillReturnedTitle": "Nhận tiền trả cho \"{categoryName}\"",
   "transactionAdjustedFrom": "Chỉnh thành \"{amountTo}\"",
   "transactionSkipReport": "Không tính vào báo cáo",

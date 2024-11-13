@@ -4,6 +4,7 @@ import 'package:income_expense_budget_plan/model/transaction.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/form_util.dart';
 import 'package:income_expense_budget_plan/service/transaction_service.dart';
+import 'package:intl/intl.dart';
 
 class TransactionItemConfigKey {
   static const double markDisplaySize = 22;
@@ -20,6 +21,7 @@ abstract class GenericTransactionTile<T extends Transactions> extends StatelessW
   final T transaction;
   final FormUtil formUtil = FormUtil();
   final Function(Transactions transaction)? onTap;
+  final DateFormat dateFormat = DateFormat("yyyy-MM-dd");
   GenericTransactionTile({super.key, required this.transaction, this.onTap});
 
   @override
@@ -31,15 +33,13 @@ abstract class GenericTransactionTile<T extends Transactions> extends StatelessW
         if (onTap != null) onTap!(transaction);
       },
       child: ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: 0, maxHeight: TransactionItemConfigKey.eachTransactionHeight),
+        constraints: BoxConstraints(minHeight: 0, maxHeight: getComponentHeight()),
         child: MouseRegion(
           cursor: SystemMouseCursors.click, // Changes the cursor to a pointer
           child: Row(
             children: [
               SizedBox(
-                height: TransactionItemConfigKey.eachTransactionHeight,
-                child: VerticalDivider(thickness: 2, color: theme.dividerColor, endIndent: 0, indent: 0),
-              ),
+                  height: getComponentHeight(), child: VerticalDivider(thickness: 2, color: theme.dividerColor, endIndent: 0, indent: 0)),
               const Text("---", style: TextStyle(fontSize: TransactionItemConfigKey.markDisplaySize), textAlign: TextAlign.left),
               iconDisplay(context),
               const SizedBox(width: 5),
@@ -55,6 +55,8 @@ abstract class GenericTransactionTile<T extends Transactions> extends StatelessW
       ),
     );
   }
+
+  double getComponentHeight() => TransactionItemConfigKey.eachTransactionHeight;
 
   Widget amountDisplay(BuildContext context) {
     var formatter = FormUtil().buildFormatter(currentAppState.currencies
@@ -186,15 +188,33 @@ class SharedBillTransactionTileForDialog extends SharedBillTransactionTile {
     AppLocalizations appLocalizations = AppLocalizations.of(context)!;
     var formatter = FormUtil().buildFormatter(currentAppState.currencies
         .firstWhere((element) => element.id == transaction.currencyUid, orElse: () => currentAppState.systemSetting.defaultCurrency!));
-    String text = appLocalizations.transactionSharedBillTitle(
-        formatter.formatDouble(transaction.amount), transaction.transactionCategory?.getTitleText(currentAppState.systemSetting) ?? "");
+    String categoryName = transaction.transactionCategory?.getTitleText(currentAppState.systemSetting) ?? "";
+    String totalLabel = appLocalizations.transactionSharedBillSelectionTitleTotal;
+    String totalVal = formatter.formatDouble(transaction.amount);
+    String remainingLabel = appLocalizations.transactionSharedBillSelectionTitleRemaining;
+    String remainingVal = formatter.formatDouble(transaction.remainingAmount);
     var descriptionTextStyle = const TextStyle(fontSize: TransactionItemConfigKey.transactionDescriptionSize);
-    var description =
-        '${appLocalizations.transactionSharedBillRemainingLabel} "${formatter.formatDouble(transaction.remainingAmount)}".${transaction.description}';
     return Expanded(
       child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(text, textAlign: TextAlign.left, style: const TextStyle(fontSize: TransactionItemConfigKey.categoryNameSize)),
-        Text(description, textAlign: TextAlign.left, style: descriptionTextStyle)
+        Row(mainAxisSize: MainAxisSize.min, children: [
+          Text(categoryName,
+              textAlign: TextAlign.left, style: const TextStyle(fontSize: TransactionItemConfigKey.categoryNameSize, color: Colors.blue)),
+          Text(' (${dateFormat.format(transaction.transactionDate)})',
+              textAlign: TextAlign.left, style: const TextStyle(fontSize: TransactionItemConfigKey.categoryNameSize)),
+        ]),
+        Row(mainAxisSize: MainAxisSize.min, children: [
+          Text(totalLabel, textAlign: TextAlign.left, style: const TextStyle(fontSize: TransactionItemConfigKey.categoryNameSize)),
+          Text(" ", textAlign: TextAlign.left, style: const TextStyle(fontSize: TransactionItemConfigKey.categoryNameSize)),
+          Text(totalVal,
+              textAlign: TextAlign.left, style: const TextStyle(fontSize: TransactionItemConfigKey.categoryNameSize, color: Colors.red)),
+        ]),
+        Row(mainAxisSize: MainAxisSize.min, children: [
+          Text(remainingLabel, textAlign: TextAlign.left, style: const TextStyle(fontSize: TransactionItemConfigKey.categoryNameSize)),
+          Text(" ", textAlign: TextAlign.left, style: const TextStyle(fontSize: TransactionItemConfigKey.categoryNameSize)),
+          Text(remainingVal,
+              textAlign: TextAlign.left, style: const TextStyle(fontSize: TransactionItemConfigKey.categoryNameSize, color: Colors.red))
+        ]),
+        if (transaction.description.trim().isNotEmpty) Text(transaction.description, textAlign: TextAlign.left, style: descriptionTextStyle)
       ]),
     );
   }
@@ -206,6 +226,9 @@ class SharedBillTransactionTileForDialog extends SharedBillTransactionTile {
 
   @override
   Widget? accountDisplay(BuildContext context) => null;
+
+  @override
+  double getComponentHeight() => TransactionItemConfigKey.eachTransactionHeight + 50;
 }
 
 class SharedBillReturnTransactionTile extends GenericTransactionTile<ShareBillReturnTransaction> {

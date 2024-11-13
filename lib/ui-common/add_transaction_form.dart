@@ -21,6 +21,7 @@ import 'package:income_expense_budget_plan/ui-platform-based/landscape/account_p
 import 'package:income_expense_budget_plan/ui-platform-based/landscape/transaction_categories_panel.dart';
 import 'package:income_expense_budget_plan/ui-platform-based/portrait/account_panel.dart';
 import 'package:income_expense_budget_plan/ui-platform-based/portrait/transaction_categories_panel.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/v8.dart';
@@ -286,12 +287,10 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
                   Row(
                     children: [
                       Flexible(
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(0, 0, 10, 0),
-                          child: ElevatedButton(
-                            onPressed: () => _chooseSharedBill(context),
-                            child: Row(children: _buildShareBillSelectionItemDisplay(context, theme, _selectedBillToReturn)),
-                          ),
+                        child: ElevatedButton(
+                          onPressed: () => _chooseSharedBill(context),
+                          style: ButtonStyle(padding: WidgetStateProperty.all(EdgeInsets.fromLTRB(10, 0, 0, 0))),
+                          child: Row(children: _buildShareBillSelectionItemDisplay(context, theme, _selectedBillToReturn)),
                         ),
                       ),
                     ],
@@ -875,6 +874,7 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
     final category = sharedBill?.transactionCategory;
     IconData? iconData = category?.icon;
     String text = "";
+    Widget content;
     Widget suffix;
     if (sharedBill != null) {
       if (_selectedBillToReturn!.description.isNotEmpty == true) {
@@ -884,15 +884,22 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
       }
       suffix = IconButton(
           onPressed: () => setState(() => _selectedBillToReturn = null), icon: const Icon(Icons.clear), color: theme.colorScheme.error);
+      final DateFormat dateFormat = DateFormat("yyyy-MM-dd");
+      content = Expanded(
+          child: Text(
+              '$text (${dateFormat.format(sharedBill.transactionDate)}) - ${_currencyTextInputFormatter.formatDouble(sharedBill.amount)}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis));
     } else {
       text = "<<${AppLocalizations.of(context)!.transactionTypeShareBill}>>";
+      content = Text(text);
       suffix = const Icon(Icons.arrow_downward);
     }
     List<Widget> result = [];
     if (iconData != null) {
       result.add(Icon(iconData, color: theme.iconTheme.color));
     }
-    result.addAll([const SizedBox(width: 5), Text(text), suffix]);
+    result.addAll([const SizedBox(width: 5), content, suffix]);
     return result;
   }
 

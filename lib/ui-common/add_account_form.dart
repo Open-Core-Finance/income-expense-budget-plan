@@ -257,28 +257,28 @@ class _AddAccountFormState extends State<AddAccountForm> {
         if (kDebugMode) {
           print("Updating asset info to DB...");
         }
-        _editingAsset = Util().changeAssetType(_editingAsset!, _selectedAccountType);
+        final asset = Util().changeAssetType(_editingAsset!, _selectedAccountType);
 
         dbService.database.then((db) {
-          _editingAsset?.icon = _selectedIcon;
-          _editingAsset?.name = _assetNameController.text;
-          _editingAsset?.localizeNames = localizeMap;
-          _editingAsset?.localizeDescriptions = localizeDesc;
-          _editingAsset?.description = _assetDescriptionController.text;
-          _editingAsset?.categoryUid = _selectedCategory.id!;
-          _editingAsset?.availableAmount = availableAmountNumber!;
-          if (_editingAsset is LoanAccount) {
-            (_editingAsset! as LoanAccount).loanAmount = loanAmountNumber!;
-          } else if (_editingAsset is CreditCard) {
+          asset.icon = _selectedIcon;
+          asset.name = _assetNameController.text;
+          asset.localizeNames = localizeMap;
+          asset.localizeDescriptions = localizeDesc;
+          asset.description = _assetDescriptionController.text;
+          asset.categoryUid = _selectedCategory.id!;
+          asset.availableAmount = availableAmountNumber!;
+          asset.currencyUid = _selectedCurrency.id!;
+          if (asset is LoanAccount) {
+            asset.loanAmount = loanAmountNumber!;
+          } else if (asset is CreditCard) {
             // Credit card
-            (_editingAsset! as CreditCard).availableAmount = availableAmountNumber!;
-            (_editingAsset! as CreditCard).creditLimit = creditLimitNumber!;
+            asset.availableAmount = availableAmountNumber;
+            asset.creditLimit = creditLimitNumber!;
           }
-          _editingAsset?.lastUpdated = DateTime.now();
+          asset.lastUpdated = DateTime.now();
 
           db
-              .update(tableNameAsset, _editingAsset!.toMap(),
-                  where: "uid = ?", whereArgs: [_editingAsset!.id], conflictAlgorithm: ConflictAlgorithm.replace)
+              .update(tableNameAsset, asset.toMap(), where: "uid = ?", whereArgs: [asset.id], conflictAlgorithm: ConflictAlgorithm.replace)
               .catchError((e) => dbService.recordCodingError(e, 'update account', null));
           setState(() {
             appState.triggerNotify();
