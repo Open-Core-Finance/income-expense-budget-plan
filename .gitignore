@@ -52,6 +52,6 @@ app.*.map.json
 /**/*.snap
 
 # My code generated
-/**/*.iebp
+#/**/*.iebp
 
 android/.kotlin/sessions/
