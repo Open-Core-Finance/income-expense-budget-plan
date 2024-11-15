@@ -4,6 +4,7 @@ import 'package:income_expense_budget_plan/model/transaction.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/form_util.dart';
 import 'package:income_expense_budget_plan/service/transaction_service.dart';
+import 'package:income_expense_budget_plan/service/year_month_filter_data.dart';
 import 'package:intl/intl.dart';
 
 class TransactionItemConfigKey {
@@ -22,7 +23,8 @@ abstract class GenericTransactionTile<T extends Transactions> extends StatelessW
   final FormUtil formUtil = FormUtil();
   final Function(Transactions transaction)? onTap;
   final DateFormat dateFormat = DateFormat("yyyy-MM-dd");
-  GenericTransactionTile({super.key, required this.transaction, this.onTap});
+  final Future<void> Function(Transactions tran)? deleteFunction;
+  GenericTransactionTile({super.key, required this.transaction, this.onTap, required this.deleteFunction});
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +50,9 @@ abstract class GenericTransactionTile<T extends Transactions> extends StatelessW
                 crossAxisAlignment: CrossAxisAlignment.end,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [amountDisplay(context), if (accountWidget != null) accountWidget],
-              )
+              ),
+              if (deleteFunction != null && (!currentAppState.isMobile || currentAppState.isLandscape))
+                IconButton(onPressed: () => deleteFunction!(transaction), icon: Icon(Icons.delete, color: Colors.red)),
             ],
           ),
         ),
@@ -101,7 +105,7 @@ abstract class GenericTransactionTile<T extends Transactions> extends StatelessW
 }
 
 class ExpenseTransactionTile extends GenericTransactionTile<ExpenseTransaction> {
-  ExpenseTransactionTile({super.key, required super.transaction, super.onTap});
+  ExpenseTransactionTile({super.key, required super.transaction, super.onTap, required super.deleteFunction});
 
   @override
   TextStyle amountTextStyle(BuildContext context) {
@@ -110,7 +114,7 @@ class ExpenseTransactionTile extends GenericTransactionTile<ExpenseTransaction> 
 }
 
 class IncomeTransactionTile extends GenericTransactionTile<IncomeTransaction> {
-  IncomeTransactionTile({super.key, required super.transaction, super.onTap});
+  IncomeTransactionTile({super.key, required super.transaction, super.onTap, required super.deleteFunction});
 
   @override
   TextStyle amountTextStyle(BuildContext context) {
@@ -119,7 +123,7 @@ class IncomeTransactionTile extends GenericTransactionTile<IncomeTransaction> {
 }
 
 class TransferTransactionTile extends GenericTransactionTile<TransferTransaction> {
-  TransferTransactionTile({super.key, required super.transaction, super.onTap});
+  TransferTransactionTile({super.key, required super.transaction, super.onTap, required super.deleteFunction});
 
   @override
   TextStyle amountTextStyle(BuildContext context) => const TextStyle(fontSize: TransactionItemConfigKey.amountSize);
@@ -145,7 +149,7 @@ class TransferTransactionTile extends GenericTransactionTile<TransferTransaction
 }
 
 class SharedBillTransactionTile extends GenericTransactionTile<ShareBillTransaction> {
-  SharedBillTransactionTile({super.key, required super.transaction, super.onTap});
+  SharedBillTransactionTile({super.key, required super.transaction, super.onTap, required super.deleteFunction});
 
   @override
   TextStyle amountTextStyle(BuildContext context) => const TextStyle(fontSize: TransactionItemConfigKey.amountSize, color: Colors.red);
@@ -181,7 +185,7 @@ class SharedBillTransactionTile extends GenericTransactionTile<ShareBillTransact
 }
 
 class SharedBillTransactionTileForDialog extends SharedBillTransactionTile {
-  SharedBillTransactionTileForDialog({super.key, required super.transaction, super.onTap});
+  SharedBillTransactionTileForDialog({super.key, required super.transaction, super.onTap, required super.deleteFunction});
 
   @override
   Widget nameDisplay(BuildContext context) {
@@ -232,7 +236,7 @@ class SharedBillTransactionTileForDialog extends SharedBillTransactionTile {
 }
 
 class SharedBillReturnTransactionTile extends GenericTransactionTile<ShareBillReturnTransaction> {
-  SharedBillReturnTransactionTile({super.key, required super.transaction, super.onTap});
+  SharedBillReturnTransactionTile({super.key, required super.transaction, super.onTap, required super.deleteFunction});
 
   @override
   TextStyle amountTextStyle(BuildContext context) => const TextStyle(fontSize: TransactionItemConfigKey.amountSize, color: Colors.blue);
@@ -263,7 +267,7 @@ class SharedBillReturnTransactionTile extends GenericTransactionTile<ShareBillRe
 
 class AdjustmentTransactionTile extends GenericTransactionTile<AdjustmentTransaction> {
   late final bool isNegative;
-  AdjustmentTransactionTile({super.key, required super.transaction, super.onTap}) {
+  AdjustmentTransactionTile({super.key, required super.transaction, super.onTap, required super.deleteFunction}) {
     isNegative = super.transaction.adjustedAmount < 0;
   }
 

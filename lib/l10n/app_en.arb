@@ -101,6 +101,7 @@
   "transactionDeleteConfirm": "Are you sure to delete transaction?",
   "transactionDeleteError": "Deleting transaction fail!",
   "transactionDeleteSuccess": "Deleting transaction success!",
+  "transactionDeleteButton": "Delete",
   "transactionUpdateError": "Updating transaction fail!",
   "transactionHaveFee": "Have fee",
   "transactionFee": "Fee",
