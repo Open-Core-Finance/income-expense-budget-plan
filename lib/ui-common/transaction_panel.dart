@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:income_expense_budget_plan/ui-common/add_transaction_form.dart';
 import 'package:income_expense_budget_plan/ui-common/no_data.dart';
 import 'package:income_expense_budget_plan/ui-common/transaction_item_display.dart';
@@ -173,9 +174,8 @@ class _TransactionPanelState extends State<TransactionPanel> {
                             maxHeight: txns.length * (TransactionItemConfigKey.eachTransactionHeight + 4) + 120,
                           ),
                           child: Padding(
-                            padding: const EdgeInsets.fromLTRB(0, 0, 10, 0),
-                            child: _transactionWidget(txn),
-                          ),
+                              padding: const EdgeInsets.fromLTRB(0, 0, 10, 0),
+                              child: _transactionWidget(txn, appLocalizations, filterData)),
                         ),
                       ]
                     ],
@@ -251,30 +251,66 @@ class _TransactionPanelState extends State<TransactionPanel> {
     return result;
   }
 
-  Widget _transactionWidget(Transactions tran) {
+  Widget _transactionWidget(Transactions tran, AppLocalizations appLocalizations, YearMonthFilterData filterData) {
     onTap(Transactions tr) {
       Util().navigateTo(context, AddTransactionForm(editingTransaction: tran, editCallback: transactionUpdated));
     }
 
+    Future<void> deleteFunction(Transactions t) => _transactionDelete(t, appLocalizations, filterData);
+    Widget content;
     if (tran is ExpenseTransaction) {
-      return ExpenseTransactionTile(transaction: tran, onTap: onTap);
+      content = ExpenseTransactionTile(transaction: tran, onTap: onTap, deleteFunction: deleteFunction);
     } else if (tran is IncomeTransaction) {
-      return IncomeTransactionTile(transaction: tran, onTap: onTap);
+      content = IncomeTransactionTile(transaction: tran, onTap: onTap, deleteFunction: deleteFunction);
     } else if (tran is TransferTransaction) {
-      return TransferTransactionTile(transaction: tran, onTap: onTap);
+      content = TransferTransactionTile(transaction: tran, onTap: onTap, deleteFunction: deleteFunction);
     } else if (tran is ShareBillTransaction) {
-      return SharedBillTransactionTile(transaction: tran, onTap: onTap);
+      content = SharedBillTransactionTile(transaction: tran, onTap: onTap, deleteFunction: deleteFunction);
     } else if (tran is ShareBillReturnTransaction) {
-      return SharedBillReturnTransactionTile(transaction: tran, onTap: onTap);
+      content = SharedBillReturnTransactionTile(transaction: tran, onTap: onTap, deleteFunction: deleteFunction);
     } else if (tran is AdjustmentTransaction) {
-      return AdjustmentTransactionTile(transaction: tran, onTap: onTap);
+      content = AdjustmentTransactionTile(transaction: tran, onTap: onTap, deleteFunction: deleteFunction);
+    } else {
+      TransactionCategory? category = tran.transactionCategory;
+      content = Row(children: [
+        const VerticalDivider(width: 10, thickness: 10, color: Colors.red),
+        Icon(category?.icon ?? defaultIconData),
+        Text(tran.getType().name)
+      ]);
     }
-    TransactionCategory? category = tran.transactionCategory;
-    return Row(children: [
-      const VerticalDivider(width: 10, thickness: 10, color: Colors.red),
-      Icon(category?.icon ?? defaultIconData),
-      Text(tran.getType().name)
-    ]);
+    if (currentAppState.isMobile) {
+      return Slidable(
+        key: Key("txn-item-${tran.id}"),
+        // motion: const ScrollMotion(),
+        endActionPane: ActionPane(
+          motion: ScrollMotion(),
+          children: [
+            SlidableAction(
+              // An action can be bigger than the others.
+              flex: 2,
+              onPressed: (BuildContext context) => _transactionDelete(tran, appLocalizations, filterData),
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              icon: Icons.delete,
+              label: appLocalizations.transactionDeleteButton,
+            ),
+          ],
+        ),
+        child: content,
+      );
+    } else {
+      return content;
+    }
+  }
+
+  Future<void> _transactionDelete(Transactions tran, AppLocalizations appLocalizations, YearMonthFilterData filterData) async {
+    return Util().showRemoveDialogByField(context, tran,
+        tableName: tableNameTransaction,
+        titleLocalize: (itemDisplay) => appLocalizations.transactionDeleteDialogTitle,
+        confirmLocalize: (itemDisplay) => appLocalizations.transactionDeleteConfirm,
+        successLocalize: (itemDisplay) => appLocalizations.transactionDeleteSuccess,
+        errorLocalize: (itemDisplay) => appLocalizations.transactionDeleteError,
+        onSuccess: () => filterData.refreshFilterTransactions());
   }
 
   void transactionUpdated(Transactions transaction, Transactions? deletedTran) => setState(() {

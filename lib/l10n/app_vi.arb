@@ -102,6 +102,7 @@
   "transactionDeleteError": "Xóa giao dịch thất bại!",
   "transactionDeleteSuccess": "Xóa giao dịch thành công!",
   "transactionUpdateError": "Cập nhật giao dịch thất bại!",
+  "transactionDeleteButton": "Delete",
   "transactionHaveFee": "Có phí",
   "transactionFee": "Phí",
   "transactionInvalidFee": "Phí phải lớn hơn 0",

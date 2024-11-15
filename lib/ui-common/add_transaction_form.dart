@@ -2,6 +2,7 @@ import 'package:currency_text_input_formatter/currency_text_input_formatter.dart
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:income_expense_budget_plan/dao/transaction_dao.dart';
 import 'package:income_expense_budget_plan/model/assets.dart';
 import 'package:income_expense_budget_plan/model/currency.dart';
@@ -12,6 +13,7 @@ import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/database_service.dart';
 import 'package:income_expense_budget_plan/service/form_util.dart';
 import 'package:income_expense_budget_plan/service/util.dart';
+import 'package:income_expense_budget_plan/service/year_month_filter_data.dart';
 import 'package:income_expense_budget_plan/ui-common/account_panel.dart';
 import 'package:income_expense_budget_plan/ui-common/date_time_form_field.dart';
 import 'package:income_expense_budget_plan/ui-common/no_data.dart';
@@ -141,8 +143,9 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
     reloadInCompleteSharedBills();
   }
 
-  void reloadInCompleteSharedBills() {
-    TransactionDao().inCompleteSharedBills().then((values) => _inCompletedSharedBills = values);
+  Future<void> reloadInCompleteSharedBills() async {
+    var values = await TransactionDao().inCompleteSharedBills();
+    _inCompletedSharedBills = values;
   }
 
   @override
@@ -370,8 +373,8 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
                 ),
                 if (_canSubmit()) ...[
                   const SizedBox(height: 20),
-                  Row(
-                    children: FormUtil().buildCategoryFormActions(
+                  Row(children: [
+                    ...FormUtil().buildCategoryFormActions(
                       context,
                       () => _validateForm(context, (Transactions transaction, Transactions? deletedTran) {
                         if (widget.editCallback != null) {
@@ -394,7 +397,35 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
                       }),
                       accountCategoryActionSaveAddMoreLabel,
                     ),
-                  )
+                    if (_editingTransaction != null && _isChecking != true) ...[
+                      const SizedBox(width: 10),
+                      ElevatedButton(
+                        onPressed: () {
+                          Util().showRemoveDialogByField(context, _editingTransaction!,
+                              tableName: tableNameTransaction,
+                              titleLocalize: (itemDisplay) => appLocalizations.transactionDeleteDialogTitle,
+                              confirmLocalize: (itemDisplay) => appLocalizations.transactionDeleteConfirm,
+                              successLocalize: (itemDisplay) => appLocalizations.transactionDeleteSuccess,
+                              errorLocalize: (itemDisplay) => appLocalizations.transactionDeleteError,
+                              onSuccess: () {
+                                if (widget.editCallback != null) {
+                                  var callback = widget.editCallback!;
+                                  if (kDebugMode) {
+                                    print("\nCallback: $callback\n");
+                                  }
+                                  callback(_editingTransaction!, _editingTransaction);
+                                }
+                                Navigator.of(context).pop();
+                              });
+                        },
+                        style: ButtonStyle(
+                          backgroundColor: WidgetStateProperty.all(Colors.lightBlueAccent),
+                          padding: WidgetStateProperty.all(const EdgeInsets.symmetric(vertical: 15, horizontal: 30)),
+                        ),
+                        child: Text(appLocalizations.transactionDeleteButton, style: const TextStyle(fontSize: 14, color: Colors.red)),
+                      ),
+                    ]
+                  ])
                 ],
               ],
             ),
@@ -790,7 +821,7 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
     );
 
     TransactionCategoriesPanel listPanel;
-    if (currentAppState.isMobile) {
+    if (currentAppState.isMobile && !currentAppState.isLandscape) {
       listPanel = TransactionCategoriesPanelPortrait(
         key: Key("transaction-categories-dialog-${widget.key.toString()}-add-txn"),
         listPanelTitle: dialogTitle,
@@ -921,15 +952,7 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
     } else {
       dialogBody = ListView(
         children: <Widget>[
-          for (var item in _inCompletedSharedBills)
-            SharedBillTransactionTileForDialog(
-              transaction: item,
-              onTap: (Transactions transaction) {
-                _selectedBillToReturn = transaction as ShareBillTransaction;
-                Navigator.of(context).pop();
-                setState(() {});
-              },
-            ),
+          for (var item in _inCompletedSharedBills) _displayShareBillSelectionItem(context, item, appLocalizations),
         ],
       );
     }
@@ -945,5 +968,55 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
         );
       },
     );
+  }
+
+  Widget _displayShareBillSelectionItem(BuildContext mainContext, ShareBillTransaction item, AppLocalizations appLocalizations) {
+    Widget content = SharedBillTransactionTileForDialog(
+      transaction: item,
+      onTap: (Transactions transaction) {
+        _selectedBillToReturn = transaction as ShareBillTransaction;
+        Navigator.of(mainContext).pop();
+        setState(() {});
+      },
+      deleteFunction: (t) => _transactionDelete(mainContext, t, appLocalizations),
+    );
+    if (!currentAppState.isMobile) {
+      return content;
+    } else {
+      return Slidable(
+        key: Key("txn-item-${item.id}"),
+        // motion: const ScrollMotion(),
+        endActionPane: ActionPane(
+          motion: ScrollMotion(),
+          children: [
+            SlidableAction(
+              // An action can be bigger than the others.
+              flex: 2,
+              onPressed: (BuildContext context) => _transactionDelete(mainContext, item, appLocalizations),
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              icon: Icons.delete,
+              label: appLocalizations.transactionDeleteButton,
+            ),
+          ],
+        ),
+        child: content,
+      );
+    }
+  }
+
+  Future<void> _transactionDelete(BuildContext context, Transactions tran, AppLocalizations appLocalizations) async {
+    return Util().showRemoveDialogByField(context, tran,
+        tableName: tableNameTransaction,
+        titleLocalize: (itemDisplay) => appLocalizations.transactionDeleteDialogTitle,
+        confirmLocalize: (itemDisplay) => appLocalizations.transactionDeleteConfirm,
+        successLocalize: (itemDisplay) => appLocalizations.transactionDeleteSuccess,
+        errorLocalize: (itemDisplay) => appLocalizations.transactionDeleteError,
+        onSuccess: () {
+          Navigator.of(context).pop();
+          reloadInCompleteSharedBills().then((_) {
+            if (context.mounted) _chooseSharedBill(context);
+          });
+        });
   }
 }

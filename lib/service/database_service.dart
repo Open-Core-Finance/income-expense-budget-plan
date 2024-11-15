@@ -188,7 +188,7 @@ class DatabaseService {
       Function? onSuccess,
       Function? onError,
       bool? navigateBackWhenSuccess,
-      bool? navigateBackWhenError}) {
+      bool? navigateBackWhenError}) async {
     Function? closeSuccessCallback;
     if (navigateBackWhenSuccess == true) {
       closeSuccessCallback = () => Navigator.of(context).pop();
@@ -198,16 +198,16 @@ class DatabaseService {
       closeErrorCallback = () => Navigator.of(context).pop();
     }
     database.then((db) {
-      db.delete(tableName, where: '$fieldName = ?', whereArgs: [fieldValue]).then((deletedCount) {
+      db.delete(tableName, where: '$fieldName = ?', whereArgs: [fieldValue]).then((deletedCount) async {
         if (onComplete != null) onComplete();
         if (kDebugMode) {
           print("Deleted $deletedCount records in table $tableName");
         }
         if (retrieveItemDisplay != null && context.mounted) {
           if (deletedCount <= 0) {
-            Util().showErrorDialog(context, errorLocalize(retrieveItemDisplay()), closeSuccessCallback);
+            await Util().showErrorDialog(context, errorLocalize(retrieveItemDisplay()), closeSuccessCallback);
           } else {
-            Util().showSuccessDialog(context, successLocalize(retrieveItemDisplay()), closeErrorCallback);
+            await Util().showSuccessDialog(context, successLocalize(retrieveItemDisplay()), closeErrorCallback);
           }
         }
         if (onSuccess != null) onSuccess();
@@ -216,9 +216,10 @@ class DatabaseService {
       }).catchError((e, f) {
         if (onComplete != null) onComplete();
         if (retrieveItemDisplay != null && context.mounted) {
-          Util().showErrorDialog(context, errorLocalize(retrieveItemDisplay()), closeErrorCallback);
+          Util().showErrorDialog(context, errorLocalize(retrieveItemDisplay()), closeErrorCallback).then((_) {
+            if (onError != null) onError(e, f);
+          });
         }
-        if (onError != null) onError(e, f);
       });
     });
   }

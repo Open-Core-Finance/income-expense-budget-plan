@@ -82,8 +82,8 @@ class _AssetCategoriesPanelState extends State<AssetCategoriesPanel> {
     );
   }
 
-  void _showRemoveDialog(BuildContext context, AssetCategory category) {
-    Util().showRemoveDialogByField(context, category,
+  Future<void> _showRemoveDialog(BuildContext context, AssetCategory category) async {
+    return Util().showRemoveDialogByField(context, category,
         tableName: tableNameAssetCategory,
         titleLocalize: AppLocalizations.of(context)!.accountCategoryDeleteDialogTitle,
         confirmLocalize: AppLocalizations.of(context)!.accountCategoryDeleteConfirm,

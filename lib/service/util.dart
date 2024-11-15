@@ -185,20 +185,21 @@ class Util {
     }
   }
 
-  void showErrorDialog(BuildContext context, String errorMessage, Function? callback) {
+  Future<void> showErrorDialog(BuildContext context, String errorMessage, Function? callback) async {
     final ThemeData theme = Theme.of(context);
-    showMessageDialog(context, AppLocalizations.of(context)!.titleError, errorMessage, AppLocalizations.of(context)!.actionClose,
+    await showMessageDialog(context, AppLocalizations.of(context)!.titleError, errorMessage, AppLocalizations.of(context)!.actionClose,
         theme.colorScheme.error, callback);
   }
 
-  void showSuccessDialog(BuildContext context, String successMessage, Function? callback) {
+  Future<void> showSuccessDialog(BuildContext context, String successMessage, Function? callback) async {
     final ThemeData theme = Theme.of(context);
-    showMessageDialog(context, AppLocalizations.of(context)!.titleSuccess, successMessage, AppLocalizations.of(context)!.actionConfirm,
-        theme.iconTheme.color, callback);
+    await showMessageDialog(context, AppLocalizations.of(context)!.titleSuccess, successMessage,
+        AppLocalizations.of(context)!.actionConfirm, theme.iconTheme.color, callback);
   }
 
-  void showMessageDialog(BuildContext context, String title, String message, String buttonText, Color? buttonColor, Function? callback) {
-    showDialog(
+  Future<void> showMessageDialog(
+      BuildContext context, String title, String message, String buttonText, Color? buttonColor, Function? callback) async {
+    return showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
@@ -221,7 +222,7 @@ class Util {
     );
   }
 
-  void showRemoveDialogByField(BuildContext context, GenericModel model,
+  Future<void> showRemoveDialogByField(BuildContext context, GenericModel model,
       {required String tableName,
       required Function(String) titleLocalize,
       required Function(String) confirmLocalize,
@@ -229,7 +230,7 @@ class Util {
       required Function(String) errorLocalize,
       Function? onComplete,
       Function? onSuccess,
-      Function? onError}) {
+      Function? onError}) async {
     bool deleting = false;
     final dialogTitle = titleLocalize(model.displayText());
     final confirmMessage = confirmLocalize(model.displayText());

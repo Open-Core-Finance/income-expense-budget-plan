@@ -66,8 +66,8 @@ class TransactionCategoryHandler {
 
   TransactionCategoryHandler({required this.categories, required this.refreshState, required this.transactionType});
 
-  void showRemoveDialog(BuildContext context, TransactionCategory category) {
-    Util().showRemoveDialogByField(
+  Future<void> showRemoveDialog(BuildContext context, TransactionCategory category) async {
+    return Util().showRemoveDialogByField(
       context,
       category,
       tableName: tableNameTransactionCategory,
