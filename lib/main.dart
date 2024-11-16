@@ -30,9 +30,9 @@ void main() async {
     await createCompletion;
   }
 
-  // await Firebase.initializeApp(
-  //   options: DefaultFirebaseOptions.currentPlatform,
-  // );
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   currentAppState.reloadTransactionCategories();
   SettingDao().loadSettings().then((SettingModel settings) {
