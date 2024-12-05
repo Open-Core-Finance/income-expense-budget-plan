@@ -5,10 +5,14 @@
 // 'flutter create' template.
 
 // The application's name. By default this is also the title of the Flutter window.
-PRODUCT_NAME = income_expense_budget_plan
+PRODUCT_NAME = Income Expense Budget Planner
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.dbaotrung.incomeExpenseBudgetPlan
+PRODUCT_BUNDLE_IDENTIFIER = Income-Expense-Budget-Planner
 
 // The copyright displayed in application information
 PRODUCT_COPYRIGHT = Copyright © 2024 com.dbaotrung. All rights reserved.
+
+//#include "../../Pods/Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"
+//#include "../../Pods/Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"
+//#include "../../Pods/Target Support Files/Pods-Runner/Pods-Runner.profile.xcconfig"
