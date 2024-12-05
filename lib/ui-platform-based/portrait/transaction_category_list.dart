@@ -153,7 +153,7 @@ class TransactionCategoryListTile extends StatelessWidget {
       leading = Icon(category.icon, color: theme.iconTheme.color);
     } else {
       leading = ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: 56),
+        constraints: BoxConstraints(maxWidth: 58),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [

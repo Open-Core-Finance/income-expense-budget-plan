@@ -341,7 +341,7 @@ class _ReportPanelState extends State<ReportPanel> {
       var maxSize = min(panelBoxConstraints.maxWidth, reportChartBoxConstraints.maxHeight);
       return [
         ConstrainedBox(constraints: BoxConstraints(maxWidth: panelBoxConstraints.maxWidth - 20, maxHeight: maxSize), child: chart),
-        const SizedBox(height: 10),
+        const SizedBox(height: 50),
         ...categoriesView
       ];
     }

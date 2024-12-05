@@ -72,7 +72,7 @@ class _AccountPanelPortraitState extends AccountPanelState<AccountPanelPortrait>
         },
         child: ListTile(
           leading: ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: 56),
+            constraints: BoxConstraints(maxWidth: 58),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
