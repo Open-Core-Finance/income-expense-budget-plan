@@ -4,6 +4,8 @@ import 'package:currency_text_input_formatter/currency_text_input_formatter.dart
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:income_expense_budget_plan/model/assets.dart';
+import 'package:income_expense_budget_plan/ui-common/account_summarize.dart';
 import 'package:income_expense_budget_plan/ui-common/report_view_more.dart';
 import 'package:income_expense_budget_plan/model/currency.dart';
 import 'package:income_expense_budget_plan/model/report_chart_data.dart';
@@ -262,7 +264,7 @@ class _ReportPanelState extends State<ReportPanel> {
     );
     List<Widget> result = [
       const Divider(thickness: 1, indent: 0),
-      Text('${appLocalizations.reportSummarizeIncomeExpense} (${currency.name})',
+      Text('${appLocalizations.reportSummarizeExpense} (${currency.name})',
           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
       SizedBox(height: chartPadding),
       ..._buildPieChartRow(
@@ -275,7 +277,9 @@ class _ReportPanelState extends State<ReportPanel> {
       viewMoreRow,
       const SizedBox(height: 10),
       const Divider(thickness: 1, indent: 0),
-      SizedBox(height: chartPadding),
+      Text('${appLocalizations.reportSummarizeIncomeExpense} (${currency.name})',
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+      SizedBox(height: chartPadding * 2),
       ..._buildBarChartRow(
         context: context,
         currency: currency,
@@ -290,10 +294,28 @@ class _ReportPanelState extends State<ReportPanel> {
         currencyFormatter: currencyFormatter,
       ),
       viewMoreRow,
+      const SizedBox(height: 10),
+      const Divider(thickness: 1, indent: 0),
+      Text('${appLocalizations.reportSummarizeAccountsAvail} (${currency.name})',
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+      SizedBox(height: chartPadding * 2),
+      ...[
+        AccountSummarizePanel(
+            currency: currency,
+            currencyFormatter: currencyFormatter,
+            percentageFormat: percentageFormat,
+            chartPadding: chartPadding,
+            assetLoader: _loadAssets(),
+            panelConstraints: panelBoxConstraints,
+            reportChartBoxConstraints: reportChartBoxConstraints,
+            reportChartDefaultSize: reportChartDefaultSize)
+      ],
       SizedBox(height: chartPadding),
     ];
     return result;
   }
+
+  Future<List<Asset>> _loadAssets() async => currentAppState.assets;
 
   List<Widget> _buildPieChartRow({
     required Currency currency,
