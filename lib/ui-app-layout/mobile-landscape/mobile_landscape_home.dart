@@ -49,14 +49,14 @@ class _HomePageMobileLandscapeState extends HomePageState<HomePageMobileLandscap
             ),
             const Divider(height: 0.5),
             ElevatedButton.icon(
-              onPressed: () => developerTriggerSupport.switchHomeTap(appState, 2, [5]),
+              onPressed: () => developerTriggerSupport.switchHomeTap(appState, 1, [5]),
               icon: Icon(Icons.analytics, color: theme.primaryColor),
               label: Text(appLocalizations.navReport),
               style: styleForIndex(theme, 2, sideButtonSize, sideButtonShape),
             ),
             const Divider(height: 0.5),
             ElevatedButton.icon(
-              onPressed: () => developerTriggerSupport.switchHomeTap(appState, 1, [5]),
+              onPressed: () => developerTriggerSupport.switchHomeTap(appState, 2, [5]),
               icon: Icon(Icons.account_box, color: theme.primaryColor),
               label: Text(appLocalizations.navAccount),
               style: styleForIndex(theme, 1, sideButtonSize, sideButtonShape),
