@@ -1,29 +1,13 @@
 #!/bin/zsh
 
 # The default execution directory of this script is the ci_scripts directory.
-cd "$CI_PRIMARY_REPOSITORY_PATH" # change working directory to the root of your cloned repo.
+# change working directory to the root of your cloned repo.
+cd "$CI_PRIMARY_REPOSITORY_PATH"
 
-chmod +x macos/ci_scripts/ci_env.sh
-. macos/ci_scripts/ci_env.sh
+chmod +x ci_scripts/*.sh
+. ci_scripts/ci_env.sh
 
-# Fail this script if any subcommand fails.
-set -e
+cp -r ci_scripts "${PRODUCT_FOLDER}/"
 
-# Install Flutter using git.
-git clone https://github.com/flutter/flutter.git --depth 1 -b stable "$FLUTTER_ROOT"
-
-# Install Flutter artifacts for iOS (--ios), or macOS (--macos) platforms.
-flutter precache --macos
-
-# Install Flutter dependencies.
-flutter pub get
-
-# Install CocoaPods using Homebrew.
-# shellcheck disable=SC2034
-HOMEBREW_NO_AUTO_UPDATE=1 # disable homebrew's automatic updates.
-brew install cocoapods
-
-# Install CocoaPods dependencies.
-cd macos && pod install # run `pod install` in the `macos` directory.
-
-sudo arch -x86_64 gem install ffi
+cd "${PRODUCT_FOLDER}/"
+. ci_scripts/ci_post_clone_common.sh
