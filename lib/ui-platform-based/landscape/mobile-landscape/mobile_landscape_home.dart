@@ -3,8 +3,8 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:income_expense_budget_plan/model/setting.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/app_state.dart';
-import 'package:income_expense_budget_plan/ui-app-layout/home.dart';
-import 'package:income_expense_budget_plan/ui-app-layout/mobile-landscape/landscape_more_panel.dart';
+import 'package:income_expense_budget_plan/ui-common/home.dart';
+import 'package:income_expense_budget_plan/ui-platform-based/landscape/landscape_more_panel.dart';
 import 'package:income_expense_budget_plan/ui-common/assets_categories_panel.dart';
 import 'package:income_expense_budget_plan/ui-common/report_panel.dart';
 import 'package:income_expense_budget_plan/ui-common/transaction_panel.dart';
@@ -114,8 +114,8 @@ class _HomePageMobileLandscapeState extends HomePageState<HomePageMobileLandscap
   List<Widget> allIndexesWidgets(BuildContext context, AppLocalizations appLocalizations) => [
         const TransactionPanel(),
         ReportPanel(),
-        const AccountPanelLandscape(),
-        const AssetCategoriesPanel(),
+        const AccountPanelLandscape(showDeleted: true),
+        const AssetCategoriesPanel(showDeleted: true),
         const Material(child: LandscapeMorePanel())
       ];
 }

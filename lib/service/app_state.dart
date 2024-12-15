@@ -6,8 +6,10 @@ import 'package:income_expense_budget_plan/model/assets.dart';
 import 'package:income_expense_budget_plan/model/currency.dart';
 import 'package:income_expense_budget_plan/model/setting.dart';
 import 'package:income_expense_budget_plan/model/transaction_category.dart';
+import 'package:income_expense_budget_plan/service/account_service.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/database_service.dart';
+import 'package:income_expense_budget_plan/service/util.dart';
 import 'package:sqflite/sqflite.dart';
 
 class AppState extends ChangeNotifier {
@@ -57,22 +59,22 @@ class AppState extends ChangeNotifier {
     triggerNotify();
   }
 
-  void reOrderAssetCategory(int oldIndex, int newIndex) {
+  void reOrderAssetCategory(int oldIndex, int newIndex) async {
     if (newIndex > oldIndex) {
       newIndex -= 1;
     }
     if (oldIndex != newIndex) {
-      DatabaseService().database.then((db) {
-        final item = assetCategories.removeAt(oldIndex);
-        assetCategories.insert(newIndex, item);
-        for (int i = min(oldIndex, newIndex); i <= max(oldIndex, newIndex); i++) {
-          var cat = assetCategories[i];
-          cat.positionIndex = i + 1;
-          db.update(tableNameAssetCategory, {'position_index': cat.positionIndex},
-              where: "uid = ?", whereArgs: [cat.id], conflictAlgorithm: ConflictAlgorithm.replace);
-        }
-        triggerNotify();
-      });
+      var db = await DatabaseService().database;
+
+      final item = assetCategories.removeAt(oldIndex);
+      assetCategories.insert(newIndex, item);
+      for (int i = min(oldIndex, newIndex); i <= max(oldIndex, newIndex); i++) {
+        var cat = assetCategories[i];
+        cat.positionIndex = i + 1;
+        db.update(tableNameAssetCategory, {'position_index': cat.positionIndex},
+            where: "uid = ?", whereArgs: [cat.id], conflictAlgorithm: ConflictAlgorithm.replace);
+      }
+      AccountService().refreshAssetCategories((_) => triggerNotify());
     }
   }
 

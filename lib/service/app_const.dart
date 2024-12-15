@@ -6,7 +6,7 @@ import 'package:income_expense_budget_plan/service/app_state.dart';
 
 // Const
 const String databaseNameMain = "main_database.db";
-const int databaseVersion = 3;
+const int databaseVersion = 4;
 
 const String tableNameCurrency = "currency";
 const String tableNameSetting = "setting";

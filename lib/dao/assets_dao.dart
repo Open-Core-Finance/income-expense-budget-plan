@@ -12,7 +12,9 @@ class AssetsDao {
   AssetsDao._internal();
 
   Future<List<AssetCategory>> assetCategories() async {
-    return databaseService.loadListModel(tableNameAssetCategory, AssetCategory.fromMap);
+    var db = await databaseService.database;
+    final List<Map<String, Object?>> dataMap = await db.query(tableNameAssetCategory, orderBy: 'soft_deleted ASC');
+    return [for (Map<String, Object?> record in dataMap) AssetCategory.fromMap(record)];
   }
 
   Future<List<Map<String, dynamic>>> loadCategoryByNameAndIgnoreSpecificCategory(String name, String? uuidToIgnore) async {

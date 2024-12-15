@@ -1,11 +1,14 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:income_expense_budget_plan/dao/transaction_dao.dart';
+import 'package:income_expense_budget_plan/service/account_service.dart';
+import 'package:income_expense_budget_plan/ui-platform-based/landscape/desktop/desktop_home.dart';
+import 'package:income_expense_budget_plan/ui-platform-based/landscape/mobile-landscape/mobile_landscape_home.dart';
 // import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-import 'package:income_expense_budget_plan/ui-app-layout/desktop/desktop_home.dart';
-import 'package:income_expense_budget_plan/ui-app-layout/mobile-landscape/mobile_landscape_home.dart';
-import 'package:income_expense_budget_plan/ui-app-layout/mobile-portrait/mobile_portrait_home.dart';
+import 'package:income_expense_budget_plan/ui-platform-based/portrait/mobile_portrait_home.dart';
 import 'package:income_expense_budget_plan/dao/setting_dao.dart';
 import 'package:income_expense_budget_plan/model/assets.dart';
 import 'package:income_expense_budget_plan/model/setting.dart';
@@ -22,14 +25,20 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Get the database instance to trigger initialization
-  await DatabaseService().database;
+  await DatabaseService().database.then((db) {
+    // Await the onCreate completion if needed
+    var createCompletion = DatabaseService().onCreateComplete;
+    if (createCompletion != null) {
+      createCompletion.then((_) => initialMainApp());
+    } else {
+      initialMainApp();
+    }
+  }).catchError((e) {
+    runApp(MyAppStartError(error: e));
+  });
+}
 
-  // Await the onCreate completion if needed
-  var createCompletion = DatabaseService().onCreateComplete;
-  if (createCompletion != null) {
-    await createCompletion;
-  }
-
+void initialMainApp() {
   // await Firebase.initializeApp(
   //   options: DefaultFirebaseOptions.currentPlatform,
   // );
@@ -46,7 +55,7 @@ void main() async {
         }
       }
       TransactionDao().transactionCategories();
-      Util().refreshAssets((List<Asset> assets) => runApp(const MyApp()));
+      AccountService().refreshAssets().then((List<Asset> assets) => runApp(const MyApp()));
     });
   });
 }
@@ -106,6 +115,42 @@ class MyApp extends StatelessWidget {
           },
           locale: setting.locale,
         ),
+      ),
+    );
+  }
+}
+
+class MyAppStartError extends StatelessWidget {
+  final Error? error;
+  const MyAppStartError({super.key, this.error});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Income Expense Budget Plan',
+      home: Scaffold(
+        body: Card(
+          //shadowColor: Colors.transparent,
+          child: SizedBox.expand(
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error, color: Colors.red, size: 60),
+                  const SizedBox(height: 2.0),
+                  Text(
+                    "So sorry to say that the app startup error!!! "
+                    "Please help send the following error message to the app developer doanbaotrung@gmail.com for further "
+                    "troubleshoot! $error",
+                    style: TextStyle(fontSize: 24),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        appBar: AppBar(leading: IconButton(onPressed: () => exit(0), icon: Icon(Icons.close, color: Colors.red, size: 40))),
       ),
     );
   }

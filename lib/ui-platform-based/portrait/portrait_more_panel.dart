@@ -5,7 +5,7 @@ import 'package:income_expense_budget_plan/dao/transaction_dao.dart';
 import 'package:income_expense_budget_plan/model/transaction_category.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/util.dart';
-import 'package:income_expense_budget_plan/ui-app-layout/home.dart';
+import 'package:income_expense_budget_plan/ui-common/home.dart';
 import 'package:income_expense_budget_plan/ui-common/assets_categories_panel.dart';
 import 'package:income_expense_budget_plan/ui-common/file_export.dart';
 import 'package:income_expense_budget_plan/ui-common/file_import.dart';
@@ -48,7 +48,7 @@ class _MobilePortraitMorePanelState extends State<MobilePortraitMorePanel> {
         ),
         ListTile(
           title: Text(appLocalizations.menuAccountCategory),
-          onTap: () => Util().navigateTo(context, const AssetCategoriesPanel()),
+          onTap: () => Util().navigateTo(context, const AssetCategoriesPanel(showDeleted: true)),
           iconColor: colorScheme.primary,
         ),
         ListTile(

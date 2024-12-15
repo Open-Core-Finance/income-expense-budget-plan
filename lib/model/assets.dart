@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
-import 'package:income_expense_budget_plan/service/data_export_import.dart';
 import 'package:income_expense_budget_plan/service/form_util.dart';
 import 'package:income_expense_budget_plan/service/util.dart';
 
@@ -17,18 +16,20 @@ abstract class Asset extends AssetTreeNode {
   AssetCategory? category;
   double availableAmount = 0;
 
-  Asset(
-      {required super.id,
-      required super.icon,
-      required super.name,
-      required this.description,
-      super.localizeNames,
-      Map<String, String>? localizeDescriptions,
-      DateTime? updatedDateTime,
-      int? index,
-      required this.currencyUid,
-      required this.categoryUid,
-      required this.availableAmount}) {
+  Asset({
+    required super.id,
+    required super.icon,
+    required super.name,
+    required this.description,
+    super.localizeNames,
+    Map<String, String>? localizeDescriptions,
+    DateTime? updatedDateTime,
+    int? index,
+    required this.currencyUid,
+    required this.categoryUid,
+    required this.availableAmount,
+    required super.deleted,
+  }) {
     if (localizeDescriptions != null) {
       this.localizeDescriptions = localizeDescriptions;
     }
@@ -42,37 +43,26 @@ abstract class Asset extends AssetTreeNode {
     }
   }
 
-  // Convert a Asset into a Map. The keys must correspond to the names of the columns in the database.
   @override
   Map<String, Object?> toMap() {
-    return {
-      idFieldName(): id,
-      'name': name,
+    Map<String, Object?> result = super.toMap();
+    result.addAll({
       'description': description,
-      'icon': icon != null ? Util().iconDataToJSONString(icon!) : "",
       'currency_uid': currencyUid,
-      'localize_names': jsonEncode(localizeNames),
       'localize_descriptions': jsonEncode(localizeDescriptions),
-      'position_index': positionIndex,
       'last_updated': lastUpdated.millisecondsSinceEpoch,
       'category_uid': categoryUid,
       'available_amount': availableAmount,
       'asset_type': getAssetType()
-    };
+    });
+    return result;
   }
 
-  // Implement toString to make it easier to see information about
-  // each Asset when using the print statement.
   @override
-  String toString() {
-    return '{${attributeString()}}';
-  }
-
   String attributeString() {
-    return '"${idFieldName()}": "$id", "name": "$name", "icon": ${Util().iconDataToJSONString(icon)},"description": "$description", '
-        '"positionIndex": $positionIndex, "lastUpdated": "${lastUpdated.toIso8601String()}", "currencyUid": "$currencyUid", '
-        '"categoryUid": "$categoryUid","localizeNames": ${jsonEncode(localizeNames)}, "localizeDescriptions": ${jsonEncode(localizeDescriptions)},"availableAmount": "$availableAmount",'
-        '"assetType": "${getAssetType()}"';
+    return '${super.attributeString()},"description": "$description", "currencyUid": "$currencyUid", '
+        '"categoryUid": "$categoryUid", "localizeDescriptions": ${jsonEncode(localizeDescriptions)},"availableAmount": "$availableAmount",'
+        '"assetType": "${getAssetType()}", "lastUpdated": "${lastUpdated.toIso8601String()}"';
   }
 
   @override
@@ -119,6 +109,7 @@ class GenericAccount extends Asset {
     required super.currencyUid,
     required super.categoryUid,
     required super.availableAmount,
+    required super.deleted,
   });
 
   factory GenericAccount.fromMap(Map<String, dynamic> json) => GenericAccount(
@@ -133,10 +124,16 @@ class GenericAccount extends Asset {
         updatedDateTime: DateTime.fromMillisecondsSinceEpoch(json['last_updated']),
         availableAmount: json['available_amount'],
         categoryUid: json['category_uid'],
+        deleted: json['soft_deleted'] == 1,
       );
 
   @override
   String getAssetType() => AssetType.genericAccount.name;
+
+  @override
+  String asExportDataLine() {
+    return '${super.asExportDataLine()}|$deleted';
+  }
 }
 
 class BankCasaAccount extends Asset {
@@ -152,6 +149,7 @@ class BankCasaAccount extends Asset {
     required super.currencyUid,
     required super.categoryUid,
     required super.availableAmount,
+    required super.deleted,
   });
 
   factory BankCasaAccount.fromMap(Map<String, dynamic> json) => BankCasaAccount(
@@ -166,10 +164,16 @@ class BankCasaAccount extends Asset {
         updatedDateTime: DateTime.fromMillisecondsSinceEpoch(json['last_updated']),
         availableAmount: json['available_amount'],
         categoryUid: json['category_uid'],
+        deleted: json['soft_deleted'] == 1,
       );
 
   @override
   String getAssetType() => AssetType.bankCasa.name;
+
+  @override
+  String asExportDataLine() {
+    return '${super.asExportDataLine()}|$deleted';
+  }
 }
 
 class LoanAccount extends Asset {
@@ -186,11 +190,12 @@ class LoanAccount extends Asset {
     required super.currencyUid,
     required super.categoryUid,
     required this.loanAmount,
+    required super.deleted,
   }) : super(availableAmount: 0);
 
   @override
   Map<String, Object?> toMap() {
-    var result = super.toMap();
+    Map<String, Object?> result = super.toMap();
     result.addAll({'loan_amount': loanAmount});
     return result;
   }
@@ -212,6 +217,7 @@ class LoanAccount extends Asset {
         updatedDateTime: DateTime.fromMillisecondsSinceEpoch(json['last_updated']),
         loanAmount: json['loan_amount'],
         categoryUid: json['category_uid'],
+        deleted: json['soft_deleted'] == 1,
       );
 
   @override
@@ -226,7 +232,7 @@ class LoanAccount extends Asset {
 
   @override
   String asExportDataLine() {
-    return '${super.asExportDataLine()}|$loanAmount';
+    return '${super.asExportDataLine()}|$loanAmount|$deleted';
   }
 }
 
@@ -243,6 +249,7 @@ class EWallet extends Asset {
     required super.currencyUid,
     required super.categoryUid,
     required super.availableAmount,
+    required super.deleted,
   });
 
   factory EWallet.fromMap(Map<String, dynamic> json) => EWallet(
@@ -257,31 +264,39 @@ class EWallet extends Asset {
         updatedDateTime: DateTime.fromMillisecondsSinceEpoch(json['last_updated']),
         availableAmount: json['available_amount'],
         categoryUid: json['category_uid'],
+        deleted: json['soft_deleted'] == 1,
       );
 
   @override
   String getAssetType() => AssetType.eWallet.name;
+
+  @override
+  String asExportDataLine() {
+    return '${super.asExportDataLine()}|$deleted';
+  }
 }
 
 class CreditCard extends Asset {
   double creditLimit = 0;
-  CreditCard(
-      {required super.id,
-      required super.icon,
-      required super.name,
-      required super.description,
-      super.localizeNames,
-      super.localizeDescriptions,
-      super.updatedDateTime,
-      super.index,
-      required super.currencyUid,
-      required super.categoryUid,
-      required super.availableAmount,
-      required this.creditLimit});
+  CreditCard({
+    required super.id,
+    required super.icon,
+    required super.name,
+    required super.description,
+    super.localizeNames,
+    super.localizeDescriptions,
+    super.updatedDateTime,
+    super.index,
+    required super.currencyUid,
+    required super.categoryUid,
+    required super.availableAmount,
+    required this.creditLimit,
+    required super.deleted,
+  });
 
   @override
   Map<String, Object?> toMap() {
-    var result = super.toMap();
+    Map<String, Object?> result = super.toMap();
     result.addAll({'credit_limit': creditLimit});
     return result;
   }
@@ -304,6 +319,7 @@ class CreditCard extends Asset {
         availableAmount: json['available_amount'],
         creditLimit: json['credit_limit'],
         categoryUid: json['category_uid'],
+        deleted: json['soft_deleted'] == 1,
       );
 
   @override
@@ -318,25 +334,27 @@ class CreditCard extends Asset {
 
   @override
   String asExportDataLine() {
-    return '${super.asExportDataLine()}|$creditLimit';
+    return '${super.asExportDataLine()}|$creditLimit|$deleted';
   }
 }
 
 class PayLaterAccount extends Asset {
   double paymentLimit = 0;
-  PayLaterAccount(
-      {required super.id,
-      required super.icon,
-      required super.name,
-      required super.description,
-      super.localizeNames,
-      super.localizeDescriptions,
-      super.updatedDateTime,
-      super.index,
-      required super.currencyUid,
-      required super.categoryUid,
-      required super.availableAmount,
-      required this.paymentLimit});
+  PayLaterAccount({
+    required super.id,
+    required super.icon,
+    required super.name,
+    required super.description,
+    super.localizeNames,
+    super.localizeDescriptions,
+    super.updatedDateTime,
+    super.index,
+    required super.currencyUid,
+    required super.categoryUid,
+    required super.availableAmount,
+    required this.paymentLimit,
+    required super.deleted,
+  });
 
   @override
   Map<String, Object?> toMap() {
@@ -363,6 +381,7 @@ class PayLaterAccount extends Asset {
         availableAmount: json['available_amount'],
         paymentLimit: json['payment_limit'],
         categoryUid: json['category_uid'],
+        deleted: json['soft_deleted'] == 1,
       );
 
   @override
@@ -370,6 +389,6 @@ class PayLaterAccount extends Asset {
 
   @override
   String asExportDataLine() {
-    return '${super.asExportDataLine()}|$paymentLimit';
+    return '${super.asExportDataLine()}|$paymentLimit|$deleted';
   }
 }

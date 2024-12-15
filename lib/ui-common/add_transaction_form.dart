@@ -893,9 +893,9 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
     );
 
     if (currentAppState.isLandscape) {
-      accountPanel = AccountPanelLandscape(accountTap: accountTap, floatingButton: floatingActionButton);
+      accountPanel = AccountPanelLandscape(accountTap: accountTap, floatingButton: floatingActionButton, showDeleted: false);
     } else {
-      accountPanel = AccountPanelPortrait(accountTap: accountTap, floatingButton: floatingActionButton);
+      accountPanel = AccountPanelPortrait(accountTap: accountTap, floatingButton: floatingActionButton, showDeleted: false);
     }
 
     showDialog(context: context, builder: (BuildContext context) => accountPanel);
