@@ -39,10 +39,8 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
   sqflite: ^2.4.1
-  sqlite3_flutter_libs: "0.5.26"
-  sqflite_common_ffi: "^2.3.4"
-#  sqflite_common_ffi:
-#    path: ./sqflite_common_ffi-2.3.4
+  sqlite3_flutter_libs: ^0.5.27
+  sqflite_common_ffi: ^2.3.4
   flutter_iconpicker: ^4.0.1
   uuid: ^4.4.2
   flutter_fancy_tree_view: ^1.6.0
@@ -98,11 +96,15 @@ flutter:
     - assets/db_upgrade_all.sql
     - assets/db_upgrade_2.sql
     - assets/db_upgrade_3.sql
+    - assets/db_upgrade_4.sql
     - assets/db_init.sql
     - assets/db_validate_and_correct.sql
     - assets/icons/borrow.png
     - assets/db_create_triggers.sql
     - assets/db_clean_triggers.sql
+    - assets/db_downgrade_all.sql
+    - assets/db_downgrade_3.sql
+    - assets/db_downgrade_4.sql
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

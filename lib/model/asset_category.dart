@@ -9,7 +9,21 @@ import 'assets.dart';
 abstract class AssetTreeNode extends NameLocalizedModel<String> {
   IconData? icon;
   int positionIndex = 0;
-  AssetTreeNode({required super.id, required super.name, super.localizeNames, required this.icon});
+  bool deleted = false;
+  AssetTreeNode({required super.id, required super.name, super.localizeNames, required this.icon, required this.deleted});
+
+  @override
+  Map<String, Object?> toMap() {
+    Map<String, Object?> result = super.toMap();
+    result.addAll(
+        {'icon': icon != null ? Util().iconDataToJSONString(icon!) : "", 'position_index': positionIndex, 'soft_deleted': deleted ? 1 : 0});
+    return result;
+  }
+
+  @override
+  String attributeString() {
+    return '${super.attributeString()}, "icon": ${Util().iconDataToJSONString(icon)}, "positionIndex": $positionIndex,"deleted": "${deleted ? 1 : 0}"}"';
+  }
 }
 
 class AssetCategory extends AssetTreeNode {
@@ -17,14 +31,16 @@ class AssetCategory extends AssetTreeNode {
   late DateTime lastUpdated;
   List<Asset> assets = [];
 
-  AssetCategory(
-      {required super.id,
-      required super.icon,
-      required super.name,
-      bool? system,
-      super.localizeNames,
-      DateTime? updatedDateTime,
-      int? index}) {
+  AssetCategory({
+    required super.id,
+    required super.icon,
+    required super.name,
+    bool? system,
+    super.localizeNames,
+    DateTime? updatedDateTime,
+    int? index,
+    required super.deleted,
+  }) {
     this.system = system == true;
     if (updatedDateTime == null) {
       lastUpdated = DateTime.now();
@@ -36,26 +52,16 @@ class AssetCategory extends AssetTreeNode {
     }
   }
 
-  // Convert a Asset into a Map. The keys must correspond to the names of the columns in the database.
   @override
   Map<String, Object?> toMap() {
-    return {
-      idFieldName(): id,
-      'name': name,
-      'icon': icon != null ? Util().iconDataToJSONString(icon!) : "",
-      'system': system ? 1 : 0,
-      'localize_names': jsonEncode(localizeNames),
-      'position_index': positionIndex,
-      'last_updated': lastUpdated.millisecondsSinceEpoch
-    };
+    Map<String, Object?> result = super.toMap();
+    result.addAll({'system': system ? 1 : 0, 'last_updated': lastUpdated.millisecondsSinceEpoch});
+    return result;
   }
 
-  // Implement toString to make it easier to see information about
-  // each Asset when using the print statement.
   @override
-  String toString() {
-    return '{"${idFieldName()}": "$id", "name": "$name", "icon": ${Util().iconDataToJSONString(icon)},"system": $system, "localizeNames": ${jsonEncode(localizeNames)},'
-        '"positionIndex": $positionIndex, "lastUpdated": "${lastUpdated.toIso8601String()}"}';
+  String attributeString() {
+    return '${super.attributeString()}, "system": $system, "lastUpdated": "${lastUpdated.toIso8601String()}"';
   }
 
   factory AssetCategory.fromMap(Map<String, dynamic> json) => AssetCategory(
@@ -66,6 +72,7 @@ class AssetCategory extends AssetTreeNode {
         localizeNames: Util().fromLocalizeDbField(Util().customJsonDecode(json['localize_names'])),
         index: json['position_index'],
         updatedDateTime: DateTime.fromMillisecondsSinceEpoch(json['last_updated']),
+        deleted: json['soft_deleted'] == 1,
       );
 
   @override

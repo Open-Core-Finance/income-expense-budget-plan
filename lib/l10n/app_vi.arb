@@ -33,6 +33,12 @@
   "accountCategoryDeleteConfirm": "Bạn có chắc muốn xoá nhóm \"{categoryName}\" không?",
   "accountCategoryDeleteError": "Xoá nhóm \"{categoryName}\" thất bại!",
   "accountCategoryDeleteSuccess": "Xoá nhóm \"{categoryName}\" thành công!",
+  "accountCategoryDeletedList": "Nhóm đã xoá",
+  "accountCategoryActivatedList": "Nhóm hoạt động",
+  "accountCategoryRestoreDialogTitle": "Xác nhận khôi phục nhóm \"{categoryName}\"",
+  "accountCategoryRestoreConfirm": "Bạn có chắc muốn khôi phục nhóm \"{categoryName}\"?",
+  "accountCategoryRestoreError": "Khôi phục nhóm \"{categoryName}\" thất bại!",
+  "accountCategoryRestoreSuccess": "Khôi phục nhóm \"{categoryName}\" thành công!",
   "accountCategoryTurnOnLocalizeNames":  "Bật hổ trợ đa ngôn ngữ",
   "transactionCategoryName": "Tên hạng mục",
   "transactionCategoryParent": "Hạng mục cha",
@@ -78,6 +84,10 @@
   "accountDeleteConfirm": "Bạn có chắc muốn xoá tài khoản \"{assetName}\" không?",
   "accountDeleteError": "Xoá tài khoản \"{assetName}\" thất bại!",
   "accountDeleteSuccess": "Xoá tài khoản \"{assetName}\" thành công!",
+  "accountRestoreDialogTitle": "Xác nhận khôi phục tài khoản \"{assetName}\"",
+  "accountRestoreConfirm": "Bạn có chắc muốn khôi phục tài khoản \"{assetName}\" không?",
+  "accountRestoreError": "Khôi phục tài khoản \"{assetName}\" thất bại!",
+  "accountRestoreSuccess": "Khôi phục tài khoản \"{assetName}\" thành công!",
   "accountCategoryEmpty": "Không có tài khoảng nào trong nhóm này",
   "noData": "Không có dữ liệu",
   "transactionActionSaveAddMore": "Lưu/Thêm tiếp",
@@ -188,5 +198,6 @@
   "dataImportResultCountSuccess": "Nhập thành công \"{successCount}\" dữ liệu.",
   "dataImportResultCountFail": "Nhập lỗi \"{errorCount}\" dữ liệu.",
   "dataImportResultCountSkip": "Đã bỏ qua \"{skipCount}\" dữ liệu.",
-  "dataImportResultCountOverride": "Đã ghi đè \"{overrideCount}\" dữ liệu."
+  "dataImportResultCountOverride": "Đã ghi đè \"{overrideCount}\" dữ liệu.",
+  "clickSelectLanguage": "Bấm vào đây để đổi ngôn ngữ"
 }

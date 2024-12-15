@@ -9,7 +9,7 @@ import 'package:income_expense_budget_plan/ui-common/assets_categories_panel.dar
 import 'package:provider/provider.dart';
 
 class AccountPanelPortrait extends AccountPanel {
-  const AccountPanelPortrait({super.key, super.accountTap, super.floatingButton});
+  const AccountPanelPortrait({super.key, super.accountTap, super.floatingButton, required super.showDeleted});
 
   @override
   State<AccountPanelPortrait> createState() => _AccountPanelPortraitState();
@@ -17,15 +17,26 @@ class AccountPanelPortrait extends AccountPanel {
 
 class _AccountPanelPortraitState extends AccountPanelState<AccountPanelPortrait> {
   @override
-  Widget buildUi(BuildContext context, AppLocalizations appLocalizations, List<Asset> accounts, List<AssetCategory> categories) {
+  Widget buildUi(BuildContext context, AppLocalizations appLocalizations, List<Asset> accounts, List<AssetCategory> categories,
+      List<AssetCategory> deletedCategories, bool showTab) {
     final ThemeData theme = Theme.of(context);
-    final appState = Provider.of<AppState>(context);
+    AppState appState = Provider.of<AppState>(context);
+    var listView = _buildListView(context, theme, appState, appLocalizations, accounts, categories);
+    if (!showTab) {
+      return listView;
+    } else {
+      return TabBarView(children: [listView, _buildListView(context, theme, appState, appLocalizations, accounts, deletedCategories)]);
+    }
+  }
+
+  Widget _buildListView(BuildContext context, ThemeData theme, AppState appState, AppLocalizations appLocalizations, List<Asset> accounts,
+      List<AssetCategory> categories) {
     List<Widget> widgets = [];
     for (var category in categories) {
       widgets.add(_categoryDisplay(theme, appState, category, assetCategoriesRefreshed));
       List<Asset> accounts = category.assets;
       for (var account in accounts) {
-        widgets.add(_accountDisplay(theme, appState, account, assetRefreshed, showRemoveDialog));
+        widgets.add(_accountDisplay(theme, appState, account, assetRefreshed));
       }
     }
     widgets.add(SizedBox(height: 30));
@@ -34,7 +45,6 @@ class _AccountPanelPortraitState extends AccountPanelState<AccountPanelPortrait>
 
   Widget _categoryDisplay(
       ThemeData theme, AppState appState, AssetCategory category, Function(List<AssetCategory> cats, bool isAddNew)? editCategoryCallBack) {
-    String tileText = category.getTitleText(appState.systemSetting);
     Widget? subTitle;
     if (category.assets.isEmpty) {
       subTitle = Text(AppLocalizations.of(context)!.accountCategoryEmpty);
@@ -47,18 +57,16 @@ class _AccountPanelPortraitState extends AccountPanelState<AccountPanelPortrait>
           util.navigateTo(context, AddAssetCategoryForm(editingCategory: category, editCallback: editCategoryCallBack));
         },
         child: ListTile(
-          leading: Icon(category.icon, color: theme.iconTheme.color), // Icon on the left
-          title: Text(tileText),
+          leading: accountService.elementIconDisplay(category, theme), // Icon on the left
+          title: accountService.elementTextDisplay(category, theme),
           subtitle: subTitle,
-          trailing: IconButton(icon: const Icon(Icons.tune), onPressed: () => util.navigateTo(context, const AssetCategoriesPanel())),
+          trailing: Row(mainAxisSize: MainAxisSize.min, children: categoryTrailingButtons(category, theme)),
         ),
       ),
     );
   }
 
-  Widget _accountDisplay(ThemeData theme, AppState appState, Asset account, Function(List<Asset> cats, bool isAddNew)? editCallBack,
-      Function(BuildContext context, Asset category) removeCall) {
-    String tileText = account.getTitleText(appState.systemSetting);
+  Widget _accountDisplay(ThemeData theme, AppState appState, Asset account, Function(List<Asset> cats, bool isAddNew)? editCallBack) {
     Widget subTitle = account.getAmountDisplayText();
     return MouseRegion(
       cursor: SystemMouseCursors.click, // Changes the cursor to a pointer
@@ -78,14 +86,14 @@ class _AccountPanelPortraitState extends AccountPanelState<AccountPanelPortrait>
               children: [
                 SizedBox(height: 20, child: VerticalDivider(thickness: 2, color: theme.dividerColor, endIndent: 0, indent: 0)),
                 const Text("---", style: TextStyle(fontSize: 10), textAlign: TextAlign.left),
-                Icon(account.icon, color: theme.iconTheme.color),
+                accountService.elementIconDisplay(account, theme),
                 SizedBox(width: 2)
               ],
             ),
           ),
-          title: Text(tileText),
+          title: accountService.elementTextDisplay(account, theme),
           subtitle: subTitle,
-          trailing: IconButton(icon: Icon(Icons.delete, color: theme.colorScheme.error), onPressed: () => removeCall(context, account)),
+          trailing: assetTrailingButton(account, theme),
         ),
       ),
     );

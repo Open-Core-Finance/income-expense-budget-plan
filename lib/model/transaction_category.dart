@@ -45,24 +45,24 @@ class TransactionCategory extends NameLocalizedModel<String> {
 
   @override
   Map<String, Object?> toMap() {
-    return {
-      idFieldName(): id,
-      'name': name,
+    Map<String, Object?> result = super.toMap();
+    result.addAll({
       'icon': icon != null ? Util().iconDataToJSONString(icon!) : "",
       'parent_uid': parentUid ?? '',
       'transaction_type': transactionType.name,
       'system': system ? 1 : 0,
-      'localize_names': jsonEncode(localizeNames),
       'position_index': positionIndex,
       'last_updated': lastUpdated.millisecondsSinceEpoch
-    };
+    });
+    return result;
   }
 
   @override
-  String toString() {
-    return '{"${idFieldName()}": "$id", "name": "$name", "icon": ${Util().iconDataToJSONString(icon)},"parentUid": "${parentUid == null ? null : "$parentUid"}"${child.isNotEmpty ? ', '
-            '"child": $child' : ''}, "transactionType": "${transactionType.name}", "localizeNames": ${jsonEncode(localizeNames)},"system": $system,'
-        '"positionIndex": $positionIndex, "lastUpdated": "${lastUpdated.toIso8601String()}"}';
+  String attributeString() {
+    return '${super.attributeString()},"icon": ${Util().iconDataToJSONString(icon)},'
+        '"parentUid": "${parentUid == null ? null : "$parentUid"}"${child.isNotEmpty ? ',  "child": $child' : ''}, '
+        '"transactionType": "${transactionType.name}","system": $system, "positionIndex": $positionIndex, '
+        '"lastUpdated": "${lastUpdated.toIso8601String()}"';
   }
 
   factory TransactionCategory.fromMap(Map<String, dynamic> json) => TransactionCategory(

@@ -33,6 +33,12 @@
   "accountCategoryDeleteConfirm": "Are you sure to delete category \"{categoryName}\"?",
   "accountCategoryDeleteError": "Deleting category \"{categoryName}\" fail!",
   "accountCategoryDeleteSuccess": "Deleting category \"{categoryName}\" success!",
+  "accountCategoryDeletedList": "Deleted categories",
+  "accountCategoryActivatedList": "Activating categories",
+  "accountCategoryRestoreDialogTitle": "Confirm to restore category \"{categoryName}\"",
+  "accountCategoryRestoreConfirm": "Are you sure to restore deleted category \"{categoryName}\"?",
+  "accountCategoryRestoreError": "Restoring category \"{categoryName}\" fail!",
+  "accountCategoryRestoreSuccess": "Restoring category \"{categoryName}\" success!",
   "accountCategoryTurnOnLocalizeNames":  "Turn on multi-language support",
   "transactionCategoryName": "Category name",
   "transactionCategoryParent": "Parent category",
@@ -78,6 +84,10 @@
   "accountDeleteConfirm": "Are you sure to delete asset \"{assetName}\"?",
   "accountDeleteError": "Deleting asset \"{assetName}\" fail!",
   "accountDeleteSuccess": "Deleting asset \"{assetName}\" success!",
+  "accountRestoreDialogTitle": "Confirm to restore asset \"{assetName}\"",
+  "accountRestoreConfirm": "Are you sure to restore deleted asset \"{assetName}\"?",
+  "accountRestoreError": "Restoring asset \"{assetName}\" fail!",
+  "accountRestoreSuccess": "Restoring asset \"{assetName}\" success!",
   "accountCategoryEmpty": "There's no account in this category",
   "noData": "No data",
   "transactionActionSaveAddMore": "Save/Add More",
@@ -188,5 +198,6 @@
   "dataImportResultCountSuccess": "Import success \"{successCount}\" records.",
   "dataImportResultCountFail": "Import fail \"{errorCount}\" records.",
   "dataImportResultCountSkip": "Skipped \"{skipCount}\" records.",
-  "dataImportResultCountOverride": "Override \"{overrideCount}\" records."
+  "dataImportResultCountOverride": "Override \"{overrideCount}\" records.",
+  "clickSelectLanguage": "Click to change language"
 }

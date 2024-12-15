@@ -6,11 +6,11 @@ CREATE TABLE IF NOT EXISTS setting(id Integer PRIMARY KEY, locale TEXT, dark_mod
 CREATE TABLE IF NOT EXISTS currency(uid TEXT PRIMARY KEY, name TEXT, iso TEXT, deleted Integer, symbol TEXT,
     symbol_position TEXT, main_currency Integer, show Integer, decimal_point Integer, language TEXT, last_sync Integer NULL);
 CREATE TABLE IF NOT EXISTS asset_category(uid TEXT PRIMARY KEY, name TEXT, icon TEXT, system Integer, localize_names TEXT,
-    position_index Integer DEFAULT 0 NOT NULL, last_updated Integer DEFAULT 0, last_sync Integer NULL);
+    position_index Integer DEFAULT 0 NOT NULL, last_updated Integer DEFAULT 0, last_sync Integer NULL, soft_deleted Integer NULL);
 CREATE TABLE IF NOT EXISTS asset(uid TEXT PRIMARY KEY, icon TEXT, name TEXT, description TEXT, available_amount REAL DEFAULT 0.0,
     loan_amount REAL DEFAULT 0.0, credit_limit REAL DEFAULT 0.0, payment_limit REAL DEFAULT 0.0, currency_uid TEXT,
     asset_type TEXT, category_uid TEXT, localize_names TEXT, localize_descriptions TEXT, position_index Integer DEFAULT 0 NOT NULL,
-    last_updated Integer DEFAULT 0, last_sync Integer NULL,
+    last_updated Integer DEFAULT 0, last_sync Integer NULL, soft_deleted Integer NULL,
     FOREIGN KEY (category_uid) REFERENCES asset_category (uid), FOREIGN KEY (currency_uid) REFERENCES currency (uid));
 CREATE TABLE IF NOT EXISTS transaction_category(uid TEXT PRIMARY KEY, name TEXT, icon TEXT, parent_uid TEXT, transaction_type TEXT, system Integer, localize_names TEXT,
     position_index Integer Integer DEFAULT 0 NOT NULL, last_updated Integer DEFAULT 0, last_sync Integer NULL);

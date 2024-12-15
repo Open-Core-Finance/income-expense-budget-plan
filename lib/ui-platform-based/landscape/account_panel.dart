@@ -4,39 +4,41 @@ import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:income_expense_budget_plan/model/asset_category.dart';
 import 'package:income_expense_budget_plan/model/assets.dart';
-import 'package:income_expense_budget_plan/service/app_state.dart';
+import 'package:income_expense_budget_plan/service/account_service.dart';
 import 'package:income_expense_budget_plan/service/util.dart';
 import 'package:income_expense_budget_plan/ui-common/account_panel.dart';
 import 'package:income_expense_budget_plan/ui-common/add_account_form.dart';
-import 'package:income_expense_budget_plan/ui-common/assets_categories_panel.dart';
-import 'package:provider/provider.dart';
 
 class AccountPanelLandscape extends AccountPanel {
-  const AccountPanelLandscape({super.key, super.accountTap, super.floatingButton});
+  const AccountPanelLandscape({super.key, super.accountTap, super.floatingButton, required super.showDeleted});
 
   @override
   State<AccountPanelLandscape> createState() => _AccountPanelLandscapeState();
 }
 
 class _AccountPanelLandscapeState extends AccountPanelState<AccountPanelLandscape> {
-  TreeController<AssetTreeNode>? treeController;
-
   @override
-  void dispose() {
-    // Remember to dispose your tree controller to release resources.
-    treeController?.dispose();
-    super.dispose();
+  Widget buildUi(BuildContext context, AppLocalizations appLocalizations, List<Asset> accounts, List<AssetCategory> categories,
+      List<AssetCategory> deletedCategories, bool showTab) {
+    var tree = _buildTree(context, appLocalizations, accounts, categories);
+    if (!showTab) {
+      return tree;
+    } else {
+      return TabBarView(children: [tree, _buildTree(context, appLocalizations, accounts, deletedCategories)]);
+    }
   }
 
-  @override
-  Widget buildUi(BuildContext context, AppLocalizations appLocalizations, List<Asset> accounts, List<AssetTreeNode> categories) {
-    treeController?.dispose();
-    treeController = TreeController<AssetTreeNode>(
+  Widget _buildTree(BuildContext context, AppLocalizations appLocalizations, List<Asset> accounts, List<AssetTreeNode> categories) {
+    TreeController<AssetTreeNode>? treeController = TreeController<AssetTreeNode>(
       // Provide the root nodes that will be used as a starting point when traversing your hierarchical data.
       roots: categories,
       // Provide a callback for the controller to get the children of a given node when traversing your hierarchical data.
       // Avoid doing heavy computations in this method, it should behave like a getter.
-      childrenProvider: (AssetTreeNode category) => (category is AssetCategory) ? category.assets : [],
+      childrenProvider: (AssetTreeNode category) {
+        List<AssetTreeNode> result = (category is AssetCategory) ? category.assets : [];
+        result.sort((a, b) => a.positionIndex - b.positionIndex);
+        return result;
+      },
       defaultExpansionState: true,
       parentProvider: (AssetTreeNode node) => (node is Asset) ? node.category : null,
     );
@@ -110,10 +112,12 @@ class _AccountPanelLandscapeState extends AccountPanelState<AccountPanelLandscap
               }
               treeController!.toggleExpansion(nodeObj);
             },
-            removeCall: showRemoveDialog,
             details: details,
             editCallBack: assetRefreshed,
             editCategoryCallBack: assetCategoriesRefreshed,
+            showDeleted: widget.showDeleted,
+            categoryTrailingButtons: categoryTrailingButtons,
+            assetTrailingButtons: assetTrailingButton,
           ),
           toggleExpansionOnHover: true,
           canToggleExpansion: true,
@@ -127,27 +131,30 @@ class _AccountPanelLandscapeState extends AccountPanelState<AccountPanelLandscap
 class AssetTreeNodeTile extends StatelessWidget {
   final TreeEntry<AssetTreeNode> entry;
   final VoidCallback onTap;
-  final Function(BuildContext context, Asset category) removeCall;
   final TreeDragAndDropDetails? details;
   final Function(List<Asset> cats, bool isAddNew)? editCallBack;
   final Function(List<AssetCategory> cats, bool isAddNew)? editCategoryCallBack;
+  final bool showDeleted;
+  final List<Widget> Function(AssetCategory category, ThemeData theme) categoryTrailingButtons;
+  final Widget Function(Asset asset, ThemeData theme) assetTrailingButtons;
 
-  const AssetTreeNodeTile(
-      {super.key,
-      required this.entry,
-      required this.onTap,
-      required this.removeCall,
-      required this.details,
-      this.editCallBack,
-      this.editCategoryCallBack});
+  const AssetTreeNodeTile({
+    super.key,
+    required this.entry,
+    required this.onTap,
+    required this.details,
+    this.editCallBack,
+    this.editCategoryCallBack,
+    required this.showDeleted,
+    required this.categoryTrailingButtons,
+    required this.assetTrailingButtons,
+  });
 
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    final appState = Provider.of<AppState>(context);
     Util util = Util();
     var category = entry.node;
-    String tileText = category.getTitleText(appState.systemSetting);
     Widget? subTitle;
     if (category is AssetCategory) {
       if (category.assets.isEmpty) {
@@ -166,28 +173,19 @@ class AssetTreeNodeTile extends StatelessWidget {
         // The widget to render next to the indentation. TreeIndentation respects the text direction of `Directionality.maybeOf(context)`
         // and defaults to left-to-right.
         child: ListTile(
-          leading: Icon(category.icon, color: theme.iconTheme.color), // Icon on the left
-          title: Text(tileText),
+          leading: AccountService().elementIconDisplay(category, theme), // Icon on the left
+          title: AccountService().elementTextDisplay(category, theme),
           subtitle: subTitle,
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              IconButton(
-                icon: Icon(Icons.edit, color: theme.primaryColor),
-                onPressed: () {
-                  if (category is Asset) {
-                    util.navigateTo(context, AddAccountForm(editingAsset: category, editCallback: editCallBack));
-                  } else {
-                    util.navigateTo(
-                        context, AddAssetCategoryForm(editingCategory: category as AssetCategory, editCallback: editCategoryCallBack));
-                  }
-                },
-              ),
               if (category is Asset) ...[
-                IconButton(icon: Icon(Icons.delete, color: theme.colorScheme.error), onPressed: () => removeCall(context, category)),
+                IconButton(
+                    icon: Icon(Icons.edit, color: theme.primaryColor),
+                    onPressed: () => util.navigateTo(context, AddAccountForm(editingAsset: category, editCallback: editCallBack))),
+                assetTrailingButtons(category, theme)
               ],
-              if (category is AssetCategory)
-                IconButton(icon: const Icon(Icons.tune), onPressed: () => util.navigateTo(context, const AssetCategoriesPanel()))
+              if (category is AssetCategory) ...categoryTrailingButtons(category, theme)
             ],
           ),
         ),
@@ -214,8 +212,9 @@ class AssetTreeNodeTile extends StatelessWidget {
           child: SizedBox(
             width: MediaQuery.of(context).size.width - 20,
             child: ListTile(
-                leading: Icon(category.icon, color: theme.iconTheme.color), // Icon on the left
-                title: Text(tileText)),
+              leading: AccountService().elementIconDisplay(category, theme), // Icon on the left
+              title: AccountService().elementTextDisplay(category, theme),
+            ),
           ),
         ),
 

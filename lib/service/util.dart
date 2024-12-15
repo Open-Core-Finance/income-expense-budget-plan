@@ -138,26 +138,6 @@ class Util {
     return null;
   }
 
-  void refreshAssetCategories(Function(List<AssetCategory> c)? callback) {
-    AssetsDao().assetCategories().then((categories) {
-      categories.sort((a, b) => a.positionIndex - b.positionIndex);
-      currentAppState.assetCategories = categories;
-      if (callback != null) {
-        callback(categories);
-      }
-    });
-  }
-
-  void refreshAssets(Function(List<Asset> a)? callback) {
-    AssetsDao().assets().then((assets) {
-      assets.sort((a, b) => a.positionIndex - b.positionIndex);
-      currentAppState.assets = assets;
-      if (callback != null) {
-        callback(assets);
-      }
-    });
-  }
-
   void mappingAssetsAndCategories(List<Asset> assets, List<AssetCategory> assetCategories) {
     int startTime = DateTime.now().millisecondsSinceEpoch;
     if (kDebugMode) {
@@ -222,15 +202,19 @@ class Util {
     );
   }
 
-  Future<void> showRemoveDialogByField(BuildContext context, GenericModel model,
-      {required String tableName,
-      required Function(String) titleLocalize,
-      required Function(String) confirmLocalize,
-      required Function(String) successLocalize,
-      required Function(String) errorLocalize,
-      Function? onComplete,
-      Function? onSuccess,
-      Function? onError}) async {
+  Future<void> showRemoveDialogByField(
+    BuildContext context,
+    GenericModel model, {
+    required String tableName,
+    required Function(String) titleLocalize,
+    required Function(String) confirmLocalize,
+    required Function(String) successLocalize,
+    required Function(String) errorLocalize,
+    Function? onComplete,
+    Function? onSuccess,
+    Function? onError,
+    Future<int> Function(Database db, String tableName, String fieldName, dynamic fieldValue)? customDeleteAction,
+  }) async {
     bool deleting = false;
     final dialogTitle = titleLocalize(model.displayText());
     final confirmMessage = confirmLocalize(model.displayText());
@@ -261,7 +245,8 @@ class Util {
                               if (onComplete != null) onComplete();
                             }),
                         onSuccess: onSuccess,
-                        onError: onError);
+                        onError: onError,
+                        customDeleteAction: customDeleteAction);
                   },
                   style: ButtonStyle(foregroundColor: WidgetStateProperty.all(theme.colorScheme.primary)),
                   child: Text(AppLocalizations.of(context)!.actionConfirm),
@@ -435,83 +420,94 @@ class Util {
     switch (selectedAccountType) {
       case "genericAccount":
         return GenericAccount(
-            id: original.id,
-            icon: original.icon,
-            name: original.name,
-            localizeNames: original.localizeNames,
-            index: original.positionIndex,
-            localizeDescriptions: original.localizeDescriptions,
-            description: original.description,
-            currencyUid: original.currencyUid,
-            categoryUid: original.categoryUid,
-            availableAmount: original.availableAmount);
+          id: original.id,
+          icon: original.icon,
+          name: original.name,
+          localizeNames: original.localizeNames,
+          index: original.positionIndex,
+          localizeDescriptions: original.localizeDescriptions,
+          description: original.description,
+          currencyUid: original.currencyUid,
+          categoryUid: original.categoryUid,
+          availableAmount: original.availableAmount,
+          deleted: original.deleted,
+        );
       case "bankCasa":
         return BankCasaAccount(
-            id: original.id,
-            icon: original.icon,
-            name: original.name,
-            localizeNames: original.localizeNames,
-            index: original.positionIndex,
-            localizeDescriptions: original.localizeDescriptions,
-            description: original.description,
-            currencyUid: original.currencyUid,
-            categoryUid: original.categoryUid,
-            availableAmount: original.availableAmount);
+          id: original.id,
+          icon: original.icon,
+          name: original.name,
+          localizeNames: original.localizeNames,
+          index: original.positionIndex,
+          localizeDescriptions: original.localizeDescriptions,
+          description: original.description,
+          currencyUid: original.currencyUid,
+          categoryUid: original.categoryUid,
+          availableAmount: original.availableAmount,
+          deleted: original.deleted,
+        );
       case "loan":
         return LoanAccount(
-            id: original.id,
-            icon: original.icon,
-            name: original.name,
-            localizeNames: original.localizeNames,
-            index: original.positionIndex,
-            localizeDescriptions: original.localizeDescriptions,
-            description: original.description,
-            currencyUid: original.currencyUid,
-            categoryUid: original.categoryUid,
-            loanAmount: 0);
+          id: original.id,
+          icon: original.icon,
+          name: original.name,
+          localizeNames: original.localizeNames,
+          index: original.positionIndex,
+          localizeDescriptions: original.localizeDescriptions,
+          description: original.description,
+          currencyUid: original.currencyUid,
+          categoryUid: original.categoryUid,
+          loanAmount: 0,
+          deleted: original.deleted,
+        );
       case "eWallet":
         return EWallet(
-            id: original.id,
-            icon: original.icon,
-            name: original.name,
-            localizeNames: original.localizeNames,
-            index: original.positionIndex,
-            localizeDescriptions: original.localizeDescriptions,
-            description: original.description,
-            currencyUid: original.currencyUid,
-            categoryUid: original.categoryUid,
-            availableAmount: original.availableAmount);
-        break;
+          id: original.id,
+          icon: original.icon,
+          name: original.name,
+          localizeNames: original.localizeNames,
+          index: original.positionIndex,
+          localizeDescriptions: original.localizeDescriptions,
+          description: original.description,
+          currencyUid: original.currencyUid,
+          categoryUid: original.categoryUid,
+          availableAmount: original.availableAmount,
+          deleted: original.deleted,
+        );
       case "payLaterAccount":
         PayLaterAccount assets = PayLaterAccount(
-            id: original.id,
-            icon: original.icon,
-            name: original.name,
-            localizeNames: original.localizeNames,
-            index: original.positionIndex,
-            localizeDescriptions: original.localizeDescriptions,
-            description: original.description,
-            currencyUid: original.currencyUid,
-            categoryUid: original.categoryUid,
-            availableAmount: original.availableAmount,
-            paymentLimit: 0);
+          id: original.id,
+          icon: original.icon,
+          name: original.name,
+          localizeNames: original.localizeNames,
+          index: original.positionIndex,
+          localizeDescriptions: original.localizeDescriptions,
+          description: original.description,
+          currencyUid: original.currencyUid,
+          categoryUid: original.categoryUid,
+          availableAmount: original.availableAmount,
+          paymentLimit: 0,
+          deleted: original.deleted,
+        );
         if (original is CreditCard) {
           assets.paymentLimit = original.creditLimit;
         }
         return assets;
       default:
         CreditCard assets = CreditCard(
-            id: original.id,
-            icon: original.icon,
-            name: original.name,
-            localizeNames: original.localizeNames,
-            index: original.positionIndex,
-            localizeDescriptions: original.localizeDescriptions,
-            description: original.description,
-            currencyUid: original.currencyUid,
-            categoryUid: original.categoryUid,
-            availableAmount: original.availableAmount,
-            creditLimit: 0);
+          id: original.id,
+          icon: original.icon,
+          name: original.name,
+          localizeNames: original.localizeNames,
+          index: original.positionIndex,
+          localizeDescriptions: original.localizeDescriptions,
+          description: original.description,
+          currencyUid: original.currencyUid,
+          categoryUid: original.categoryUid,
+          availableAmount: original.availableAmount,
+          creditLimit: 0,
+          deleted: original.deleted,
+        );
         if (original is PayLaterAccount) {
           assets.creditLimit = original.paymentLimit;
         }

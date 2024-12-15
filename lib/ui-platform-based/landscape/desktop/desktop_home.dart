@@ -6,13 +6,13 @@ import 'package:income_expense_budget_plan/model/transaction_category.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/app_state.dart';
 import 'package:income_expense_budget_plan/service/year_month_filter_data.dart';
-import 'package:income_expense_budget_plan/ui-app-layout/home.dart';
-import 'package:income_expense_budget_plan/ui-app-layout/mobile-landscape/landscape_more_panel.dart';
+import 'package:income_expense_budget_plan/ui-common/home.dart';
 import 'package:income_expense_budget_plan/ui-common/assets_categories_panel.dart';
 import 'package:income_expense_budget_plan/ui-common/report_panel.dart';
 import 'package:income_expense_budget_plan/ui-common/transaction_panel.dart';
 import 'package:income_expense_budget_plan/ui-common/vertical_split_view.dart';
 import 'package:income_expense_budget_plan/ui-platform-based/landscape/account_panel.dart';
+import 'package:income_expense_budget_plan/ui-platform-based/landscape/landscape_more_panel.dart';
 import 'package:income_expense_budget_plan/ui-platform-based/landscape/transaction_categories_panel.dart';
 import 'package:provider/provider.dart';
 
@@ -129,7 +129,10 @@ class _HomePageDesktopState extends HomePageState<HomePageDesktop> {
           right: ReportPanel(yearMonthFilterData: yearMonthFilterData),
         ),
         const VerticalSplitView(
-            key: Key("2nd_panel"), left: AccountPanelLandscape(), right: AssetCategoriesPanel(disableBack: true), ratio: 0.6),
+            key: Key("2nd_panel"),
+            left: AccountPanelLandscape(showDeleted: true),
+            right: AssetCategoriesPanel(disableBack: true, showDeleted: true),
+            ratio: 0.6),
         VerticalSplitView(
           key: const Key("3rd_panel"),
           left: ChangeNotifierProvider(
