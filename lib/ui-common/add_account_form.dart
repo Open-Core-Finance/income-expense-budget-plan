@@ -7,6 +7,7 @@ import 'package:income_expense_budget_plan/dao/assets_dao.dart';
 import 'package:income_expense_budget_plan/model/asset_category.dart';
 import 'package:income_expense_budget_plan/model/assets.dart';
 import 'package:income_expense_budget_plan/model/currency.dart';
+import 'package:income_expense_budget_plan/service/account_service.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/app_state.dart';
 import 'package:income_expense_budget_plan/service/form_util.dart';
@@ -302,7 +303,8 @@ class _AddAccountFormState extends State<AddAccountForm> {
                 description: _assetDescriptionController.text,
                 currencyUid: _selectedCurrency.id!,
                 categoryUid: _selectedCategory.id!,
-                availableAmount: availableAmountNumber!);
+                availableAmount: availableAmountNumber!,
+                deleted: false);
             break;
           case "bankCasa":
             assets = BankCasaAccount(
@@ -315,7 +317,8 @@ class _AddAccountFormState extends State<AddAccountForm> {
                 description: _assetDescriptionController.text,
                 currencyUid: _selectedCurrency.id!,
                 categoryUid: _selectedCategory.id!,
-                availableAmount: availableAmountNumber!);
+                availableAmount: availableAmountNumber!,
+                deleted: false);
             break;
           case "loan":
             assets = LoanAccount(
@@ -328,7 +331,8 @@ class _AddAccountFormState extends State<AddAccountForm> {
                 description: _assetDescriptionController.text,
                 currencyUid: _selectedCurrency.id!,
                 categoryUid: _selectedCategory.id!,
-                loanAmount: loanAmountNumber!);
+                loanAmount: loanAmountNumber!,
+                deleted: false);
             break;
           case "eWallet":
             assets = EWallet(
@@ -341,7 +345,8 @@ class _AddAccountFormState extends State<AddAccountForm> {
                 description: _assetDescriptionController.text,
                 currencyUid: _selectedCurrency.id!,
                 categoryUid: _selectedCategory.id!,
-                availableAmount: availableAmountNumber!);
+                availableAmount: availableAmountNumber!,
+                deleted: false);
             break;
           case "payLaterAccount":
             assets = PayLaterAccount(
@@ -355,7 +360,8 @@ class _AddAccountFormState extends State<AddAccountForm> {
                 currencyUid: _selectedCurrency.id!,
                 categoryUid: _selectedCategory.id!,
                 availableAmount: availableAmountNumber!,
-                paymentLimit: creditLimitNumber!);
+                paymentLimit: creditLimitNumber!,
+                deleted: false);
             break;
           default:
             assets = CreditCard(
@@ -369,7 +375,8 @@ class _AddAccountFormState extends State<AddAccountForm> {
                 currencyUid: _selectedCurrency.id!,
                 categoryUid: _selectedCategory.id!,
                 availableAmount: availableAmountNumber!,
-                creditLimit: creditLimitNumber!);
+                creditLimit: creditLimitNumber!,
+                deleted: false);
             break;
         }
         dbService.database.then((db) {
@@ -386,20 +393,34 @@ class _AddAccountFormState extends State<AddAccountForm> {
     }
   }
 
-  List<DropdownMenuItem<AssetCategory>> _buildListCategoriesDropdown() {
-    var currentLocale = currentAppState.systemSetting.locale?.languageCode;
-    return currentAppState.assetCategories.map<DropdownMenuItem<AssetCategory>>((AssetCategory cat) {
-      var localizedNameTxt = cat.localizeNames[currentLocale];
-      var menuText = FormUtil().resolveAccountTypeLocalize(context, localizedNameTxt?.isNotEmpty == true ? localizedNameTxt! : cat.name);
-      return _buildDropdownMenuItem(context, cat, menuText);
+  List<DropdownMenuItem<AssetCategory>> _buildListCategoriesDropdown(ThemeData theme) {
+    return currentAppState.assetCategories.where((c) {
+      if (c.deleted) {
+        if (_editingAsset != null) {
+          return c.id == _editingAsset!.category?.id;
+        }
+      }
+      return true;
+    }).map<DropdownMenuItem<AssetCategory>>((AssetCategory cat) {
+      AccountService accountService = AccountService();
+      return DropdownMenuItem<AssetCategory>(
+        value: cat,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [accountService.elementIconDisplay(cat, theme), SizedBox(width: 10), accountService.elementTextDisplay(cat, theme)],
+        ),
+      );
     }).toList();
   }
 
-  List<DropdownMenuItem<Currency>> _buildListCurrenciesDropdown() {
-    return currentAppState.currencies
-        .map<DropdownMenuItem<Currency>>(
-            (Currency currency) => _buildDropdownMenuItem(context, currency, FormUtil().resolveAccountTypeLocalize(context, currency.name)))
-        .toList();
+  List<DropdownMenuItem<Currency>> _buildListCurrenciesDropdown(ThemeData theme) {
+    return currentAppState.currencies.map<DropdownMenuItem<Currency>>((Currency currency) {
+      // _buildDropdownMenuItem(context, currency, FormUtil().resolveAccountTypeLocalize(context, currency.name));
+      return DropdownMenuItem<Currency>(
+        value: currency,
+        child: Text("${currency.name} (${currency.symbol})", style: TextStyle(color: theme.iconTheme.color)),
+      );
+    }).toList();
   }
 
   List<Widget> _buildLocalizedComponents(BuildContext context, ThemeData theme) {
@@ -459,10 +480,6 @@ class _AddAccountFormState extends State<AddAccountForm> {
     ]);
   }
 
-  DropdownMenuItem<T> _buildDropdownMenuItem<T>(BuildContext context, T value, String text) {
-    return DropdownMenuItem<T>(value: value, child: Padding(padding: const EdgeInsets.fromLTRB(10, 0, 0, 0), child: Text(text)));
-  }
-
   List<Widget> _moneyInputField(bool show, String label, TextEditingController textEditingController, ThemeData theme,
       {FormFieldValidator<String>? validator}) {
     List<Widget> result = [];
@@ -514,7 +531,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
     if (enabled != false) {
       inputWidget = DropdownButtonFormField<T>(
           value: value,
-          icon: const Icon(Icons.arrow_downward),
+          icon: Icon(Icons.arrow_downward, color: Colors.blue),
           elevation: 16,
           style: TextStyle(color: colorScheme.primary),
           onChanged: onChange,
@@ -561,11 +578,21 @@ class _AddAccountFormState extends State<AddAccountForm> {
       context,
       value: _selectedAccountType,
       label: appLocalizations.accountType,
-      items: AssetType.values
-          .map<DropdownMenuItem<String>>(
-            (AssetType t) => _buildDropdownMenuItem(context, t.name, FormUtil().resolveAccountTypeLocalize(context, t.name)),
-          )
-          .toList(),
+      items: AssetType.values.map<DropdownMenuItem<String>>(
+        (AssetType t) {
+          return DropdownMenuItem<String>(
+            value: t.name,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(AccountService().resolveAccountTypeIcon(t), color: theme.iconTheme.color),
+                SizedBox(width: 10),
+                Text(FormUtil().resolveAccountTypeLocalize(context, t.name))
+              ],
+            ),
+          );
+        },
+      ).toList(),
       onChange: (String? value) => setState(() => _selectedAccountType = value!),
     ));
 
@@ -573,7 +600,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
       context,
       value: _selectedCategory,
       label: appLocalizations.accountCategorySelect,
-      items: _buildListCategoriesDropdown(),
+      items: _buildListCategoriesDropdown(theme),
       onChange: (AssetCategory? value) => setState(() => _selectedCategory = value!),
     ));
 
@@ -581,7 +608,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
       context,
       value: _selectedCurrency,
       label: appLocalizations.accountCurrencySelect,
-      items: _buildListCurrenciesDropdown(),
+      items: _buildListCurrenciesDropdown(theme),
       onChange: (Currency? value) => setState(
         () {
           _selectedCurrency = value!;

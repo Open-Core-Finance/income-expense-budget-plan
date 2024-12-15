@@ -4,6 +4,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_iconpicker/flutter_iconpicker.dart';
 import 'package:income_expense_budget_plan/dao/assets_dao.dart';
 import 'package:income_expense_budget_plan/model/asset_category.dart';
+import 'package:income_expense_budget_plan/service/account_service.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/app_state.dart';
 import 'package:income_expense_budget_plan/service/form_util.dart';
@@ -15,17 +16,21 @@ import 'package:uuid/v8.dart';
 
 class AssetCategoriesPanel extends StatefulWidget {
   final bool disableBack;
-  const AssetCategoriesPanel({super.key, bool? disableBack}) : disableBack = disableBack ?? false;
+  final bool showDeleted;
+  const AssetCategoriesPanel({super.key, bool? disableBack, required this.showDeleted}) : disableBack = disableBack ?? false;
 
   @override
   State<AssetCategoriesPanel> createState() => _AssetCategoriesPanelState();
 }
 
 class _AssetCategoriesPanelState extends State<AssetCategoriesPanel> {
+  Util util = Util();
+  final AccountService accountService = AccountService();
+
   @override
   void initState() {
     super.initState();
-    Util().refreshAssetCategories((_) => setState(() {}));
+    accountService.refreshAssetCategories((_) => setState(() {}));
   }
 
   @override
@@ -34,7 +39,10 @@ class _AssetCategoriesPanelState extends State<AssetCategoriesPanel> {
     final String accountCategoryLabel = AppLocalizations.of(context)!.menuAccountCategory;
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
-    return Scaffold(
+    final List<AssetCategory> categories = appState.assetCategories.where((category) => category.deleted != true).toList();
+    final List<AssetCategory> deletedCategories = appState.assetCategories.where((category) => category.deleted == true).toList();
+    bool showTab = widget.showDeleted && deletedCategories.isNotEmpty;
+    var scaffold = Scaffold(
       appBar: AppBar(
         leading: widget.disableBack
             ? null
@@ -43,53 +51,110 @@ class _AssetCategoriesPanelState extends State<AssetCategoriesPanel> {
                 onPressed: () => Navigator.of(context).pop(),
               ),
         title: Text(accountCategoryLabel),
+        bottom: _topTabBar(theme, appState, categories, deletedCategories, showTab),
       ),
       floatingActionButton: FloatingActionButton(
         foregroundColor: theme.primaryColor,
         backgroundColor: theme.iconTheme.color,
         shape: const CircleBorder(),
-        onPressed: () => Util().navigateTo(context, const AddAssetCategoryForm()),
+        onPressed: () => util.navigateTo(context, const AddAssetCategoryForm()),
         heroTag: "Add-Account-Category-Button",
         child: const Icon(Icons.add),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      body: Column(
-        children: [
-          Flexible(
-            child: ReorderableListView(
-              children: <Widget>[
-                for (AssetCategory category in appState.assetCategories)
-                  ListTile(
-                    key: ValueKey(category),
-                    leading: Icon(category.icon, color: theme.iconTheme.color), // Icon on the left
-                    title: Text(category.localizeNames[currentAppState.systemSetting.locale?.languageCode]?.isNotEmpty == true
-                        ? category.localizeNames[currentAppState.systemSetting.locale!.languageCode]!
-                        : category.name), // Title of the item
-                    trailing: category.system
-                        ? null
-                        : IconButton(
-                            icon: Icon(Icons.delete, color: theme.colorScheme.error),
-                            onPressed: () => _showRemoveDialog(context, category)),
-                    onTap: () => Util().navigateTo(context, AddAssetCategoryForm(editingCategory: category)),
-                  ),
-              ],
-              onReorder: (oldIndex, newIndex) => appState.reOrderAssetCategory(oldIndex, newIndex),
-            ),
-          ),
-          const SizedBox(height: 25),
-        ],
-      ),
+      body: _buildBody(theme, appState, categories, deletedCategories, showTab),
     );
+    if (!showTab) {
+      return scaffold;
+    } else {
+      return DefaultTabController(length: 2, child: scaffold);
+    }
   }
 
-  Future<void> _showRemoveDialog(BuildContext context, AssetCategory category) async {
-    return Util().showRemoveDialogByField(context, category,
-        tableName: tableNameAssetCategory,
-        titleLocalize: AppLocalizations.of(context)!.accountCategoryDeleteDialogTitle,
-        confirmLocalize: AppLocalizations.of(context)!.accountCategoryDeleteConfirm,
-        successLocalize: AppLocalizations.of(context)!.accountCategoryDeleteSuccess,
-        errorLocalize: AppLocalizations.of(context)!.accountCategoryDeleteError,
-        onSuccess: () => Util().refreshAssetCategories((_) => setState(() {})));
+  // Widget _categoryIconDisplay(AssetCategory category, ThemeData theme) {
+  //   if (category.deleted) {
+  //     return Icon(category.icon, color: Colors.grey);
+  //   }
+  //   return Icon(category.icon, color: theme.iconTheme.color);
+  // }
+  //
+  // Widget _categoryTextDisplay(AssetCategory category, ThemeData theme) {
+  //   String? text = category.getTitleText(currentAppState.systemSetting);
+  //   if (category.deleted) {
+  //     return Text(text, style: TextStyle(decoration: TextDecoration.lineThrough));
+  //   }
+  //   return Text(text);
+  // }
+
+  Widget _buildBody(
+      ThemeData theme, AppState appState, List<AssetCategory> categories, List<AssetCategory> deletedCategories, bool showTab) {
+    var activatedCategories = Column(children: [
+      Flexible(
+        child: ReorderableListView(
+          children: _categoriesDisplay(theme, appState, categories),
+          onReorder: (oldIndex, newIndex) => appState.reOrderAssetCategory(oldIndex, newIndex),
+        ),
+      ),
+      const SizedBox(height: 25),
+    ]);
+    if (!showTab) {
+      return activatedCategories;
+    } else {
+      return TabBarView(children: [
+        activatedCategories,
+        Column(children: [
+          Flexible(child: ListView(children: _deletedCategoriesDisplay(theme, appState, deletedCategories))),
+          const SizedBox(height: 25),
+        ])
+      ]);
+    }
+  }
+
+  List<Widget> _categoriesDisplay(ThemeData theme, AppState appState, List<AssetCategory> categories) {
+    return <Widget>[
+      for (AssetCategory category in categories)
+        ListTile(
+          key: ValueKey(category),
+          leading: accountService.elementIconDisplay(category, theme),
+          title: accountService.elementTextDisplay(category, theme),
+          trailing: IconButton(
+            icon: Icon(Icons.delete, color: theme.colorScheme.error),
+            onPressed: () => AccountService().showRemoveCategoryDialog(context, category,
+                onSuccess: () => accountService.refreshAssetCategories((_) => setState(() {}))),
+          ),
+          onTap: () => Util().navigateTo(context, AddAssetCategoryForm(editingCategory: category)),
+        )
+    ];
+  }
+
+  List<Widget> _deletedCategoriesDisplay(ThemeData theme, AppState appState, List<AssetCategory> categories) {
+    if (categories.isEmpty) return [];
+    return <Widget>[
+      for (AssetCategory category in categories)
+        ListTile(
+          key: ValueKey(category),
+          leading: accountService.elementIconDisplay(category, theme),
+          title: accountService.elementTextDisplay(category, theme),
+          trailing: IconButton(
+            icon: Icon(Icons.restore, color: Colors.green),
+            onPressed: () => AccountService().showRestoreCategoryDialog(context, category,
+                onSuccess: () => accountService.refreshAssetCategories((_) => setState(() {}))),
+          ),
+          onTap: () => Util().navigateTo(context, AddAssetCategoryForm(editingCategory: category)),
+        ),
+    ];
+  }
+
+  PreferredSizeWidget? _topTabBar(
+      ThemeData theme, AppState appState, List<AssetCategory> categories, List<AssetCategory> deletedCategories, bool showTab) {
+    if (!showTab) return null;
+    AppLocalizations appLocalizations = AppLocalizations.of(context)!;
+    return TabBar(
+      tabs: <Widget>[
+        Tab(icon: Icon(Icons.category, color: Colors.blue), text: appLocalizations.accountCategoryActivatedList),
+        Tab(icon: Icon(Icons.delete, color: Colors.red), text: appLocalizations.accountCategoryDeletedList)
+      ],
+    );
   }
 }
 
@@ -318,6 +383,7 @@ class _AddAssetCategoryFormState extends State<AddAssetCategoryForm> {
           name: _categoryNameController.text,
           localizeNames: localizeMap,
           index: appState.assetCategories.length,
+          deleted: false,
         );
         DatabaseService().database.then((db) {
           db.insert(tableNameAssetCategory, assetCategory.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);

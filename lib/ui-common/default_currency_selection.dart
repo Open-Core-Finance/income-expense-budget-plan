@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:income_expense_budget_plan/model/currency.dart';
+import 'package:income_expense_budget_plan/service/account_service.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/database_service.dart';
 import 'package:income_expense_budget_plan/service/util.dart';
@@ -18,8 +19,8 @@ class _DefaultCurrencySelectionDialog extends State<DefaultCurrencySelectionDial
   @override
   Widget build(BuildContext context) {
     AppLocalizations appLocalizations = AppLocalizations.of(context)!;
-    AppBar? appBar =
-        AppBar(title: Text(appLocalizations.currencyDialogTitleSelectDefault), leading: null, automaticallyImplyLeading: false);
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme colorScheme = theme.colorScheme;
     Widget? bottomBar;
     if (_selectedCurrency != null) {
       bottomBar = BottomAppBar(
@@ -36,7 +37,7 @@ class _DefaultCurrencySelectionDialog extends State<DefaultCurrencySelectionDial
                   DatabaseService().database.then((db) {
                     db.update(tableNameSetting, currentAppState.systemSetting.toMap(),
                         where: "id = ?", whereArgs: ["1"], conflictAlgorithm: ConflictAlgorithm.replace);
-                    db.execute("update $tableNameAsset set currency_uid=$selectedCurrencyId").then((_) => Util().refreshAssets(null));
+                    db.execute("update $tableNameAsset set currency_uid=$selectedCurrencyId").then((_) => AccountService().refreshAssets());
                   });
                   Navigator.of(context).pop();
                 } else {
@@ -49,9 +50,17 @@ class _DefaultCurrencySelectionDialog extends State<DefaultCurrencySelectionDial
       );
     }
     return Scaffold(
-      appBar: appBar,
+      // appBar: appBar,
       body: SingleChildScrollView(
         child: ListBody(children: <Widget>[
+          ListTile(
+            leading: Icon(Icons.flag),
+            title: Text(appLocalizations.clickSelectLanguage),
+            subtitle: Text(currentAppState.systemSetting.currentLanguageText),
+            onTap: () => Util().chooseLanguage(context),
+            iconColor: colorScheme.primary,
+          ),
+          ListTile(title: Text(appLocalizations.currencyDialogTitleSelectDefault), iconColor: colorScheme.primary),
           for (var currency in currentAppState.currencies)
             RadioListTile(
               title: Text("${currency.name} (${currency.symbol})"),

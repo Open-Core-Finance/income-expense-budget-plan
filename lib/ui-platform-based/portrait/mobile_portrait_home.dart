@@ -3,8 +3,8 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:income_expense_budget_plan/model/setting.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/app_state.dart';
-import 'package:income_expense_budget_plan/ui-app-layout/home.dart';
-import 'package:income_expense_budget_plan/ui-app-layout/mobile-portrait/portrait_more_panel.dart';
+import 'package:income_expense_budget_plan/ui-common/home.dart';
+import 'package:income_expense_budget_plan/ui-platform-based/portrait/portrait_more_panel.dart';
 import 'package:income_expense_budget_plan/ui-common/report_panel.dart';
 import 'package:income_expense_budget_plan/ui-common/transaction_panel.dart';
 import 'package:income_expense_budget_plan/ui-platform-based/portrait/account_panel.dart';
@@ -48,5 +48,5 @@ class _HomePageMobilePortraitState extends HomePageState<HomePageMobilePortrait>
 
   @override
   List<Widget> allIndexesWidgets(BuildContext context, AppLocalizations appLocalizations) =>
-      [const TransactionPanel(), ReportPanel(), const AccountPanelPortrait(), const MobilePortraitMorePanel()];
+      [const TransactionPanel(), ReportPanel(), const AccountPanelPortrait(showDeleted: true), const MobilePortraitMorePanel()];
 }

@@ -393,7 +393,8 @@ class DataExportV1 extends DataExport {
   @override
   String accountCategoryToLineData(AssetCategory category) {
     return '${category.id}$dataSeparator${category.name}$dataSeparator${Util().iconDataToJSONString(category.icon)}$dataSeparator${category.system}$dataSeparator${jsonEncode(category.localizeNames)}'
-        '$dataSeparator${category.positionIndex}$dataSeparator${category.lastUpdated.millisecondsSinceEpoch}';
+        '$dataSeparator${category.positionIndex}$dataSeparator${category.lastUpdated.millisecondsSinceEpoch}'
+        '$dataSeparator${category.deleted}';
   }
 
   @override
@@ -452,7 +453,8 @@ class DataImportV1 extends DataImport {
             description: description,
             currencyUid: currencyUid,
             categoryUid: categoryUid,
-            availableAmount: availableAmount);
+            availableAmount: availableAmount,
+            deleted: _retrieveDeletedFlag(data, 12));
       case "bankCasa":
         return BankCasaAccount(
             id: id,
@@ -465,7 +467,8 @@ class DataImportV1 extends DataImport {
             description: description,
             currencyUid: currencyUid,
             categoryUid: categoryUid,
-            availableAmount: availableAmount);
+            availableAmount: availableAmount,
+            deleted: _retrieveDeletedFlag(data, 12));
       case "loan":
         double loanAmount = double.tryParse(data[12]) ?? 0;
         return LoanAccount(
@@ -479,7 +482,8 @@ class DataImportV1 extends DataImport {
             description: description,
             currencyUid: currencyUid,
             categoryUid: categoryUid,
-            loanAmount: loanAmount);
+            loanAmount: loanAmount,
+            deleted: _retrieveDeletedFlag(data, 13));
       case "eWallet":
         return EWallet(
             id: id,
@@ -492,7 +496,8 @@ class DataImportV1 extends DataImport {
             description: description,
             currencyUid: currencyUid,
             categoryUid: categoryUid,
-            availableAmount: availableAmount);
+            availableAmount: availableAmount,
+            deleted: _retrieveDeletedFlag(data, 12));
       case "payLaterAccount":
         double paymentLimit = double.tryParse(data[12]) ?? 0;
         return PayLaterAccount(
@@ -507,7 +512,8 @@ class DataImportV1 extends DataImport {
             currencyUid: currencyUid,
             categoryUid: categoryUid,
             availableAmount: availableAmount,
-            paymentLimit: paymentLimit);
+            paymentLimit: paymentLimit,
+            deleted: _retrieveDeletedFlag(data, 13));
       default:
         double creditLimit = double.tryParse(data[12]) ?? 0;
         return CreditCard(
@@ -522,7 +528,8 @@ class DataImportV1 extends DataImport {
             currencyUid: currencyUid,
             categoryUid: categoryUid,
             availableAmount: availableAmount,
-            creditLimit: creditLimit);
+            creditLimit: creditLimit,
+            deleted: _retrieveDeletedFlag(data, 13));
     }
   }
 
@@ -537,7 +544,18 @@ class DataImportV1 extends DataImport {
     int positionIndex = int.tryParse(data[5]) ?? 0;
     DateTime lastUpdated = DateTime.fromMillisecondsSinceEpoch(int.tryParse(data[6]) ?? 0);
     return AssetCategory(
-        id: id, icon: icon, name: name, system: system, localizeNames: localizeNames, index: positionIndex, updatedDateTime: lastUpdated);
+        id: id,
+        icon: icon,
+        name: name,
+        system: system,
+        localizeNames: localizeNames,
+        index: positionIndex,
+        updatedDateTime: lastUpdated,
+        deleted: _retrieveDeletedFlag(data, 7));
+  }
+
+  bool _retrieveDeletedFlag(List<String> data, int flagIndex) {
+    return data.length >= (flagIndex + 1) ? (bool.tryParse(data[flagIndex]) ?? false) : false;
   }
 
   @override
