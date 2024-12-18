@@ -12,10 +12,25 @@ set -e
 
 if [ "${CI_PRODUCT_PLATFORM}" = "macOS" ]; then
   echo "MacOS build..."
-  flutter build macos --no-tree-shake-icons --release
+  inputFile="macos/Runner.xcodeproj/project.pbxproj"
+  tmpFile="${inputFile}.bak"
+  cp "${inputFile}" "${tmpFile}"
+#  sed -i '' 's/CODE_SIGN_IDENTITY = "Apple Development"/"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-"/g' "${inputFile}"
+  echo "Creating temp proj file for flutter build..."
+  sed -i '' '/CODE_SIGN_IDENTITY = "Apple Development"/d' "${inputFile}"
+  sed -i '' '/CODE_SIGN_STYLE = Automatic/d' "${inputFile}"
+  echo "Running flutter build..."
+  flutter build macos --no-tree-shake-icons --debug
+  echo "Remove generated project file"
+  rm -rfv "${inputFile}"
+  echo "Remove generated build folder"
+  rm -rfv "build/macos/Build"
+  echo "Restore original project file"
+  cp "${tmpFile}" "${inputFile}"
+  echo "Mac OS prebuilt completed!"
 else
   echo "iOS build..."
-  flutter build ipa --no-tree-shake-icons --release
+  # flutter build ipa --no-tree-shake-icons --no-codesign
 fi
 
 cd "$CI_PRIMARY_REPOSITORY_PATH"

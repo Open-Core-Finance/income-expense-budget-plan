@@ -18,6 +18,10 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
 
+kotlin {
+    jvmToolchain(17) // Java version defined here
+}
+
 android {
     namespace = "com.dbaotrung.income_expense_budget_plan"
     compileSdk = flutter.compileSdkVersion
@@ -35,11 +39,20 @@ android {
 
     defaultConfig {
         applicationId = "com.dbaotrung.income_expense_budget_plan"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
-        // minSdk = flutter.minSdkVersion
-        minSdk = 23
-        targetSdk = flutter.targetSdkVersion
+        // Android 15 (API level 35)
+        // Android 14 (API level 34)
+        // Android 13 (API level 33)
+        // Android 12 (API levels 31, 32)
+        // Android 11 (API level 30)
+        // Android 10 (API level 29)
+        // Android 9 (API level 28)
+        // Android 8.1 (API level 27)
+        // Android 8.0 (API level 26)
+        // Android 7.1 (API level 25)
+        // Android 7.0 (API level 24)
+        minSdk = 24
+        // targetSdk = flutter.targetSdkVersion
+        targetSdk = 35
         versionCode = flutter.versionCode
         versionName = flutter.versionName
 

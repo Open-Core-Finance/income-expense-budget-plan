@@ -53,6 +53,7 @@ app.*.map.json
 /**/*.snap
 
 # My code generated
-#/**/*.iebp
+/**/*.iebp
+macos/Runner.xcodeproj/project.pbxproj.bak
 
 android/.kotlin/sessions/
