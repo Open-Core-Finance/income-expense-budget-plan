@@ -54,5 +54,6 @@ app.*.map.json
 
 # My code generated
 /**/*.iebp
+macos/Runner.xcodeproj/project.pbxproj.bak
 
 android/.kotlin/sessions/
