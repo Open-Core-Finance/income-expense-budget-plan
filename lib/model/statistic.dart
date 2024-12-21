@@ -6,7 +6,7 @@ class Statistic {
   late double totalTransfer;
   late double totalSharedBillPaid;
   late double totalSharedBillReturn;
-  late double totalFeePaid;
+  late double totalPaidFee;
   late double totalLend;
   late double totalBorrow;
 
@@ -29,7 +29,7 @@ class Statistic {
     this.totalTransfer = totalTransfer ?? 0;
     this.totalSharedBillPaid = totalSharedBillPaid ?? 0;
     this.totalSharedBillReturn = totalSharedBillReturn ?? 0;
-    this.totalFeePaid = totalFeePaid ?? 0;
+    this.totalPaidFee = totalFeePaid ?? 0;
     this.totalLend = totalLend ?? 0;
     this.totalBorrow = totalBorrow ?? 0;
   }
@@ -41,7 +41,7 @@ class Statistic {
 
   String toAttrString() => '"totalIncome": $totalIncome, "totalExpense": $totalExpense,'
       '"totalTransferOut": $totalTransferOut, "totalTransferIn": $totalTransferIn, "totalSharedBillPaid": $totalSharedBillPaid,'
-      '"totalSharedBillReturn": $totalSharedBillReturn, "totalFeePaid": $totalFeePaid, "totalLend": $totalLend, "totalBorrow": $totalBorrow';
+      '"totalSharedBillReturn": $totalSharedBillReturn, "totalFeePaid": $totalPaidFee, "totalLend": $totalLend, "totalBorrow": $totalBorrow';
 
   void combineWith(Statistic statistic) {
     totalIncome += statistic.totalIncome;
@@ -53,6 +53,6 @@ class Statistic {
     totalTransferIn += statistic.totalTransferIn;
     totalTransferOut += statistic.totalTransferOut;
     totalTransfer += statistic.totalTransfer;
-    totalFeePaid += statistic.totalFeePaid;
+    totalPaidFee += statistic.totalPaidFee;
   }
 }

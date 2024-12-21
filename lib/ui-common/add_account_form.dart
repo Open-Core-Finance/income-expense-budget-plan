@@ -7,11 +7,12 @@ import 'package:income_expense_budget_plan/dao/assets_dao.dart';
 import 'package:income_expense_budget_plan/model/asset_category.dart';
 import 'package:income_expense_budget_plan/model/assets.dart';
 import 'package:income_expense_budget_plan/model/currency.dart';
+import 'package:income_expense_budget_plan/model/transaction.dart';
 import 'package:income_expense_budget_plan/service/account_service.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/app_state.dart';
-import 'package:income_expense_budget_plan/service/form_util.dart';
 import 'package:income_expense_budget_plan/service/database_service.dart';
+import 'package:income_expense_budget_plan/service/form_util.dart';
 import 'package:income_expense_budget_plan/service/util.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
@@ -44,6 +45,8 @@ class _AddAccountFormState extends State<AddAccountForm> {
   late AssetCategory _selectedCategory;
   late Currency _selectedCurrency;
   late CurrencyTextInputFormatter _currencyTextInputFormatter;
+  bool _recordDiffAmountAsTransaction = false;
+  FormUtil formUtil = FormUtil();
 
   // Create a global key that uniquely identifies the Form widget
   // and allows validation of the form.
@@ -104,10 +107,11 @@ class _AddAccountFormState extends State<AddAccountForm> {
     } else {
       _initEmptyForm();
     }
-    _currencyTextInputFormatter = FormUtil().buildFormatter(_selectedCurrency);
+    _currencyTextInputFormatter = formUtil.buildFormatter(_selectedCurrency);
     _creditLimitController.text = _currencyTextInputFormatter.formatDouble(double.tryParse(_creditLimitController.text) ?? 0);
     _loanAmountController.text = _currencyTextInputFormatter.formatDouble(double.tryParse(_loanAmountController.text) ?? 0);
     _availableAmountController.text = _currencyTextInputFormatter.formatDouble(double.tryParse(_availableAmountController.text) ?? 0);
+    _availableAmountController.addListener(() => setState(() {}));
   }
 
   _initEmptyForm() {
@@ -169,7 +173,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
                 for (var widget in _formFields(context, theme)) widget,
                 const SizedBox(height: 20),
                 Row(
-                  children: FormUtil().buildCategoryFormActions(
+                  children: formUtil.buildCategoryFormActions(
                     context,
                     () => _validateForm(context, (List<Asset> assets, bool isAddNew) {
                       if (widget.editCallback != null) {
@@ -206,7 +210,6 @@ class _AddAccountFormState extends State<AddAccountForm> {
       print("Calling form validation...");
     }
     final appState = Provider.of<AppState>(context, listen: false);
-    var formUtil = FormUtil();
     setState(() {
       _isChecking = true;
       _isValidAssetName = true;
@@ -258,6 +261,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
         if (kDebugMode) {
           print("Updating asset info to DB...");
         }
+        double originalAmount = _editingAsset!.availableAmount;
         final asset = Util().changeAssetType(_editingAsset!, _selectedAccountType);
 
         dbService.database.then((db) {
@@ -273,14 +277,36 @@ class _AddAccountFormState extends State<AddAccountForm> {
             asset.loanAmount = loanAmountNumber!;
           } else if (asset is CreditCard) {
             // Credit card
-            asset.availableAmount = availableAmountNumber;
             asset.creditLimit = creditLimitNumber!;
           }
           asset.lastUpdated = DateTime.now();
 
-          db
-              .update(tableNameAsset, asset.toMap(), where: "uid = ?", whereArgs: [asset.id], conflictAlgorithm: ConflictAlgorithm.replace)
-              .catchError((e) => dbService.recordCodingError(e, 'update account', null));
+          var accountInsertFuture = db.update(tableNameAsset, asset.toMap(),
+              where: "uid = ?", whereArgs: [asset.id], conflictAlgorithm: ConflictAlgorithm.replace);
+          accountInsertFuture.then((_) {
+            if (_recordDiffAmountAsTransaction) {
+              DateTime dateTime = DateTime.now();
+              var adjustment = AdjustmentTransaction(
+                id: const UuidV8().generate(),
+                transactionDate: dateTime,
+                transactionTime: TimeOfDay.fromDateTime(dateTime),
+                transactionCategory: null,
+                description: "",
+                withFee: false,
+                feeAmount: 0,
+                amount: asset.availableAmount,
+                account: asset,
+                currencyUid: asset.currencyUid,
+                updatedDateTime: DateTime.now(),
+                adjustedAmount: asset.availableAmount - originalAmount,
+                skipReport: false,
+              );
+              var insertFuture = db.insert(tableNameTransaction, adjustment.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+              insertFuture.catchError((e) {
+                DatabaseService().recordCodingError(e, 'Edit account and add as new adjustment transaction', null);
+              });
+            }
+          }).catchError((e) => dbService.recordCodingError(e, 'update account', null));
           setState(() {
             appState.triggerNotify();
             callback(appState.assets, false);
@@ -294,89 +320,101 @@ class _AddAccountFormState extends State<AddAccountForm> {
         switch (_selectedAccountType) {
           case "genericAccount":
             assets = GenericAccount(
-                id: const UuidV8().generate(),
-                icon: _selectedIcon,
-                name: _assetNameController.text,
-                localizeNames: localizeMap,
-                index: appState.assets.length,
-                localizeDescriptions: localizeDesc,
-                description: _assetDescriptionController.text,
-                currencyUid: _selectedCurrency.id!,
-                categoryUid: _selectedCategory.id!,
-                availableAmount: availableAmountNumber!,
-                deleted: false);
+              id: const UuidV8().generate(),
+              icon: _selectedIcon,
+              name: _assetNameController.text,
+              localizeNames: localizeMap,
+              index: appState.assets.length,
+              localizeDescriptions: localizeDesc,
+              description: _assetDescriptionController.text,
+              currencyUid: _selectedCurrency.id!,
+              categoryUid: _selectedCategory.id!,
+              availableAmount: availableAmountNumber!,
+              deleted: false,
+              paidFee: 0,
+            );
             break;
           case "bankCasa":
             assets = BankCasaAccount(
-                id: const UuidV8().generate(),
-                icon: _selectedIcon,
-                name: _assetNameController.text,
-                localizeNames: localizeMap,
-                index: appState.assets.length,
-                localizeDescriptions: localizeDesc,
-                description: _assetDescriptionController.text,
-                currencyUid: _selectedCurrency.id!,
-                categoryUid: _selectedCategory.id!,
-                availableAmount: availableAmountNumber!,
-                deleted: false);
+              id: const UuidV8().generate(),
+              icon: _selectedIcon,
+              name: _assetNameController.text,
+              localizeNames: localizeMap,
+              index: appState.assets.length,
+              localizeDescriptions: localizeDesc,
+              description: _assetDescriptionController.text,
+              currencyUid: _selectedCurrency.id!,
+              categoryUid: _selectedCategory.id!,
+              availableAmount: availableAmountNumber!,
+              deleted: false,
+              paidFee: 0,
+            );
             break;
           case "loan":
             assets = LoanAccount(
-                id: const UuidV8().generate(),
-                icon: _selectedIcon,
-                name: _assetNameController.text,
-                localizeNames: localizeMap,
-                index: appState.assets.length,
-                localizeDescriptions: localizeDesc,
-                description: _assetDescriptionController.text,
-                currencyUid: _selectedCurrency.id!,
-                categoryUid: _selectedCategory.id!,
-                loanAmount: loanAmountNumber!,
-                deleted: false);
+              id: const UuidV8().generate(),
+              icon: _selectedIcon,
+              name: _assetNameController.text,
+              localizeNames: localizeMap,
+              index: appState.assets.length,
+              localizeDescriptions: localizeDesc,
+              description: _assetDescriptionController.text,
+              currencyUid: _selectedCurrency.id!,
+              categoryUid: _selectedCategory.id!,
+              loanAmount: loanAmountNumber!,
+              deleted: false,
+              paidFee: 0,
+            );
             break;
           case "eWallet":
             assets = EWallet(
-                id: const UuidV8().generate(),
-                icon: _selectedIcon,
-                name: _assetNameController.text,
-                localizeNames: localizeMap,
-                index: appState.assets.length,
-                localizeDescriptions: localizeDesc,
-                description: _assetDescriptionController.text,
-                currencyUid: _selectedCurrency.id!,
-                categoryUid: _selectedCategory.id!,
-                availableAmount: availableAmountNumber!,
-                deleted: false);
+              id: const UuidV8().generate(),
+              icon: _selectedIcon,
+              name: _assetNameController.text,
+              localizeNames: localizeMap,
+              index: appState.assets.length,
+              localizeDescriptions: localizeDesc,
+              description: _assetDescriptionController.text,
+              currencyUid: _selectedCurrency.id!,
+              categoryUid: _selectedCategory.id!,
+              availableAmount: availableAmountNumber!,
+              deleted: false,
+              paidFee: 0,
+            );
             break;
           case "payLaterAccount":
             assets = PayLaterAccount(
-                id: const UuidV8().generate(),
-                icon: _selectedIcon,
-                name: _assetNameController.text,
-                localizeNames: localizeMap,
-                index: appState.assets.length,
-                localizeDescriptions: localizeDesc,
-                description: _assetDescriptionController.text,
-                currencyUid: _selectedCurrency.id!,
-                categoryUid: _selectedCategory.id!,
-                availableAmount: availableAmountNumber!,
-                paymentLimit: creditLimitNumber!,
-                deleted: false);
+              id: const UuidV8().generate(),
+              icon: _selectedIcon,
+              name: _assetNameController.text,
+              localizeNames: localizeMap,
+              index: appState.assets.length,
+              localizeDescriptions: localizeDesc,
+              description: _assetDescriptionController.text,
+              currencyUid: _selectedCurrency.id!,
+              categoryUid: _selectedCategory.id!,
+              availableAmount: availableAmountNumber!,
+              paymentLimit: creditLimitNumber!,
+              deleted: false,
+              paidFee: 0,
+            );
             break;
           default:
             assets = CreditCard(
-                id: const UuidV8().generate(),
-                icon: _selectedIcon,
-                name: _assetNameController.text,
-                localizeNames: localizeMap,
-                index: appState.assets.length,
-                localizeDescriptions: localizeDesc,
-                description: _assetDescriptionController.text,
-                currencyUid: _selectedCurrency.id!,
-                categoryUid: _selectedCategory.id!,
-                availableAmount: availableAmountNumber!,
-                creditLimit: creditLimitNumber!,
-                deleted: false);
+              id: const UuidV8().generate(),
+              icon: _selectedIcon,
+              name: _assetNameController.text,
+              localizeNames: localizeMap,
+              index: appState.assets.length,
+              localizeDescriptions: localizeDesc,
+              description: _assetDescriptionController.text,
+              currencyUid: _selectedCurrency.id!,
+              categoryUid: _selectedCategory.id!,
+              availableAmount: availableAmountNumber!,
+              creditLimit: creditLimitNumber!,
+              deleted: false,
+              paidFee: 0,
+            );
             break;
         }
         dbService.database.then((db) {
@@ -415,7 +453,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
 
   List<DropdownMenuItem<Currency>> _buildListCurrenciesDropdown(ThemeData theme) {
     return currentAppState.currencies.map<DropdownMenuItem<Currency>>((Currency currency) {
-      // _buildDropdownMenuItem(context, currency, FormUtil().resolveAccountTypeLocalize(context, currency.name));
+      // _buildDropdownMenuItem(context, currency, formUtil.resolveAccountTypeLocalize(context, currency.name));
       return DropdownMenuItem<Currency>(
         value: currency,
         child: Text("${currency.name} (${currency.symbol})", style: TextStyle(color: theme.iconTheme.color)),
@@ -444,7 +482,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
     result.add(Row(
       children: [
         Flexible(
-          child: FormUtil().buildCheckboxFormField(context, theme,
+          child: formUtil.buildCheckboxFormField(context, theme,
               value: _enableMultiLanguage, title: AppLocalizations.of(context)!.accountTurnOnLocalizeNames, onChanged: onchange),
         ),
       ],
@@ -562,13 +600,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
             controller: controller, enabled: false, style: TextStyle(color: theme.colorScheme.primary), decoration: decoration);
       }
     }
-    return [
-      const SizedBox(height: 10),
-      // Row(
-      //   children: [const SizedBox(width: 10), Text(label), const SizedBox(width: 10), Flexible(child: inputWidget!)],
-      // )
-      inputWidget!
-    ];
+    return [const SizedBox(height: 10), inputWidget!];
   }
 
   List<Widget> _formFields(BuildContext context, ThemeData theme) {
@@ -587,7 +619,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
               children: [
                 Icon(AccountService().resolveAccountTypeIcon(t), color: theme.iconTheme.color),
                 SizedBox(width: 10),
-                Text(FormUtil().resolveAccountTypeLocalize(context, t.name))
+                Text(formUtil.resolveAccountTypeLocalize(context, t.name))
               ],
             ),
           );
@@ -612,7 +644,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
       onChange: (Currency? value) => setState(
         () {
           _selectedCurrency = value!;
-          _currencyTextInputFormatter = FormUtil().buildFormatter(_selectedCurrency);
+          _currencyTextInputFormatter = formUtil.buildFormatter(_selectedCurrency);
           _availableAmountController.text = _currencyTextInputFormatter.formatString(_availableAmountController.text);
           _loanAmountController.text = _currencyTextInputFormatter.formatString(_loanAmountController.text);
           _creditLimitController.text = _currencyTextInputFormatter.formatString(_creditLimitController.text);
@@ -653,6 +685,24 @@ class _AddAccountFormState extends State<AddAccountForm> {
         _creditLimitController, theme));
     result.addAll(_moneyInputField(AssetType.payLaterAccount.name == _selectedAccountType,
         AppLocalizations.of(context)!.accountPaymentLimit, _paymentLimitController, theme));
+
+    var moneyFormat = _currencyTextInputFormatter.numberFormat;
+    double? availableAmountNumber = formUtil.parseAmount(_availableAmountController.text, moneyFormat);
+    if (kDebugMode) {
+      print("availableAmountNumber: $availableAmountNumber");
+    }
+    if (availableAmountNumber != null && _editingAsset != null && _editingAsset!.availableAmount != availableAmountNumber) {
+      result.add(Row(
+        children: [
+          Flexible(
+            child: formUtil.buildCheckboxFormField(context, theme,
+                value: _recordDiffAmountAsTransaction,
+                title: AppLocalizations.of(context)!.accountRecordDiffAmountAsTxn,
+                onChanged: (bool? value) => setState(() => _recordDiffAmountAsTransaction = value!)),
+          ),
+        ],
+      ));
+    }
     result.addAll(_buildLocalizedComponents(context, theme));
     return result;
   }

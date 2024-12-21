@@ -431,6 +431,7 @@ class Util {
           categoryUid: original.categoryUid,
           availableAmount: original.availableAmount,
           deleted: original.deleted,
+          paidFee: original.paidFee,
         );
       case "bankCasa":
         return BankCasaAccount(
@@ -445,6 +446,7 @@ class Util {
           categoryUid: original.categoryUid,
           availableAmount: original.availableAmount,
           deleted: original.deleted,
+          paidFee: original.paidFee,
         );
       case "loan":
         return LoanAccount(
@@ -459,6 +461,7 @@ class Util {
           categoryUid: original.categoryUid,
           loanAmount: 0,
           deleted: original.deleted,
+          paidFee: original.paidFee,
         );
       case "eWallet":
         return EWallet(
@@ -473,6 +476,7 @@ class Util {
           categoryUid: original.categoryUid,
           availableAmount: original.availableAmount,
           deleted: original.deleted,
+          paidFee: original.paidFee,
         );
       case "payLaterAccount":
         PayLaterAccount assets = PayLaterAccount(
@@ -488,6 +492,7 @@ class Util {
           availableAmount: original.availableAmount,
           paymentLimit: 0,
           deleted: original.deleted,
+          paidFee: original.paidFee,
         );
         if (original is CreditCard) {
           assets.paymentLimit = original.creditLimit;
@@ -507,6 +512,7 @@ class Util {
           availableAmount: original.availableAmount,
           creditLimit: 0,
           deleted: original.deleted,
+          paidFee: original.paidFee,
         );
         if (original is PayLaterAccount) {
           assets.creditLimit = original.paymentLimit;

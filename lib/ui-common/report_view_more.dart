@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:income_expense_budget_plan/service/statistic.dart';
 import 'package:income_expense_budget_plan/ui-common/feature_in_development.dart';
 import 'package:income_expense_budget_plan/model/currency.dart';
 import 'package:income_expense_budget_plan/model/resource_statistic.dart';
@@ -8,15 +9,13 @@ import 'package:income_expense_budget_plan/service/year_month_filter_data.dart';
 class ReportViewMore extends StatefulWidget {
   final Currency currency;
   final List<ResourceStatisticMonthly> resourcesStatisticsMonthly;
-  final double totalIncome;
-  final double totalExpense;
   final YearMonthFilterData filterData;
+  final CurrencyStatistic statistic;
   const ReportViewMore({
     super.key,
     required this.currency,
     required this.resourcesStatisticsMonthly,
-    required this.totalIncome,
-    required this.totalExpense,
+    required this.statistic,
     required this.filterData,
   });
 

@@ -1,0 +1,1 @@
+ALTER TABLE asset ADD COLUMN paid_fee REAL DEFAULT 0.0;
