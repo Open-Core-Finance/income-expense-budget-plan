@@ -29,6 +29,7 @@ class AppState extends ChangeNotifier {
   bool isLandscape = false;
   int lastLayoutStyle = -1;
   PlatformConst platformConst = PlatformConst();
+  bool needRefreshTxnPanel = false;
 
   set currentHomePageIndex(int currentHomePageIndex) {
     _currentHomePageIndex = currentHomePageIndex;

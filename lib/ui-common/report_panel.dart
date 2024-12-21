@@ -1,23 +1,24 @@
 import 'dart:math';
 
 import 'package:currency_text_input_formatter/currency_text_input_formatter.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:income_expense_budget_plan/model/assets.dart';
-import 'package:income_expense_budget_plan/ui-common/account_summarize.dart';
-import 'package:income_expense_budget_plan/ui-common/report_view_more.dart';
 import 'package:income_expense_budget_plan/model/currency.dart';
 import 'package:income_expense_budget_plan/model/report_chart_data.dart';
 import 'package:income_expense_budget_plan/model/resource_statistic.dart';
 import 'package:income_expense_budget_plan/model/transaction_category.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/form_util.dart';
+import 'package:income_expense_budget_plan/service/statistic.dart';
 import 'package:income_expense_budget_plan/service/util.dart';
 import 'package:income_expense_budget_plan/service/year_month_filter_data.dart';
-import 'package:income_expense_budget_plan/ui-common/vertical_split_view.dart';
+import 'package:income_expense_budget_plan/ui-common/bar_chart_report.dart';
+import 'package:income_expense_budget_plan/ui-common/currency_assests_summarize.dart';
+import 'package:income_expense_budget_plan/ui-common/report_view_more.dart';
 import 'package:intl/intl.dart';
-import 'package:fl_chart/fl_chart.dart';
 
 import 'no_data.dart';
 
@@ -47,9 +48,6 @@ class _ReportPanelState extends State<ReportPanel> {
     YearMonthFilterData? providedYearMonthFilterData;
     try {
       providedYearMonthFilterData = widget.yearMonthFilterData;
-      // if (kDebugMode) {
-      //   print("Debug purpose only!. Provided filter: $providedYearMonthFilterData");
-      // }
     } catch (e) {
       if (kDebugMode) {
         print("Debug purpose only!. There's no provided filter! $e");
@@ -71,8 +69,28 @@ class _ReportPanelState extends State<ReportPanel> {
         }
 
         Map<Currency, List<ResourceStatisticMonthly>> resourcesStatisticsMonthlyMap = filterData.resourcesStatisticsMonthlyMap;
+        Set<Currency> noTranCurrencies = currentAppState.assets
+            .where((asset) {
+              bool contain = false;
+              for (var k in resourcesStatisticsMonthlyMap.keys) {
+                if (k.id == asset.currencyUid) {
+                  contain = true;
+                  break;
+                }
+              }
+              return !contain && asset.availableAmount > deltaCompareValue;
+            })
+            .map((asset) => currentAppState.currencies.firstWhere((c) => c.id == asset.currencyUid))
+            .toSet();
+        Set<Currency> reportCurrencies = resourcesStatisticsMonthlyMap.keys.toSet();
+        reportCurrencies.addAll(noTranCurrencies);
+        if (kDebugMode) {
+          if (noTranCurrencies.isNotEmpty) {
+            print("No transactions currencies $noTranCurrencies");
+          }
+        }
         Widget body;
-        if (resourcesStatisticsMonthlyMap.isEmpty) {
+        if (reportCurrencies.isEmpty) {
           body = const NoDataCard();
         } else {
           final percentageFormat = NumberFormat.percentPattern()
@@ -82,43 +100,48 @@ class _ReportPanelState extends State<ReportPanel> {
           double chartPadding = currentAppState.systemSetting.reportChartPadding;
           double minSize = max(reportChartDefaultSize, (min(panelConstraints.maxWidth, panelConstraints.maxHeight) - 10) / 2);
           reportChartDefaultSize = minSize;
-          BoxConstraints constraints = BoxConstraints(maxWidth: minSize, maxHeight: minSize);
-          List<Widget> children = [];
-          for (var entry in resourcesStatisticsMonthlyMap.entries) {
-            var currency = entry.key;
-            List<ResourceStatisticMonthly> resourcesStatisticsMonthly =
-                entry.value.where((statistic) => statistic.resourceType == 'category').toList(growable: false);
-            double totalIncome = 0;
-            double totalExpense = 0;
-            for (var statistic in resourcesStatisticsMonthly) {
-              totalIncome += statistic.totalIncome;
-              totalExpense += statistic.totalExpense;
-            }
-            List<ReportChartDataItem> chartDataItems =
-                _buildExpenseCategoryReportChartData(context, resourcesStatisticsMonthly, totalExpense);
-            List<BarChartGroupData> barChartData =
-                _buildExpenseIncomeBarChartData(context, totalIncome: totalIncome, totalExpense: totalExpense);
+          BoxConstraints constraints = BoxConstraints(maxWidth: minSize, maxHeight: minSize + 15);
+
+          if (reportCurrencies.length > 1) {
+            var tapBar = TabBar(
+              tabs: <Widget>[for (Currency currency in reportCurrencies) Tab(child: Text("${currency.iso} (${currency.symbol})"))],
+            );
+            var reportPanels = TabBarView(children: [
+              for (Currency currency in reportCurrencies)
+                _buildChartsForCurrency(
+                  context,
+                  currency: currency,
+                  monthlyStatistics: resourcesStatisticsMonthlyMap[currency] ?? [],
+                  chartPadding: chartPadding,
+                  reportChartBoxConstraints: constraints,
+                  panelBoxConstraints: panelConstraints,
+                  percentageFormat: percentageFormat,
+                  reportChartDefaultSize: reportChartDefaultSize,
+                  currencyFormatter: FormUtil().buildFormatter(currency),
+                  filterData: filterData,
+                )
+            ]);
+            body = DefaultTabController(
+              length: reportCurrencies.length,
+              child: Scaffold(appBar: AppBar(title: tapBar), body: reportPanels),
+            );
+          } else {
+            var currency = reportCurrencies.first;
             CurrencyTextInputFormatter currencyFormatter = FormUtil().buildFormatter(currency);
-            children.addAll(_buildChartForCurrency(
+            List<ResourceStatisticMonthly> monthlyStatistics = resourcesStatisticsMonthlyMap[currency] ?? [];
+            body = _buildChartsForCurrency(
               context,
               currency: currency,
+              monthlyStatistics: monthlyStatistics,
               chartPadding: chartPadding,
               reportChartBoxConstraints: constraints,
+              panelBoxConstraints: panelConstraints,
               percentageFormat: percentageFormat,
-              chartDataItems: chartDataItems,
-              totalExpense: totalExpense,
-              totalIncome: totalIncome,
-              barChartData: barChartData,
               reportChartDefaultSize: reportChartDefaultSize,
               currencyFormatter: currencyFormatter,
-              viewMoreFnc: () => _viewMore(currency, resourcesStatisticsMonthly, totalIncome, totalExpense, filterData),
-              panelBoxConstraints: panelConstraints,
-            ));
+              filterData: filterData,
+            );
           }
-
-          body = SingleChildScrollView(
-            child: Column(mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start, children: children),
-          );
         }
 
         AppBar? appBar =
@@ -126,6 +149,72 @@ class _ReportPanelState extends State<ReportPanel> {
 
         return Scaffold(appBar: appBar, body: body);
       },
+    );
+  }
+
+  SingleChildScrollView _buildChartsForCurrency(
+    BuildContext context, {
+    required Currency currency,
+    required List<ResourceStatisticMonthly> monthlyStatistics,
+    required double chartPadding,
+    required BoxConstraints reportChartBoxConstraints,
+    required BoxConstraints panelBoxConstraints,
+    required NumberFormat percentageFormat,
+    required double reportChartDefaultSize,
+    required CurrencyTextInputFormatter currencyFormatter,
+    required YearMonthFilterData filterData,
+  }) {
+    var appLocalizations = AppLocalizations.of(context)!;
+    List<Widget> children = [SizedBox(height: 20)];
+    List<ResourceStatisticMonthly> resourcesStatisticsMonthly =
+        monthlyStatistics.where((statistic) => statistic.resourceType == 'category').toList(growable: false);
+    if (resourcesStatisticsMonthly.isNotEmpty) {
+      CurrencyStatistic statistic = CurrencyStatistic(currency: currency);
+      for (var st in resourcesStatisticsMonthly) {
+        statistic.totalIncome += st.totalIncome;
+        statistic.totalExpense += st.totalExpense;
+        statistic.totalPaidFee += st.totalPaidFee;
+      }
+      List<ReportChartDataItem> chartDataItems =
+          _buildExpenseCategoryReportChartData(context, resourcesStatisticsMonthly, statistic.totalExpense);
+      CurrencyTextInputFormatter currencyFormatter = FormUtil().buildFormatter(currency);
+      children.addAll(
+        _buildExpenseChartForCurrency(
+          context,
+          currency: currency,
+          chartPadding: chartPadding,
+          reportChartBoxConstraints: reportChartBoxConstraints,
+          percentageFormat: percentageFormat,
+          chartDataItems: chartDataItems,
+          statistic: statistic,
+          reportChartDefaultSize: reportChartDefaultSize,
+          currencyFormatter: currencyFormatter,
+          viewMoreFnc: () => _viewMore(currency, resourcesStatisticsMonthly, statistic, filterData),
+          panelBoxConstraints: panelBoxConstraints,
+        ),
+      );
+      children.add(const Divider(thickness: 1, indent: 0));
+    }
+    children.addAll(
+      [
+        Text('${appLocalizations.reportSummarizeAccountsAvail} (${currency.name})',
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        SizedBox(height: chartPadding * 2),
+        BarChartReportPanel(
+          currency: currency,
+          currencyFormatter: currencyFormatter,
+          percentageFormat: percentageFormat,
+          chartPadding: chartPadding,
+          panelConstraints: panelBoxConstraints,
+          reportChartBoxConstraints: reportChartBoxConstraints,
+          reportChartDefaultSize: reportChartDefaultSize,
+          barChartListData: CurrencyAssetsSummarize(currency: currency, assets: currentAppState.assets),
+        ),
+        SizedBox(height: chartPadding),
+      ],
+    );
+    return SingleChildScrollView(
+      child: Column(mainAxisAlignment: MainAxisAlignment.start, crossAxisAlignment: CrossAxisAlignment.start, children: children),
     );
   }
 
@@ -226,28 +315,40 @@ class _ReportPanelState extends State<ReportPanel> {
     return result;
   }
 
-  List<BarChartGroupData> _buildExpenseIncomeBarChartData(BuildContext context,
-      {required double totalIncome, required double totalExpense}) {
-    List<BarChartGroupData> result = [];
-    double barWidth = currentAppState.systemSetting.reportBarWidth;
-    List<BarChartRodData> data = [
-      BarChartRodData(toY: totalIncome, color: Colors.blue, width: barWidth, fromY: 0),
-      BarChartRodData(toY: totalExpense, color: Colors.red, width: barWidth, fromY: 0)
+  BarChartListData _buildExpenseIncomeBarChartData(BuildContext context, {required CurrencyStatistic statistic}) {
+    var appLocalizations = AppLocalizations.of(context)!;
+    List<BarChartItemData> data = [
+      BarChartItemData(value: statistic.totalIncome, color: Colors.blue, label: appLocalizations.reportTotalIncome),
+      BarChartItemData(
+          value: statistic.totalExpense, color: Colors.red, label: appLocalizations.reportTotalExpense, showAsNegativeInLabel: true)
     ];
-    result.add(BarChartGroupData(x: 1, barRods: data, barsSpace: currentAppState.systemSetting.reportBarSpace));
-    return result;
+
+    if (statistic.totalPaidFee > deltaCompareValue) {
+      data.add(BarChartItemData(
+        value: statistic.totalPaidFee,
+        color: Colors.purpleAccent,
+        label: appLocalizations.reportTotalPaidFee,
+        showAsNegativeInLabel: true,
+      ));
+    }
+    double totalDifferences = statistic.totalIncome - statistic.totalExpense - statistic.totalPaidFee;
+    data.add(BarChartItemData(
+        value: totalDifferences,
+        color: totalDifferences < 0 ? Colors.red : Colors.blue,
+        label: '',
+        startWithDivider: true,
+        excludeInChart: true));
+    return GenericBarChartListData(items: data);
   }
 
-  List<Widget> _buildChartForCurrency(BuildContext context,
+  List<Widget> _buildExpenseChartForCurrency(BuildContext context,
       {required Currency currency,
       required double chartPadding,
       required BoxConstraints reportChartBoxConstraints,
       required BoxConstraints panelBoxConstraints,
       required NumberFormat percentageFormat,
       required List<ReportChartDataItem> chartDataItems,
-      required List<BarChartGroupData> barChartData,
-      required double totalExpense,
-      required double totalIncome,
+      required CurrencyStatistic statistic,
       required double reportChartDefaultSize,
       required CurrencyTextInputFormatter currencyFormatter,
       required void Function() viewMoreFnc}) {
@@ -263,7 +364,6 @@ class _ReportPanelState extends State<ReportPanel> {
       ),
     );
     List<Widget> result = [
-      const Divider(thickness: 1, indent: 0),
       Text('${appLocalizations.reportSummarizeExpense} (${currency.name})',
           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
       SizedBox(height: chartPadding),
@@ -280,42 +380,21 @@ class _ReportPanelState extends State<ReportPanel> {
       Text('${appLocalizations.reportSummarizeIncomeExpense} (${currency.name})',
           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
       SizedBox(height: chartPadding * 2),
-      ..._buildBarChartRow(
-        context: context,
+      BarChartReportPanel(
         currency: currency,
         percentageFormat: percentageFormat,
         reportChartBoxConstraints: reportChartBoxConstraints,
-        panelBoxConstraints: panelBoxConstraints,
+        panelConstraints: panelBoxConstraints,
         chartPadding: chartPadding,
-        barChartData: barChartData,
-        totalExpense: totalExpense,
-        totalIncome: totalIncome,
+        barChartListData: _buildExpenseIncomeBarChartData(context, statistic: statistic),
         reportChartDefaultSize: reportChartDefaultSize,
         currencyFormatter: currencyFormatter,
       ),
       viewMoreRow,
-      const SizedBox(height: 10),
-      const Divider(thickness: 1, indent: 0),
-      Text('${appLocalizations.reportSummarizeAccountsAvail} (${currency.name})',
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-      SizedBox(height: chartPadding * 2),
-      ...[
-        AccountSummarizePanel(
-            currency: currency,
-            currencyFormatter: currencyFormatter,
-            percentageFormat: percentageFormat,
-            chartPadding: chartPadding,
-            assetLoader: _loadAssets(),
-            panelConstraints: panelBoxConstraints,
-            reportChartBoxConstraints: reportChartBoxConstraints,
-            reportChartDefaultSize: reportChartDefaultSize)
-      ],
       SizedBox(height: chartPadding),
     ];
     return result;
   }
-
-  Future<List<Asset>> _loadAssets() async => currentAppState.assets;
 
   List<Widget> _buildPieChartRow({
     required Currency currency,
@@ -342,8 +421,8 @@ class _ReportPanelState extends State<ReportPanel> {
         centerSpaceRadius: 0,
         sections: showingSections(chartDataItems),
       ),
-      swapAnimationDuration: const Duration(milliseconds: 150),
-      swapAnimationCurve: Curves.linear,
+      duration: const Duration(milliseconds: 150),
+      curve: Curves.linear,
     );
     List<Widget> categoriesView = [
       for (var item in chartDataItems)
@@ -375,125 +454,13 @@ class _ReportPanelState extends State<ReportPanel> {
     ];
   }
 
-  void _viewMore(Currency currency, List<ResourceStatisticMonthly> resourcesStatisticsMonthly, double totalIncome, double totalExpense,
+  void _viewMore(Currency currency, List<ResourceStatisticMonthly> resourcesStatisticsMonthly, CurrencyStatistic statistic,
       YearMonthFilterData filterData) {
     Util().navigateTo(
       context,
       ReportViewMore(
-        currency: currency,
-        resourcesStatisticsMonthly: resourcesStatisticsMonthly,
-        totalIncome: totalIncome,
-        totalExpense: totalExpense,
-        filterData: filterData,
-      ),
+          currency: currency, resourcesStatisticsMonthly: resourcesStatisticsMonthly, statistic: statistic, filterData: filterData),
     );
-  }
-
-  List<Widget> _buildBarChartRow({
-    required BuildContext context,
-    required Currency currency,
-    required NumberFormat percentageFormat,
-    required BoxConstraints reportChartBoxConstraints,
-    required BoxConstraints panelBoxConstraints,
-    required double chartPadding,
-    required List<BarChartGroupData> barChartData,
-    required double totalExpense,
-    required double totalIncome,
-    required double reportChartDefaultSize,
-    required CurrencyTextInputFormatter currencyFormatter,
-  }) {
-    ThemeData theme = Theme.of(context);
-    var appLocalizations = AppLocalizations.of(context)!;
-    double totalDifferences = totalIncome - totalExpense;
-
-    BarChart chart = BarChart(
-      BarChartData(
-        barGroups: barChartData,
-        maxY: max(totalExpense, totalIncome) * 1.2,
-        barTouchData: BarTouchData(
-          touchTooltipData: BarTouchTooltipData(
-            getTooltipItem: (group, groupIndex, rod, rodIndex) {
-              return BarTooltipItem(currencyFormatter.formatDouble(rod.toY), TextStyle(color: rod.color));
-            },
-            getTooltipColor: (group) => (theme.brightness == Brightness.light) ? Colors.black : Colors.white,
-          ),
-        ),
-      ),
-      swapAnimationDuration: const Duration(milliseconds: 150),
-      swapAnimationCurve: Curves.linear,
-    );
-    Widget summarizeDisplay = Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        SizedBox(height: chartPadding),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            SizedBox(width: 20, height: 20, child: Container(color: Colors.blue)),
-            const SizedBox(width: 10),
-            Text("${appLocalizations.reportTotalIncome}:"),
-            Expanded(
-              child: Text(currencyFormatter.formatDouble(totalIncome),
-                  overflow: TextOverflow.fade, style: const TextStyle(color: Colors.blue), textAlign: TextAlign.right),
-            )
-          ],
-        ),
-        SizedBox(height: chartPadding),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            SizedBox(width: 20, height: 20, child: Container(color: Colors.red)),
-            const SizedBox(width: 10),
-            Text("${appLocalizations.reportTotalExpense}:"),
-            Expanded(
-                child: Text('-${currencyFormatter.formatDouble(totalExpense)}',
-                    overflow: TextOverflow.fade, style: const TextStyle(color: Colors.red), textAlign: TextAlign.right))
-          ],
-        ),
-        const Divider(thickness: 1, indent: 0),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            SizedBox(width: 20, height: 20, child: Container()),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                currencyFormatter.formatDouble(totalDifferences),
-                overflow: TextOverflow.fade,
-                style: TextStyle(color: totalDifferences < 0 ? Colors.red : Colors.blue),
-                textAlign: TextAlign.right,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-    if (panelBoxConstraints.maxWidth < currentAppState.platformConst.reportVerticalSplitViewMinWidth) {
-      var maxSize = min(panelBoxConstraints.maxWidth, reportChartBoxConstraints.maxHeight);
-      var constraints = BoxConstraints(maxWidth: panelBoxConstraints.maxWidth - 20, maxHeight: maxSize);
-      return [
-        ConstrainedBox(constraints: constraints, child: chart),
-        ConstrainedBox(
-          constraints: constraints,
-          child: Padding(padding: EdgeInsets.fromLTRB(chartPadding, 0, chartPadding, 0), child: summarizeDisplay),
-        ),
-      ];
-    }
-    return [
-      Padding(
-        padding: EdgeInsets.fromLTRB(chartPadding / 2, 0, chartPadding / 2, 0),
-        child: Row(
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            ConstrainedBox(constraints: reportChartBoxConstraints, child: chart),
-            SizedBox(width: chartPadding),
-            ConstrainedBox(
-                constraints: BoxConstraints(maxHeight: reportChartDefaultSize, maxWidth: reportChartDefaultSize - chartPadding),
-                child: summarizeDisplay),
-          ],
-        ),
-      ),
-    ];
   }
 }
 

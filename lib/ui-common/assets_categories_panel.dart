@@ -71,21 +71,6 @@ class _AssetCategoriesPanelState extends State<AssetCategoriesPanel> {
     }
   }
 
-  // Widget _categoryIconDisplay(AssetCategory category, ThemeData theme) {
-  //   if (category.deleted) {
-  //     return Icon(category.icon, color: Colors.grey);
-  //   }
-  //   return Icon(category.icon, color: theme.iconTheme.color);
-  // }
-  //
-  // Widget _categoryTextDisplay(AssetCategory category, ThemeData theme) {
-  //   String? text = category.getTitleText(currentAppState.systemSetting);
-  //   if (category.deleted) {
-  //     return Text(text, style: TextStyle(decoration: TextDecoration.lineThrough));
-  //   }
-  //   return Text(text);
-  // }
-
   Widget _buildBody(
       ThemeData theme, AppState appState, List<AssetCategory> categories, List<AssetCategory> deletedCategories, bool showTab) {
     var activatedCategories = Column(children: [

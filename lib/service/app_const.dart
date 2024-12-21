@@ -6,7 +6,7 @@ import 'package:income_expense_budget_plan/service/app_state.dart';
 
 // Const
 const String databaseNameMain = "main_database.db";
-const int databaseVersion = 4;
+const int databaseVersion = 5;
 
 const String tableNameCurrency = "currency";
 const String tableNameSetting = "setting";
@@ -29,14 +29,17 @@ const tabSelectedColor = Color.fromARGB(255, 237, 202, 113);
 
 // Share data
 final platformBrightness = PlatformDispatcher.instance.platformBrightness;
+const double deltaCompareValue = 0.00000000001;
 
 AppState currentAppState = AppState();
 
-const IconData dataAlert = IconData(0xf7f6, fontFamily: 'MaterialSymbolsIcons');
-const incomeIconData = IconData(0xe147, fontFamily: 'MaterialSymbolsIcons');
-const expenseIconData = IconData(0xe644, fontFamily: 'MaterialSymbolsIcons');
-const lendIconData = IconData(0xf52c, fontFamily: 'MaterialSymbolsIcons');
-const genericCategoryIconData = IconData(0xe65b, fontFamily: 'MaterialSymbolsIcons');
+const dataAlert = IconData(0xf7f6, fontFamily: 'MaterialSymbolsIcons', matchTextDirection: false, fontPackage: "material_symbols");
+const incomeIconData = IconData(0xe147, fontFamily: 'MaterialSymbolsIcons', matchTextDirection: false, fontPackage: "material_symbols");
+const expenseIconData = IconData(0xe644, fontFamily: 'MaterialSymbolsIcons', matchTextDirection: false, fontPackage: "material_symbols");
+const lendIconData = IconData(0xf52c, fontFamily: 'MaterialSymbolsIcons', matchTextDirection: false, fontPackage: "material_symbols");
+const genericCategoryIconData =
+    IconData(0xe65b, fontFamily: 'MaterialSymbolsIcons', matchTextDirection: false, fontPackage: "material_symbols");
+const moneyBagIconData = IconData(0xf3ee, fontFamily: 'MaterialSymbolsIcons', matchTextDirection: true);
 
 class PlatformConst {
   late int appMinWidthMobile;

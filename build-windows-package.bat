@@ -1,6 +1,6 @@
 @echo on
 
-call dart run flutter_iconpicker:generate_packs
+call dart run flutter_iconpicker:generate_packs -a
 
 dart run msix:create
 

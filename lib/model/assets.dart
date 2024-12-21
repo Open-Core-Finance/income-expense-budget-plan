@@ -15,6 +15,7 @@ abstract class Asset extends AssetTreeNode {
   String categoryUid;
   AssetCategory? category;
   double availableAmount = 0;
+  double paidFee;
 
   Asset({
     required super.id,
@@ -29,6 +30,7 @@ abstract class Asset extends AssetTreeNode {
     required this.categoryUid,
     required this.availableAmount,
     required super.deleted,
+    required this.paidFee,
   }) {
     if (localizeDescriptions != null) {
       this.localizeDescriptions = localizeDescriptions;
@@ -110,6 +112,7 @@ class GenericAccount extends Asset {
     required super.categoryUid,
     required super.availableAmount,
     required super.deleted,
+    required super.paidFee,
   });
 
   factory GenericAccount.fromMap(Map<String, dynamic> json) => GenericAccount(
@@ -125,6 +128,7 @@ class GenericAccount extends Asset {
         availableAmount: json['available_amount'],
         categoryUid: json['category_uid'],
         deleted: json['soft_deleted'] == 1,
+        paidFee: json['paid_fee'],
       );
 
   @override
@@ -150,6 +154,7 @@ class BankCasaAccount extends Asset {
     required super.categoryUid,
     required super.availableAmount,
     required super.deleted,
+    required super.paidFee,
   });
 
   factory BankCasaAccount.fromMap(Map<String, dynamic> json) => BankCasaAccount(
@@ -165,6 +170,7 @@ class BankCasaAccount extends Asset {
         availableAmount: json['available_amount'],
         categoryUid: json['category_uid'],
         deleted: json['soft_deleted'] == 1,
+        paidFee: json['paid_fee'],
       );
 
   @override
@@ -177,7 +183,7 @@ class BankCasaAccount extends Asset {
 }
 
 class LoanAccount extends Asset {
-  double loanAmount = 0;
+  double loanAmount;
   LoanAccount({
     required super.id,
     required super.icon,
@@ -191,6 +197,7 @@ class LoanAccount extends Asset {
     required super.categoryUid,
     required this.loanAmount,
     required super.deleted,
+    required super.paidFee,
   }) : super(availableAmount: 0);
 
   @override
@@ -218,6 +225,7 @@ class LoanAccount extends Asset {
         loanAmount: json['loan_amount'],
         categoryUid: json['category_uid'],
         deleted: json['soft_deleted'] == 1,
+        paidFee: json['paid_fee'],
       );
 
   @override
@@ -250,6 +258,7 @@ class EWallet extends Asset {
     required super.categoryUid,
     required super.availableAmount,
     required super.deleted,
+    required super.paidFee,
   });
 
   factory EWallet.fromMap(Map<String, dynamic> json) => EWallet(
@@ -265,6 +274,7 @@ class EWallet extends Asset {
         availableAmount: json['available_amount'],
         categoryUid: json['category_uid'],
         deleted: json['soft_deleted'] == 1,
+        paidFee: json['paid_fee'],
       );
 
   @override
@@ -292,6 +302,7 @@ class CreditCard extends Asset {
     required super.availableAmount,
     required this.creditLimit,
     required super.deleted,
+    required super.paidFee,
   });
 
   @override
@@ -320,6 +331,7 @@ class CreditCard extends Asset {
         creditLimit: json['credit_limit'],
         categoryUid: json['category_uid'],
         deleted: json['soft_deleted'] == 1,
+        paidFee: json['paid_fee'],
       );
 
   @override
@@ -354,6 +366,7 @@ class PayLaterAccount extends Asset {
     required super.availableAmount,
     required this.paymentLimit,
     required super.deleted,
+    required super.paidFee,
   });
 
   @override
@@ -382,6 +395,7 @@ class PayLaterAccount extends Asset {
         paymentLimit: json['payment_limit'],
         categoryUid: json['category_uid'],
         deleted: json['soft_deleted'] == 1,
+        paidFee: json['paid_fee'],
       );
 
   @override

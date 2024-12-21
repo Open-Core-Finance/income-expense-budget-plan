@@ -132,20 +132,24 @@ class _SqlImportState extends _FileImportState<SqlImport> {
     return result;
   }
 
-  void _executeSqlContent(BuildContext context, String filePath) async {
-    File(filePath).readAsString().then((content) {
-      databaseService.executeSqlContent(content).then(
-            (resultMap) => (context.mounted ? _showExecuteResult(context, resultMap, "SQL") : {}),
-          );
+  Future<Map<String, dynamic>> _executeSqlContent(BuildContext context, String filePath) async {
+    var content = await File(filePath).readAsString();
+    var result = databaseService.executeSqlContent(content);
+    result.then((resultMap) {
+      if (context.mounted) _showExecuteResult(context, resultMap, "SQL");
+      currentAppState.needRefreshTxnPanel = true;
     });
+    return result;
   }
 
-  void _executeSqlTriggerContent(BuildContext context, String filePath) async {
-    File(filePath).readAsString().then((content) {
-      databaseService.executeTriggersSqlFile(content).then(
-            (resultMap) => (context.mounted ? _showExecuteResult(context, resultMap, "Trigger") : {}),
-          );
+  Future<Map<String, dynamic>> _executeSqlTriggerContent(BuildContext context, String filePath) async {
+    var content = await File(filePath).readAsString();
+    Future<Map<String, dynamic>> result = databaseService.executeTriggersSqlFile(content);
+    result.then((resultMap) {
+      if (context.mounted) _showExecuteResult(context, resultMap, "Trigger");
+      currentAppState.needRefreshTxnPanel = true;
     });
+    return result;
   }
 
   void _showExecuteResult(BuildContext context, Map<String, dynamic> resultMap, String execType) async {
@@ -233,7 +237,9 @@ class _DataFileImportState extends _FileImportState<DataFileImport> {
       if (context.mounted) {
         DataImportV1().readFileData(context, File(filePath), _overrideMode).then((result) {
           if (context.mounted) {
-            showDialog(context: context, builder: (BuildContext context) => _resultDialogContent(context, result, () {}));
+            showDialog(
+                context: context,
+                builder: (BuildContext context) => _resultDialogContent(context, result, () => currentAppState.needRefreshTxnPanel = true));
           }
         }, onError: (e) {
           if (context.mounted) {
