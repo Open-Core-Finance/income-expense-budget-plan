@@ -8,7 +8,7 @@ import 'package:income_expense_budget_plan/ui-common/transaction_item_display.da
 import 'package:income_expense_budget_plan/model/currency.dart';
 import 'package:income_expense_budget_plan/model/daily_transaction_entry.dart';
 import 'package:income_expense_budget_plan/model/transaction_category.dart';
-import 'package:income_expense_budget_plan/service/account_statistic.dart';
+import 'package:income_expense_budget_plan/service/statistic.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/form_util.dart';
 import 'package:income_expense_budget_plan/service/util.dart';
@@ -64,10 +64,27 @@ class _TransactionPanelState extends State<TransactionPanel> {
     }
   }
 
+  Future<void> _refresh() async {
+    if (kDebugMode) {
+      print("Call reload data from DB!");
+    }
+    currentAppState.needRefreshTxnPanel = false;
+    YearMonthFilterData? providedYearMonthFilterData = _retrieveProvidedFilter() ?? yearMonthFilterData;
+    providedYearMonthFilterData?.refreshFilterTransactions().then((_) => setState(() {
+          if (kDebugMode) {
+            print("Reload data from DB completed!");
+          }
+        }));
+  }
+
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     var appLocalizations = AppLocalizations.of(context)!;
+
+    if (currentAppState.needRefreshTxnPanel) {
+      _refresh();
+    }
 
     YearMonthFilterData? providedYearMonthFilterData = _retrieveProvidedFilter();
     YearMonthFilterData filterData;
@@ -77,6 +94,10 @@ class _TransactionPanelState extends State<TransactionPanel> {
       filterData = yearMonthFilterData!;
     }
     List<Transactions> transactions = filterData.transactions;
+
+    if (kDebugMode) {
+      print("Refresh transaction panel!");
+    }
 
     Widget body;
     if (transactions.isEmpty) {
@@ -313,14 +334,5 @@ class _TransactionPanelState extends State<TransactionPanel> {
         onSuccess: () => filterData.refreshFilterTransactions());
   }
 
-  void transactionUpdated(Transactions transaction, Transactions? deletedTran) => setState(() {
-        YearMonthFilterData? providedYearMonthFilterData = _retrieveProvidedFilter();
-        YearMonthFilterData filterData;
-        if (providedYearMonthFilterData != null) {
-          filterData = providedYearMonthFilterData;
-        } else {
-          filterData = yearMonthFilterData!;
-        }
-        filterData.refreshFilterTransactions();
-      });
+  void transactionUpdated(Transactions transaction, Transactions? deletedTran) => _refresh();
 }

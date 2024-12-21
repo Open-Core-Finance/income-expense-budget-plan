@@ -33,13 +33,21 @@ BEGIN
     update asset set available_amount = available_amount + NEW.amount - CASE
                                                                             WHEN (NEW.transaction_type <> 'transfer' OR (NEW.transaction_type = 'transfer' AND NEW.fee_apply_to_from_account <> 0)) THEN NEW.fee_amount
                                                                             ELSE 0
-                                                                        END
+                                                                        END,
+                     paid_fee = paid_fee + CASE
+                                             WHEN (NEW.transaction_type <> 'transfer' OR (NEW.transaction_type = 'transfer' AND NEW.fee_apply_to_from_account <> 0)) THEN NEW.fee_amount
+                                             ELSE 0
+                                           END
        WHERE ((uid = NEW.account_uid and (NEW.transaction_type = 'income' or NEW.transaction_type = 'shareBillReturn')) or (uid = NEW.to_account_uid and NEW.transaction_type = 'transfer'))
        and asset_type <> 'loan';
     update asset set loan_amount = loan_amount - NEW.amount + CASE
                                                                   WHEN (NEW.transaction_type <> 'transfer' OR (NEW.transaction_type = 'transfer' AND NEW.fee_apply_to_from_account <> 0)) THEN NEW.fee_amount
                                                                   ELSE 0
-                                                              END
+                                                              END,
+                     paid_fee = paid_fee + CASE
+                                             WHEN (NEW.transaction_type <> 'transfer' OR (NEW.transaction_type = 'transfer' AND NEW.fee_apply_to_from_account <> 0)) THEN NEW.fee_amount
+                                             ELSE 0
+                                           END
        WHERE ((uid = NEW.account_uid and (NEW.transaction_type = 'income' or NEW.transaction_type = 'shareBillReturn')) or (uid = NEW.to_account_uid and NEW.transaction_type = 'transfer'))
        and asset_type = 'loan';
 
@@ -47,17 +55,24 @@ BEGIN
     update asset set available_amount = available_amount - NEW.amount - CASE
                                                                             WHEN (NEW.transaction_type <> 'transfer' OR (NEW.transaction_type = 'transfer' AND NEW.fee_apply_to_from_account <> 0)) THEN NEW.fee_amount
                                                                             ELSE 0
-                                                                        END
+                                                                        END,
+                     paid_fee = paid_fee + CASE
+                                             WHEN (NEW.transaction_type <> 'transfer' OR (NEW.transaction_type = 'transfer' AND NEW.fee_apply_to_from_account <> 0)) THEN NEW.fee_amount
+                                             ELSE 0
+                                           END
        WHERE uid = NEW.account_uid and (NEW.transaction_type = 'expense' or NEW.transaction_type = 'transfer' or NEW.transaction_type = 'shareBill') and asset_type <> 'loan';
     update asset set loan_amount = loan_amount + NEW.amount + CASE
                                                                   WHEN (NEW.transaction_type <> 'transfer' OR (NEW.transaction_type = 'transfer' AND NEW.fee_apply_to_from_account <> 0)) THEN NEW.fee_amount
                                                                   ELSE 0
-                                                              END
+                                                              END,
+                     paid_fee = paid_fee + CASE
+                                             WHEN (NEW.transaction_type <> 'transfer' OR (NEW.transaction_type = 'transfer' AND NEW.fee_apply_to_from_account <> 0)) THEN NEW.fee_amount
+                                             ELSE 0
+                                           END
        WHERE uid = NEW.account_uid and (NEW.transaction_type = 'expense' or NEW.transaction_type = 'transfer' or NEW.transaction_type = 'shareBill') and asset_type = 'loan';
 
     -- Adjustment
-    update asset set available_amount = NEW.amount WHERE uid = NEW.account_uid and NEW.transaction_type = 'adjustment' and asset_type <> 'loan';
-    update asset set loan_amount = NEW.amount WHERE uid = NEW.account_uid and NEW.transaction_type = 'adjustment' and asset_type = 'loan';
+    update asset set available_amount = NEW.amount WHERE uid = NEW.account_uid and NEW.transaction_type = 'adjustment';
 
     -- Insert statistic if not existed
     INSERT OR IGNORE INTO resource_statistic_daily (resource_type, resource_uid, stat_year,

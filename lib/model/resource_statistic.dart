@@ -1,5 +1,5 @@
 import 'package:income_expense_budget_plan/model/statistic.dart';
-import 'package:income_expense_budget_plan/service/account_statistic.dart';
+import 'package:income_expense_budget_plan/service/statistic.dart';
 import 'package:income_expense_budget_plan/service/util.dart';
 
 class ResourceStatisticMonthly extends CurrencyStatistic {
@@ -134,7 +134,7 @@ class ResourceStatisticDaily extends ResourceStatisticMonthly {
         totalTransferOut: totalTransferOut,
         totalTransferIn: totalTransferIn,
         totalTransfer: totalTransfer,
-        totalFeePaid: totalFeePaid,
+        totalFeePaid: totalPaidFee,
         totalLend: totalLend,
         totalBorrow: totalBorrow,
         currency: currency,

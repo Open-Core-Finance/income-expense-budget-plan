@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:income_expense_budget_plan/model/currency.dart';
 import 'package:income_expense_budget_plan/model/transaction.dart';
 import 'package:income_expense_budget_plan/model/transaction_category.dart';
-import 'package:income_expense_budget_plan/service/account_statistic.dart';
+import 'package:income_expense_budget_plan/service/statistic.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/model/statistic.dart';
 import 'package:income_expense_budget_plan/service/util.dart';
@@ -18,9 +18,9 @@ class TransactionService {
     for (Statistic statistic in statistics) {
       if (transactions.withFee) {
         if (transactions is ShareBillReturnTransaction) {
-          statistic.totalFeePaid -= transactions.feeAmount;
+          statistic.totalPaidFee -= transactions.feeAmount;
         } else {
-          statistic.totalFeePaid += transactions.feeAmount;
+          statistic.totalPaidFee += transactions.feeAmount;
         }
       }
       if (transactions is IncomeTransaction) {
@@ -58,7 +58,7 @@ class TransactionService {
     if ((tran is IncomeTransaction) || (tran is ShareBillTransaction)) {
       return Icons.paid_sharp;
     } else if (tran is ExpenseTransaction) {
-      return const IconData(0xf3ee, fontFamily: 'MaterialSymbolsIcons');
+      return Icons.shopping_bag_outlined;
     } else if (tran is TransferTransaction) {
       return Icons.published_with_changes_sharp;
     } else if (tran is AdjustmentTransaction) {
@@ -66,8 +66,7 @@ class TransactionService {
       if (isNegative) {
         return Icons.paid_sharp;
       } else {
-        // Money bag
-        return const IconData(0xf3ee, fontFamily: 'MaterialSymbolsIcons');
+        return Icons.shopping_bag_outlined;
       }
     }
     return defaultIconData;

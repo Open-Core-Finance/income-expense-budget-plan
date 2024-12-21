@@ -443,93 +443,105 @@ class DataImportV1 extends DataImport {
     switch (assetType) {
       case "genericAccount":
         return GenericAccount(
-            id: id,
-            icon: icon,
-            name: name,
-            index: positionIndex,
-            updatedDateTime: lastUpdated,
-            localizeNames: localizeNames,
-            localizeDescriptions: localizeDescriptions,
-            description: description,
-            currencyUid: currencyUid,
-            categoryUid: categoryUid,
-            availableAmount: availableAmount,
-            deleted: _retrieveDeletedFlag(data, 12));
+          id: id,
+          icon: icon,
+          name: name,
+          index: positionIndex,
+          updatedDateTime: lastUpdated,
+          localizeNames: localizeNames,
+          localizeDescriptions: localizeDescriptions,
+          description: description,
+          currencyUid: currencyUid,
+          categoryUid: categoryUid,
+          availableAmount: availableAmount,
+          deleted: _retrieveDeletedFlag(data, 12),
+          paidFee: _retrievePaidFeeFlag(data, 13),
+        );
       case "bankCasa":
         return BankCasaAccount(
-            id: id,
-            icon: icon,
-            name: name,
-            index: positionIndex,
-            updatedDateTime: lastUpdated,
-            localizeNames: localizeNames,
-            localizeDescriptions: localizeDescriptions,
-            description: description,
-            currencyUid: currencyUid,
-            categoryUid: categoryUid,
-            availableAmount: availableAmount,
-            deleted: _retrieveDeletedFlag(data, 12));
+          id: id,
+          icon: icon,
+          name: name,
+          index: positionIndex,
+          updatedDateTime: lastUpdated,
+          localizeNames: localizeNames,
+          localizeDescriptions: localizeDescriptions,
+          description: description,
+          currencyUid: currencyUid,
+          categoryUid: categoryUid,
+          availableAmount: availableAmount,
+          deleted: _retrieveDeletedFlag(data, 12),
+          paidFee: _retrievePaidFeeFlag(data, 13),
+        );
       case "loan":
         double loanAmount = double.tryParse(data[12]) ?? 0;
         return LoanAccount(
-            id: id,
-            icon: icon,
-            name: name,
-            index: positionIndex,
-            updatedDateTime: lastUpdated,
-            localizeNames: localizeNames,
-            localizeDescriptions: localizeDescriptions,
-            description: description,
-            currencyUid: currencyUid,
-            categoryUid: categoryUid,
-            loanAmount: loanAmount,
-            deleted: _retrieveDeletedFlag(data, 13));
+          id: id,
+          icon: icon,
+          name: name,
+          index: positionIndex,
+          updatedDateTime: lastUpdated,
+          localizeNames: localizeNames,
+          localizeDescriptions: localizeDescriptions,
+          description: description,
+          currencyUid: currencyUid,
+          categoryUid: categoryUid,
+          loanAmount: loanAmount,
+          deleted: _retrieveDeletedFlag(data, 13),
+          paidFee: _retrievePaidFeeFlag(data, 14),
+        );
       case "eWallet":
         return EWallet(
-            id: id,
-            icon: icon,
-            name: name,
-            index: positionIndex,
-            updatedDateTime: lastUpdated,
-            localizeNames: localizeNames,
-            localizeDescriptions: localizeDescriptions,
-            description: description,
-            currencyUid: currencyUid,
-            categoryUid: categoryUid,
-            availableAmount: availableAmount,
-            deleted: _retrieveDeletedFlag(data, 12));
+          id: id,
+          icon: icon,
+          name: name,
+          index: positionIndex,
+          updatedDateTime: lastUpdated,
+          localizeNames: localizeNames,
+          localizeDescriptions: localizeDescriptions,
+          description: description,
+          currencyUid: currencyUid,
+          categoryUid: categoryUid,
+          availableAmount: availableAmount,
+          deleted: _retrieveDeletedFlag(data, 12),
+          paidFee: _retrievePaidFeeFlag(data, 13),
+        );
       case "payLaterAccount":
         double paymentLimit = double.tryParse(data[12]) ?? 0;
         return PayLaterAccount(
-            id: id,
-            icon: icon,
-            name: name,
-            index: positionIndex,
-            updatedDateTime: lastUpdated,
-            localizeNames: localizeNames,
-            localizeDescriptions: localizeDescriptions,
-            description: description,
-            currencyUid: currencyUid,
-            categoryUid: categoryUid,
-            availableAmount: availableAmount,
-            paymentLimit: paymentLimit,
-            deleted: _retrieveDeletedFlag(data, 13));
+          id: id,
+          icon: icon,
+          name: name,
+          index: positionIndex,
+          updatedDateTime: lastUpdated,
+          localizeNames: localizeNames,
+          localizeDescriptions: localizeDescriptions,
+          description: description,
+          currencyUid: currencyUid,
+          categoryUid: categoryUid,
+          availableAmount: availableAmount,
+          paymentLimit: paymentLimit,
+          deleted: _retrieveDeletedFlag(data, 13),
+          paidFee: _retrievePaidFeeFlag(data, 14),
+        );
       default:
         double creditLimit = double.tryParse(data[12]) ?? 0;
         return CreditCard(
-            id: id,
-            icon: icon,
-            name: name,
-            index: positionIndex,
-            updatedDateTime: lastUpdated,
-            localizeNames: localizeNames,
-            localizeDescriptions: localizeDescriptions,
-            description: description,
-            currencyUid: currencyUid,
-            categoryUid: categoryUid,
-            availableAmount: availableAmount,
-            creditLimit: creditLimit,
-            deleted: _retrieveDeletedFlag(data, 13));
+          id: id,
+          icon: icon,
+          name: name,
+          index: positionIndex,
+          updatedDateTime: lastUpdated,
+          localizeNames: localizeNames,
+          localizeDescriptions: localizeDescriptions,
+          description: description,
+          currencyUid: currencyUid,
+          categoryUid: categoryUid,
+          availableAmount: availableAmount,
+          creditLimit: creditLimit,
+          deleted: _retrieveDeletedFlag(data, 13),
+          paidFee: _retrievePaidFeeFlag(data, 14),
+        );
     }
   }
 
@@ -556,6 +568,10 @@ class DataImportV1 extends DataImport {
 
   bool _retrieveDeletedFlag(List<String> data, int flagIndex) {
     return data.length >= (flagIndex + 1) ? (bool.tryParse(data[flagIndex]) ?? false) : false;
+  }
+
+  double _retrievePaidFeeFlag(List<String> data, int flagIndex) {
+    return data.length >= (flagIndex + 1) ? (double.tryParse(data[flagIndex]) ?? 0.0) : 0.0;
   }
 
   @override

@@ -198,7 +198,10 @@ class DatabaseService {
     if (oldVersion < 4) {
       await _executeSqlFileBundle(db, 'assets/db_upgrade_4.sql');
     }
-    // add more version specific sql like 5, 6, 7...
+    if (oldVersion < 5) {
+      await _executeSqlFileBundle(db, 'assets/db_upgrade_5.sql');
+    }
+    // add more version specific sql like 6, 7, 8...
     await _executeTriggersSqlFileBundle(db, 'assets/db_create_triggers.sql');
   }
 
@@ -283,7 +286,10 @@ class DatabaseService {
     }
     await _executeSqlFileBundle(db, 'assets/db_clean_triggers.sql');
 
-    // add more version specific sql like 7, 6, 5...
+    // add more version specific sql like 8, 7, 6...
+    if (oldVersion >= 5) {
+      await _executeSqlFileBundle(db, 'assets/db_downgrade_5.sql');
+    }
     if (oldVersion >= 4) {
       await _executeSqlFileBundle(db, 'assets/db_downgrade_4.sql');
     }

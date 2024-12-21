@@ -4,7 +4,6 @@ import 'package:income_expense_budget_plan/model/transaction.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/form_util.dart';
 import 'package:income_expense_budget_plan/service/transaction_service.dart';
-import 'package:income_expense_budget_plan/service/year_month_filter_data.dart';
 import 'package:intl/intl.dart';
 
 class TransactionItemConfigKey {
@@ -242,7 +241,7 @@ class SharedBillReturnTransactionTile extends GenericTransactionTile<ShareBillRe
   TextStyle amountTextStyle(BuildContext context) => const TextStyle(fontSize: TransactionItemConfigKey.amountSize, color: Colors.blue);
 
   @override
-  IconData defaultIcon(BuildContext context) => const IconData(0xf3ee, fontFamily: 'MaterialSymbolsIcons');
+  IconData defaultIcon(BuildContext context) => moneyBagIconData;
 
   @override
   Widget nameDisplay(BuildContext context) {

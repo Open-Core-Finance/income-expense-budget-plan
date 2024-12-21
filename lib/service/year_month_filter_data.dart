@@ -8,7 +8,7 @@ import 'package:income_expense_budget_plan/model/daily_transaction_entry.dart';
 import 'package:income_expense_budget_plan/model/local_date.dart';
 import 'package:income_expense_budget_plan/model/resource_statistic.dart';
 import 'package:income_expense_budget_plan/model/transaction.dart';
-import 'package:income_expense_budget_plan/service/account_statistic.dart';
+import 'package:income_expense_budget_plan/service/statistic.dart';
 import 'package:income_expense_budget_plan/service/form_util.dart';
 import 'package:income_expense_budget_plan/service/transaction_service.dart';
 
@@ -108,27 +108,37 @@ class YearMonthFilterData extends ChangeNotifier {
     if (refreshStatisticFunction != null) refreshStatisticFunction!();
   }
 
-  void refreshFilterTransactions() {
-    _refreshFilterTransactions((transactions) {
+  Future<void> refreshFilterTransactions() async {
+    return _refreshFilterTransactions((transactions) {
       notifyListeners();
     }, (statistics) {
       notifyListeners();
     });
   }
 
-  void _refreshFilterTransactions(
-      void Function(List<Transactions>) callback, void Function(List<ResourceStatisticMonthly>) statisticMonthlyCallback) {
+  Future<void> _refreshFilterTransactions(
+      void Function(List<Transactions>) callback, void Function(List<ResourceStatisticMonthly>) statisticMonthlyCallback) async {
+    Future<List<Transactions>>? txnFuture;
+    Future<List<ResourceStatisticMonthly>>? statisticFuture;
     if (supportLoadTransactions) {
-      TransactionDao().transactionsByYearAndMonth(year, month).then((txnList) {
+      txnFuture = TransactionDao().transactionsByYearAndMonth(year, month);
+      txnFuture.then((txnList) {
         transactions = txnList;
         callback(txnList);
       });
     }
     if (supportLoadStatisticMonthly) {
-      ResourceStatisticDao().loadMonthlyStatistics(year, month).then((statistic) {
+      statisticFuture = ResourceStatisticDao().loadMonthlyStatistics(year, month);
+      statisticFuture.then((statistic) {
         resourcesStatisticsMonthly = statistic;
         statisticMonthlyCallback(statistic);
       });
+    }
+    if (txnFuture != null) {
+      await txnFuture;
+    }
+    if (statisticFuture != null) {
+      await statisticFuture;
     }
   }
 

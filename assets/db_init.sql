@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS asset_category(uid TEXT PRIMARY KEY, name TEXT, icon 
 CREATE TABLE IF NOT EXISTS asset(uid TEXT PRIMARY KEY, icon TEXT, name TEXT, description TEXT, available_amount REAL DEFAULT 0.0,
     loan_amount REAL DEFAULT 0.0, credit_limit REAL DEFAULT 0.0, payment_limit REAL DEFAULT 0.0, currency_uid TEXT,
     asset_type TEXT, category_uid TEXT, localize_names TEXT, localize_descriptions TEXT, position_index Integer DEFAULT 0 NOT NULL,
-    last_updated Integer DEFAULT 0, last_sync Integer NULL, soft_deleted Integer NULL,
+    last_updated Integer DEFAULT 0, last_sync Integer NULL, soft_deleted Integer NULL, paid_fee REAL DEFAULT 0.0,
     FOREIGN KEY (category_uid) REFERENCES asset_category (uid), FOREIGN KEY (currency_uid) REFERENCES currency (uid));
 CREATE TABLE IF NOT EXISTS transaction_category(uid TEXT PRIMARY KEY, name TEXT, icon TEXT, parent_uid TEXT, transaction_type TEXT, system Integer, localize_names TEXT,
     position_index Integer Integer DEFAULT 0 NOT NULL, last_updated Integer DEFAULT 0, last_sync Integer NULL);

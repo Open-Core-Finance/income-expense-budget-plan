@@ -13,7 +13,6 @@ import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/database_service.dart';
 import 'package:income_expense_budget_plan/service/form_util.dart';
 import 'package:income_expense_budget_plan/service/util.dart';
-import 'package:income_expense_budget_plan/service/year_month_filter_data.dart';
 import 'package:income_expense_budget_plan/ui-common/account_panel.dart';
 import 'package:income_expense_budget_plan/ui-common/date_time_form_field.dart';
 import 'package:income_expense_budget_plan/ui-common/no_data.dart';
@@ -190,7 +189,9 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
           child: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                if (_selectedTransactionType != TransactionType.shareBillReturn) ...[
+                if (_selectedTransactionType != TransactionType.shareBillReturn &&
+                    _selectedTransactionType != TransactionType.transfer &&
+                    _selectedTransactionType != TransactionType.adjustment) ...[
                   ElevatedButton(
                     onPressed: () => _chooseCategory(context, _selectedTransactionType),
                     child: Row(
@@ -297,6 +298,15 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
                         ),
                       ),
                     ],
+                  ),
+                ],
+                if (_selectedTransactionType == TransactionType.transfer || _selectedTransactionType == TransactionType.adjustment) ...[
+                  const SizedBox(height: 10),
+                  ElevatedButton(
+                    onPressed: () => _chooseCategory(context, _selectedTransactionType),
+                    child: Row(
+                        children: _buildSelectedLocalizedItemDisplay(context, appLocalizations.transactionCategory, theme,
+                            _selectedCategory, () => setState(() => _selectedCategory = null))),
                   ),
                 ],
                 const SizedBox(height: 10),
@@ -777,6 +787,9 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
     Map<TransactionType, List<TransactionCategory>> categoriesMap;
     if (type == TransactionType.income || type == TransactionType.expense) {
       var list = await TransactionDao().transactionCategoryByType(type);
+      return {type: list};
+    } else if (type == TransactionType.shareBill) {
+      var list = await TransactionDao().transactionCategoryByType(TransactionType.expense);
       return {type: list};
     } else {
       var list = await TransactionDao().transactionCategories();
