@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:income_expense_budget_plan/service/custom_font.dart';
 
 class NoDataCard extends StatefulWidget {
   const NoDataCard({super.key});
@@ -18,7 +18,7 @@ class _NoDataCardState extends State<NoDataCard> {
       child: SizedBox.expand(
         child: Center(
           child: Column(mainAxisSize: MainAxisSize.min, mainAxisAlignment: MainAxisAlignment.center, children: [
-            const Icon(dataAlert, size: 60),
+            const Icon(MaterialSymbolsOutlinedFont.iconDataDataAlert, size: 60),
             const SizedBox(height: 2.0),
             Text(AppLocalizations.of(context)!.noData, style: theme.textTheme.titleLarge),
           ]),

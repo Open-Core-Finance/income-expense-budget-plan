@@ -10,6 +10,7 @@ import 'package:income_expense_budget_plan/model/name_localized_model.dart';
 import 'package:income_expense_budget_plan/model/transaction.dart';
 import 'package:income_expense_budget_plan/model/transaction_category.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
+import 'package:income_expense_budget_plan/service/custom_font.dart';
 import 'package:income_expense_budget_plan/service/database_service.dart';
 import 'package:income_expense_budget_plan/service/form_util.dart';
 import 'package:income_expense_budget_plan/service/util.dart';
@@ -728,9 +729,10 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
   List<DropdownMenuItem<TransactionType>> _buildTransactionTypeDropdownMenuEntries(BuildContext context) {
     var appLocalization = AppLocalizations.of(context)!;
     List<List<dynamic>> iconMap = [
-      [TransactionType.income, incomeIconData, Colors.green, 1.0, appLocalization.transactionTypeIncome],
-      [TransactionType.expense, expenseIconData, Colors.red, 1.0, appLocalization.transactionTypeExpense],
-      // [TransactionType.lend, lendIconData, Colors.blue, 1.0, appLocalization.transactionTypeLend],
+      [TransactionType.income, MaterialSymbolsOutlinedFont.iconDataAddCircle, Colors.green, 1.0, appLocalization.transactionTypeIncome],
+      // [TransactionType.expense, MaterialSymbolsOutlinedFont.expenseIconData, Colors.red, 1.0, appLocalization.transactionTypeExpense],
+      [TransactionType.expense, Icons.remove_circle, Colors.red, 1.0, appLocalization.transactionTypeExpense],
+      // [TransactionType.lend, MaterialSymbolsOutlinedFont.lendIconData, Colors.blue, 1.0, appLocalization.transactionTypeLend],
       // [TransactionType.borrowing, Icons.add_business_sharp, Colors.blue, 1.0, appLocalization.transactionTypeBorrowing],
       [TransactionType.transfer, Icons.currency_exchange_outlined, Colors.blueGrey, 1.0, appLocalization.transactionTypeTransfer],
       [TransactionType.shareBill, Icons.receipt_long_outlined, Colors.deepOrangeAccent, 1.0, appLocalization.transactionTypeShareBill],

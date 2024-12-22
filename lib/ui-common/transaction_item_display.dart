@@ -5,6 +5,7 @@ import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/form_util.dart';
 import 'package:income_expense_budget_plan/service/transaction_service.dart';
 import 'package:intl/intl.dart';
+import 'package:income_expense_budget_plan/service/custom_font.dart';
 
 class TransactionItemConfigKey {
   static const double markDisplaySize = 22;
@@ -241,7 +242,7 @@ class SharedBillReturnTransactionTile extends GenericTransactionTile<ShareBillRe
   TextStyle amountTextStyle(BuildContext context) => const TextStyle(fontSize: TransactionItemConfigKey.amountSize, color: Colors.blue);
 
   @override
-  IconData defaultIcon(BuildContext context) => moneyBagIconData;
+  IconData defaultIcon(BuildContext context) => MaterialSymbolsOutlinedFont.priceChangeIconData;
 
   @override
   Widget nameDisplay(BuildContext context) {

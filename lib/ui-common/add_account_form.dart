@@ -2,6 +2,7 @@ import 'package:currency_text_input_formatter/currency_text_input_formatter.dart
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_iconpicker/Models/configuration.dart';
 import 'package:flutter_iconpicker/flutter_iconpicker.dart';
 import 'package:income_expense_budget_plan/dao/assets_dao.dart';
 import 'package:income_expense_budget_plan/model/asset_category.dart';
@@ -160,7 +161,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
                     Text(appLocalizations.accountActionSelectIcon),
                     IconButton(
                       onPressed: () {
-                        showIconPicker(context).then((IconPickerIcon? iconData) {
+                        showIconPicker(context, configuration: iconPickerConfig).then((IconPickerIcon? iconData) {
                           if (iconData != null) setState(() => _selectedIcon = iconData.data);
                         });
                       },
