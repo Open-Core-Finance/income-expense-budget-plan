@@ -5,6 +5,7 @@ import 'package:income_expense_budget_plan/model/transaction_category.dart';
 import 'package:income_expense_budget_plan/service/app_const.dart';
 import 'package:income_expense_budget_plan/service/util.dart';
 import 'package:provider/provider.dart';
+import 'package:income_expense_budget_plan/service/custom_font.dart';
 
 abstract class TransactionCategoriesPanel extends StatefulWidget {
   final bool disableBack;
@@ -36,7 +37,10 @@ abstract class TransactionCategoriesPanelState<T extends TransactionCategoriesPa
       String expenseTitle = apLocalizations.menuExpenseCategory;
       String incomeTitle = apLocalizations.menuIncomeCategory;
       appBarBottom = TabBar(
-        tabs: [Tab(icon: const Icon(incomeIconData), text: incomeTitle), Tab(icon: const Icon(expenseIconData), text: expenseTitle)],
+        tabs: [
+          Tab(icon: const Icon(MaterialSymbolsOutlinedFont.iconDataAddCircle), text: incomeTitle),
+          Tab(icon: const Icon(Icons.remove_circle), text: expenseTitle)
+        ],
       );
 
       // if (kDebugMode) {
@@ -67,14 +71,15 @@ class TransactionCategoryHandler {
   TransactionCategoryHandler({required this.categories, required this.refreshState, required this.transactionType});
 
   Future<void> showRemoveDialog(BuildContext context, TransactionCategory category) async {
+    AppLocalizations apLocalizations = AppLocalizations.of(context)!;
     return Util().showRemoveDialogByField(
       context,
       category,
       tableName: tableNameTransactionCategory,
-      titleLocalize: AppLocalizations.of(context)!.transactionCategoryDeleteDialogTitle,
-      confirmLocalize: AppLocalizations.of(context)!.transactionCategoryDeleteConfirm,
-      successLocalize: AppLocalizations.of(context)!.transactionCategoryDeleteSuccess,
-      errorLocalize: AppLocalizations.of(context)!.transactionCategoryDeleteError,
+      titleLocalize: apLocalizations.transactionCategoryDeleteDialogTitle,
+      confirmLocalize: apLocalizations.transactionCategoryDeleteConfirm,
+      successLocalize: apLocalizations.transactionCategoryDeleteSuccess,
+      errorLocalize: apLocalizations.transactionCategoryDeleteError,
       onSuccess: () => refreshState(() => Util().removeInTree(categories, category)),
       onError: (e, over) {
         if (kDebugMode) {

@@ -2,7 +2,10 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_iconpicker/Models/configuration.dart';
+import 'package:flutter_iconpicker/flutter_iconpicker.dart';
 import 'package:income_expense_budget_plan/service/app_state.dart';
+import 'package:income_expense_budget_plan/service/custom_font.dart';
 
 // Const
 const String databaseNameMain = "main_database.db";
@@ -30,16 +33,18 @@ const tabSelectedColor = Color.fromARGB(255, 237, 202, 113);
 // Share data
 final platformBrightness = PlatformDispatcher.instance.platformBrightness;
 const double deltaCompareValue = 0.00000000001;
+const SinglePickerConfiguration iconPickerConfig = SinglePickerConfiguration(iconPackModes: [
+  IconPack.allMaterial,
+  IconPack.cupertino,
+  IconPack.fontAwesomeIcons,
+  IconPack.lineAwesomeIcons,
+  IconPack.custom
+], customIconPack: {
+  "Data Alert": IconPickerIcon(data: MaterialSymbolsOutlinedFont.iconDataDataAlert, name: 'data_alert', pack: IconPack.custom),
+  "Price Change": IconPickerIcon(data: MaterialSymbolsOutlinedFont.priceChangeIconData, name: 'price_change', pack: IconPack.custom)
+});
 
 AppState currentAppState = AppState();
-
-const dataAlert = IconData(0xf7f6, fontFamily: 'MaterialSymbolsIcons', matchTextDirection: false, fontPackage: "material_symbols");
-const incomeIconData = IconData(0xe147, fontFamily: 'MaterialSymbolsIcons', matchTextDirection: false, fontPackage: "material_symbols");
-const expenseIconData = IconData(0xe644, fontFamily: 'MaterialSymbolsIcons', matchTextDirection: false, fontPackage: "material_symbols");
-const lendIconData = IconData(0xf52c, fontFamily: 'MaterialSymbolsIcons', matchTextDirection: false, fontPackage: "material_symbols");
-const genericCategoryIconData =
-    IconData(0xe65b, fontFamily: 'MaterialSymbolsIcons', matchTextDirection: false, fontPackage: "material_symbols");
-const moneyBagIconData = IconData(0xf3ee, fontFamily: 'MaterialSymbolsIcons', matchTextDirection: true);
 
 class PlatformConst {
   late int appMinWidthMobile;

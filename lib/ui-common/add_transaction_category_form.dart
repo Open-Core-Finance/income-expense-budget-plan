@@ -109,7 +109,7 @@ class _AddTransactionCategoryPanelState extends State<AddTransactionCategoryPane
                       const SizedBox(width: 10),
                       Text(appLocalizations.transactionCategoryActionSelectIcon),
                       IconButton(
-                        onPressed: () => showIconPicker(context).then((IconPickerIcon? iconData) {
+                        onPressed: () => showIconPicker(context, configuration: iconPickerConfig).then((IconPickerIcon? iconData) {
                           if (iconData != null) setState(() => _selectedIcon = iconData.data);
                         }),
                         icon: Icon(_selectedIcon),

@@ -227,7 +227,7 @@ class _AddAssetCategoryFormState extends State<AddAssetCategoryForm> {
                     Text(accountCategoryActionSelectIconLabel),
                     IconButton(
                       onPressed: () {
-                        showIconPicker(context).then((IconPickerIcon? iconData) {
+                        showIconPicker(context, configuration: iconPickerConfig).then((IconPickerIcon? iconData) {
                           if (iconData != null) setState(() => _selectedIcon = iconData.data);
                         });
                       },
