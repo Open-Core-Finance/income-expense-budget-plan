@@ -31,20 +31,36 @@ platforms:
     build-for: [ arm64 ]
 
 parts:
+  #zenity:
+  #  plugin: nil
+  #  stage-packages:
+  #    - zenity
   income-expense-budget-plan:
     source: .
     plugin: flutter
     flutter-target: lib/main.dart # The main entry-point file of the application
-   
+    #after:
+    #  - zenity
     stage:
-        - -ios/**
-        - -windows/**
-        - -web/**
-        - -macos/**
-        - -adndroid/**
-        - -linux/**
-        - -build/**
-        - -test-data/**
-        - -.dart_tool/**
-        - -.idea/**
-        - -ci_scripts/**
+      - -ios/**
+      - -windows/**
+      - -web/**
+      - -macos/**
+      - -adndroid/**
+      - -linux/**
+      - -build/**
+      - -test-data/**
+      - -.dart_tool/**
+      - -.idea/**
+      - -ci_scripts/**
+    stage-packages:
+      - zenity
+    #  - libwebkit2gtk-4.1-0
+    #stage-snaps:
+    #  - zenity
+  # Integrate custom dialogs in your snap - doc - snapcraft.io
+  # https://forum.snapcraft.io/t/integrate-custom-dialogs-in-your-snap/10825
+  # zenity-integration:
+  #  plugin: nil
+  #  stage-snaps:
+  #    - zenity-integration
