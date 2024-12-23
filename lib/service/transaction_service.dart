@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:income_expense_budget_plan/service/custom_font.dart';
 import 'package:flutter/material.dart';
 import 'package:income_expense_budget_plan/model/currency.dart';
 import 'package:income_expense_budget_plan/model/transaction.dart';
@@ -58,7 +58,7 @@ class TransactionService {
     if ((tran is IncomeTransaction) || (tran is ShareBillTransaction)) {
       return Icons.paid_sharp;
     } else if (tran is ExpenseTransaction) {
-      return Icons.shopping_bag_outlined;
+      return MaterialSymbolsOutlinedFont.priceChangeIconData;
     } else if (tran is TransferTransaction) {
       return Icons.published_with_changes_sharp;
     } else if (tran is AdjustmentTransaction) {
@@ -66,7 +66,7 @@ class TransactionService {
       if (isNegative) {
         return Icons.paid_sharp;
       } else {
-        return Icons.shopping_bag_outlined;
+        return MaterialSymbolsOutlinedFont.priceChangeIconData;
       }
     }
     return defaultIconData;

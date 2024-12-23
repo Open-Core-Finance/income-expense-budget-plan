@@ -1,9 +1,10 @@
-Eng:
-
-- Enhance expense/income/currencies reports
-- Enhance transaction form
-
+<en-US>
+- Enhance expense/income/currencies reports.
+- Enhance transaction form.
+- Fix icon display issue.
+</en-US>
 Vi:
 
 - Nâng cấp báo cáo tài chính.
 - Nâng cấp giao diện nhập liệu.
+- Sửa lỗi hiển thị biểu tượng.
