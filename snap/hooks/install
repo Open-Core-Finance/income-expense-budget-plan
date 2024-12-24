@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# Check if 'qarma' is installed
+#if ! snap list | grep -q qarma; then
+#  echo "Qarma snap not found. Installing Qarma..."
+#  snap install qarma
+#else
+#  echo "Qarma snap is already installed."
+#fi
