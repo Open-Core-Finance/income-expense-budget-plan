@@ -2,7 +2,8 @@
 Name=Income Expense Budget Planner
 Comment=Input and keep track your money related activities like income, expense, transfer money
 Exec=income-expense-budget-plan
-Icon=/snap/income-expense-budget-plan/current/meta/gui/income-expense-budget-plan.png
+#Icon=/snap/income-expense-budget-plan/current/meta/gui/income-expense-budget-plan.png
+Icon=${SNAP}/meta/gui/income-expense-budget-plan.png
 Terminal=false
 Type=Application
 Categories=Tools; # Adjust accordingly your snap category.

@@ -1,5 +1,5 @@
 name: income-expense-budget-plan
-version: 1.1.4
+version: 1.1.4.1
 summary: Income Expense Budget Planner
 description: "This app help to input and keep track your money related activities like income, expense, transfer money... We also help you to get month reports about your activities so that you can have an overall what did you spend and what your finance statuses. This will help to adjust your expense for a better life. We support multiple platforms as Windows, Linux, MacOS, iOS, Android. Feel free to contact my email: doanbaotrung@gmail.com for any question or comment or request. Your comment will be a big help to support me improve the software. This application is free of charge."
 
@@ -7,17 +7,39 @@ confinement: strict
 base: core24
 grade: stable
 
+assumes:
+  - snapd2.0
+
+plugs:
+  # Plug to access qarma's desktop interface (if available)
+  qarma-desktop:
+    interface: content
+    target: $SNAP_COMMON
+    content: qarma
+  personal-files:
+    read:
+      - $HOME/Documents
+      - $HOME/Pictures
+    write:
+      - $HOME/Downloads
+
 slots:
   income-expense-budget-plan: # adjust accordingly to your app name
     interface: dbus
     bus: session
-    name: com.dbaotrung.income_expense_budget_plan # adjust accordingly to your app name and
+    name: com.dbaotrung.income_expense_budget_plan
 
 apps:
   income-expense-budget-plan:
     command: income_expense_budget_plan
     extensions: [gnome] # gnome includes the libraries required by flutter
-    #plugs:
+    plugs:
+      - desktop
+      - home
+      - fuse-support
+      - personal-files
+      #- system-files
+      #- qarma
     #  - network
     slots:
       - income-expense-budget-plan
@@ -31,10 +53,6 @@ platforms:
     build-for: [ arm64 ]
 
 parts:
-  #zenity:
-  #  plugin: nil
-  #  stage-packages:
-  #    - zenity
   income-expense-budget-plan:
     source: .
     plugin: flutter
@@ -55,12 +73,20 @@ parts:
       - -ci_scripts/**
     stage-packages:
       - zenity
+     # - qarma
     #  - libwebkit2gtk-4.1-0
     #stage-snaps:
-    #  - zenity
+    #  - qarma
   # Integrate custom dialogs in your snap - doc - snapcraft.io
   # https://forum.snapcraft.io/t/integrate-custom-dialogs-in-your-snap/10825
   # zenity-integration:
   #  plugin: nil
   #  stage-snaps:
   #    - zenity-integration
+  #qarma-integration:
+  #  plugin: nil
+  #  stage-snaps:
+  #    - qarma
+  #  stage:
+  #    - usr/bin/qarma
+
