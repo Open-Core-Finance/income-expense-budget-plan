@@ -1,0 +1,301 @@
+data-version-1
+=== Currencies ===
+1|Viet Nam Dong|VND|false|₫|SymbolPosition.S|true|true|0|vi-VN
+3|United States Dollar|USD|false|$|SymbolPosition.P|false|true|2|en-US
+4|Euro|EUR|false|€|SymbolPosition.P|false|true|2|fr-FR
+5|Japanese Yen|JPY|false|¥|SymbolPosition.P|false|true|0|ja-JP
+6|British Pound|GBP|false|£|SymbolPosition.P|false|true|2|en-GB
+7|Australian Dollar|AUD|false|$|SymbolPosition.P|false|true|2|en-AU
+8|Canadian Dollar|CAD|false|$|SymbolPosition.P|false|true|2|en-CA
+9|Swiss Franc|CHF|false|SFr|SymbolPosition.P|false|true|2|de-CH
+10|Renminbi (Chinese Yuan)|CNY|false|¥|SymbolPosition.P|false|true|2|zh-CN
+11|Hong Kong Dollar|HKD|false|$|SymbolPosition.P|false|true|2|zh-HK
+12|New Zealand Dollar|NZD|false|$|SymbolPosition.P|false|true|2|en-NZ
+13|Swedish Krona|SEK|false|kr|SymbolPosition.P|false|true|2|sv-SE
+14|South Korean Won|KRW|false|₩|SymbolPosition.P|false|true|0|ko-KR
+15|Singapore Dollar|SGD|false|$|SymbolPosition.P|false|true|2|zh-SG
+16|Norwegian Krone|NOK|false|kr|SymbolPosition.P|false|true|2|no-NO
+17|Mexican Peso|MXN|false|$|SymbolPosition.P|false|true|2|es-MX
+18|Indian Rupee|INR|false|₹|SymbolPosition.P|false|true|2|hi-IN
+19|Russian Ruble|RUB|false|₽|SymbolPosition.P|false|true|2|ru-RU
+20|South African Rand|ZAR|false|R|SymbolPosition.P|false|true|2|en-ZA
+21|Turkish Lira|TRY|false|₺|SymbolPosition.P|false|true|2|tr-TR
+22|Brazilian Real|BRL|false|R$|SymbolPosition.P|false|true|2|pt-BR
+23|Thai Baht|THB|false|฿|SymbolPosition.P|false|true|2|th-TH
+24|Indonesian Rupiah|IDR|false|Rp|SymbolPosition.P|false|true|0|id-ID
+25|Hungarian Forint|HUF|false|Ft|SymbolPosition.S|false|true|0|hu-HU
+26|Czech Koruna|CZK|false|Kč|SymbolPosition.S|false|true|2|cs-CZ
+27|Israeli New Shekel|ILS|false|₪|SymbolPosition.S|false|true|2|he-IL
+28|Chilean Peso|CLP|false|$|SymbolPosition.P|false|true|2|es-CL
+29|Philippine Peso|PHP|false|₱|SymbolPosition.P|false|true|2|fil-PH
+30|UAE Dirham|AED|false|د.إ|SymbolPosition.P|false|true|2|ar-AE
+31|Colombian Peso|COP|false|$|SymbolPosition.P|false|true|2|es-CO
+32|Saudi Riyal|SAR|false|﷼|SymbolPosition.P|false|true|2|ar-SA
+33|Malaysian Ringgit|MYR|false|RM|SymbolPosition.P|false|true|2|ms-MY
+34|Romanian Leu|RON|false|L|SymbolPosition.S|false|true|2|ro-RO
+35|Loyalty Point|Point|false|⭐|SymbolPosition.S|false|true|0|en-US
+=== Account Categories ===
+20240814-1016-8412-a943-a2e9d6ba37c9|Bank accounts|{"codePoint":63178,"fontFamily":"CupertinoIcons","fontPackage":"cupertino_icons","matchTextDirection":false}|true|{"en":"Bank accounts","vi":"Tài khoản ngân hàng"}|3|1724245880000|false
+20240814-1025-8e05-9011-a6fed676958f|Cards|{"codePoint":57759,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|true|{"en":"Cards","vi":"Thẻ"}|4|1724245880000|false
+20240814-1026-8e32-a113-ce2ffa4f9305|Loans|{"codePoint":58361,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|true|{"en":"Loans","vi":"Các khoản vay"}|6|1724245880000|false
+20240814-1027-8317-9580-ef12a94c7312|Others|{"codePoint":57842,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|true|{"en":"Others","vi":"Tài khoản khác"}|7|1724245880000|false
+20240823-0515-8322-8813-46af221b06bc|Accounts|{"codePoint":62881,"fontFamily":"CupertinoIcons","fontPackage":"cupertino_icons","matchTextDirection":false}|true|{"en":"Accounts","vi":"Tài khoản"}|1|1724390122834|false
+20241216-0530-8d58-b989-f9150bfed06a|Test|{"codePoint":57345,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|false|{}|5|1734327058989|true
+=== Accounts ===
+20240823-1529-8009-a864-e7b9299a07f6|Cash|{"codePoint":58360,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|The amount of cash in your wallet|1|1731632039000|1|20240823-0515-8322-8813-46af221b06bc|{"en":"Cash","vi":"Tiền mặt"}|{"en":"The amount of cash in your wallet","vi":"Số tiền mặt bạn đang có"}|1783000.0|genericAccount|false
+20240824-1557-8718-b097-5d9d1c51ff98|KBank Cashback|{"codePoint":62998,"fontFamily":"CupertinoIcons","fontPackage":"cupertino_icons","matchTextDirection":false}|KBank cashback credit card|2|1734682946583|1|20240814-1025-8e05-9011-a6fed676958f|{}|{}|163078895.0|creditCard|197993081.0|false
+20240923-1551-8745-a167-ef1ab27a221c|UOB Cashback|{"codePoint":62999,"fontFamily":"CupertinoIcons","fontPackage":"cupertino_icons","matchTextDirection":false}|UOB Cashback Credit Card|2|1734683148860|1|20240814-1025-8e05-9011-a6fed676958f|{}|{}|294875099.0|creditCard|299972000.0|false
+20240923-1658-8307-9686-bc5528febb04|ACB Point|{"codePoint":57749,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|ACB Loyalty Point|3|1731632065000|1|20240814-1027-8317-9580-ef12a94c7312|{"en":"ACB Point","vi":"Điểm thưởng ACB"}|{"en":"ACB Loyalty Points","vi":"Điểm thưởng ACB của tôi"}|9880.0|genericAccount|false
+20240923-1554-8b47-9102-55c61f9ea489|Vietinbank|{"codePoint":57408,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|Vietinbank CASA Account|3|1731632065000|1|20240814-1016-8412-a943-a2e9d6ba37c9|{}|{}|0.0|bankCasa|false
+20240923-1557-8406-9654-c89ac03d5d48|Techcombank|{"codePoint":57547,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|Techcombank CASA Account|4|1734682689522|1|20240814-1016-8412-a943-a2e9d6ba37c9|{}|{}|31794769.0|bankCasa|false
+20240923-1559-8209-b117-207b9fb61dd4|ACB|{"codePoint":57409,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|ACB CASA Account|5|1731632065000|1|20240814-1016-8412-a943-a2e9d6ba37c9|{}|{}|1393.0|bankCasa|false
+20240923-1601-8716-a430-c762e2b118f8|K+ Account|{"codePoint":57547,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|KBank mobile account|6|1731632065000|1|20240814-1016-8412-a943-a2e9d6ba37c9|{}|{}|22684096.0|bankCasa|false
+20240923-1602-8d34-a574-010bb7471a82|Vietcombank|{"codePoint":57408,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|Vietcombank CASA Account|7|1731632065000|1|20240814-1016-8412-a943-a2e9d6ba37c9|{}|{}|41588127.0|bankCasa|false
+20240923-1613-8e14-b775-7416222fe76b|Techcombank MyCash|{"codePoint":63723,"fontFamily":"CupertinoIcons","fontPackage":"cupertino_icons","matchTextDirection":false}|Tài khoản trả trước Techcombank MyCash|8|1731632065000|1|20240814-1027-8317-9580-ef12a94c7312|{}|{}|0.0|payLaterAccount|0.0|false
+20240923-1630-8b52-a380-8e7dc5aef337|Momo|{"codePoint":63723,"fontFamily":"CupertinoIcons","fontPackage":"cupertino_icons","matchTextDirection":false}|Momo e-wallet|9|1731632065000|1|20240823-0515-8322-8813-46af221b06bc|{}|{}|1265424.0|eWallet|false
+20240923-1632-8f38-b935-25a461ea4a1e|ZaloPay|{"codePoint":58778,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|ZaloPay E-Wallet|10|1731632065000|1|20240823-0515-8322-8813-46af221b06bc|{}|{}|0.0|eWallet|false
+20240923-1644-8a38-8576-f042f8feb0e6|Viettel Money|{"codePoint":57409,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|Viettel Money E-Wallet|11|1731632065000|1|20240823-0515-8322-8813-46af221b06bc|{}|{}|6933.0|eWallet|false
+20240923-1648-8226-8047-80d5e424608e|Viettel Tiền di động|{"codePoint":57421,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|Viettel Tiền di động|12|1731632065000|1|20240814-1027-8317-9580-ef12a94c7312|{}|{}|679.0|genericAccount|false
+20240923-1649-8043-a311-4fe253850fb6|Shopee Pay|{"codePoint":58498,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|Shopee Pay E-Wallet|13|1731632065000|1|20240823-0515-8322-8813-46af221b06bc|{}|{}|0.0|eWallet|false
+20240923-1651-8e18-8983-a0bf3f786ced|Viettel|{"codePoint":59113,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|Viettel telecome account|14|1731632065000|1|20240814-1027-8317-9580-ef12a94c7312|{}|{}|185933.0|genericAccount|false
+20240923-1706-8b25-8280-6e29ddb6238b|City cashback|{"codePoint":57408,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|City cashback money|16|1731632065000|1|20240814-1027-8317-9580-ef12a94c7312|{"en":"City cashback","vi":"City cashback"}|{"en":"City cashback money","vi":"Tiền City bank cashback"}|62919.0|genericAccount|false
+20240923-1707-8544-a439-185350d8af92|Viettel++|{"codePoint":58348,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|Viettel++|17|1731632065000|1|20240814-1027-8317-9580-ef12a94c7312|{}|{}|8485.0|genericAccount|false
+=== Transaction Categories ===
+20240817-1308-8713-a188-d741f89c1c16|Bonus|{"codePoint":61694,"fontFamily":"FontAwesomeSolid","fontPackage":"font_awesome_flutter","matchTextDirection":false}|null|income|{"en":"Bonus","vi":"Thưởng"}|true|0|1731632039000
+20240817-1309-8d23-8361-0ee27354b19d|Cash back|{"codePoint":984247,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|null|income|{}|true|1|1731632039000
+20240817-1310-8437-a826-458e8b73dc4a|Interest|{"codePoint":58665,"fontFamily":"FontAwesomeSolid","fontPackage":"font_awesome_flutter","matchTextDirection":false}|null|income|{"en":"Interest","vi":"Tiền lãi"}|true|2|1731632039000
+20240817-1311-8e31-9761-1a2b7758c617|Salary|{"codePoint":62780,"fontFamily":"LineAwesomeIcons","fontPackage":"flutter_iconpicker","matchTextDirection":false}|null|income|{"en":"Salary","vi":"Tiền lương"}|true|3|1731632039000
+20240817-1320-8e58-b557-203534d739d9|Selling|{"codePoint":58664,"fontFamily":"FontAwesomeSolid","fontPackage":"font_awesome_flutter","matchTextDirection":false}|null|income|{"en":"Selling","vi":"Bán hàng"}|true|4|1731632039000
+20240817-1335-8037-8900-7d6dd33ec68f|Other|{"codePoint":57778,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|null|income|{"en":"Other","vi":"Loại khác"}|true|15|1731632039000
+20240817-1323-8253-9141-8d10e6f5e904|Saving|{"codePoint":58707,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|null|income|{"en":"Saving","vi":"Tiết kiệm"}|true|6|1731632039000
+20240925-0755-8805-8199-8fdd9ccb635c|Mua sắm|{"codePoint":62455,"fontFamily":"CupertinoIcons","fontPackage":"cupertino_icons","matchTextDirection":false}|null|expense|{"en":"Shopping","vi":"Mua sắm"}|false|14|1731632039000
+20240925-0755-8557-9160-80ccca9d75f0|Online shopping|{"codePoint":62849,"fontFamily":"CupertinoIcons","fontPackage":"cupertino_icons","matchTextDirection":false}|20240925-0755-8805-8199-8fdd9ccb635c|expense|{}|false|0|1731632039000
+20240925-0756-8f22-a053-a29c19ba8a84|Siêu thị|{"codePoint":62455,"fontFamily":"CupertinoIcons","fontPackage":"cupertino_icons","matchTextDirection":false}|20240925-0755-8805-8199-8fdd9ccb635c|expense|{"en":"Super market","vi":"Siêu thị"}|false|1|1731632039000
+20240818-0916-8313-b803-8caf4636f8ed|Auto/Transport|{"codePoint":58590,"fontFamily":"FontAwesomeSolid","fontPackage":"font_awesome_flutter","matchTextDirection":false}|null|expense|{"en":"Auto/Transport","vi":"Xe cộ/di chuyển"}|false|3|1731632039000
+20240818-0917-8a23-8537-c81942dc694b|Bank|{"codePoint":62781,"fontFamily":"FontAwesomeSolid","fontPackage":"font_awesome_flutter","matchTextDirection":false}|null|expense|{"en":"Bank","vi":"Ngân hàng"}|false|6|1731632039000
+20240818-0917-8b58-b505-91a519cab619|Health|{"codePoint":61982,"fontFamily":"LineAwesomeIcons","fontPackage":"flutter_iconpicker","matchTextDirection":false}|null|expense|{"en":"Health","vi":"Sức khoẻ"}|false|4|1731632039000
+20240818-0918-8b40-9969-ad37185faad9|Entertainment|{"codePoint":63268,"fontFamily":"CupertinoIcons","fontPackage":"cupertino_icons","matchTextDirection":false}|null|expense|{"en":"Entertainment","vi":"Giải trí"}|false|2|1731632039000
+20240818-0921-8602-a361-27cdff20be6a|Food/Dining|{"codePoint":58714,"fontFamily":"FontAwesomeSolid","fontPackage":"font_awesome_flutter","matchTextDirection":false}|null|expense|{"en":"Food/Dining","vi":"Ăn uống"}|false|1|1731632039000
+20240818-0922-8b17-9936-770a04e383c6|Gifts & Donations|{"codePoint":63113,"fontFamily":"CupertinoIcons","fontPackage":"cupertino_icons","matchTextDirection":false}|null|expense|{"en":"Gifts & Donations","vi":"Quà tặng & Từ Thiện"}|false|7|1731632039000
+20240818-0924-8a02-a977-e04d8056e5fd|Beauty|{"codePoint":985169,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|null|expense|{"en":"Beauty","vi":"Làm đẹp"}|false|5|1731632039000
+20240818-0924-8159-a073-fd1943976cc7|Home|{"codePoint":62535,"fontFamily":"CupertinoIcons","fontPackage":"cupertino_icons","matchTextDirection":false}|null|expense|{"en":"Home","vi":"Nhà cửa"}|false|11|1731632039000
+20240818-0925-8936-8960-5512057b03f8|Kids|{"codePoint":58553,"fontFamily":"FontAwesomeSolid","fontPackage":"font_awesome_flutter","matchTextDirection":false}|null|expense|{"en":"Kids","vi":"Con cái"}|false|10|1731632039000
+20240818-0926-8f04-b345-0c66fb9ad03e|Personal|{"codePoint":62589,"fontFamily":"CupertinoIcons","fontPackage":"cupertino_icons","matchTextDirection":false}|null|expense|{"en":"Personal","vi":"Cá nhân"}|false|8|1731632039000
+20240818-0927-8e53-8521-7514cee10522|Services|{"codePoint":63501,"fontFamily":"FontAwesomeSolid","fontPackage":"font_awesome_flutter","matchTextDirection":false}|null|expense|{"en":"Services","vi":"Dịch vụ"}|false|9|1731632039000
+20240818-0930-8e06-b551-b47065a0de2f|Utilities|{"codePoint":57446,"fontFamily":"FontAwesomeSolid","fontPackage":"font_awesome_flutter","matchTextDirection":false}|null|expense|{"en":"Utilities","vi":"Tiện ích"}|false|13|1731632039000
+20240818-0930-8a38-b801-9590ba5f92f7|Others|{"codePoint":62020,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|null|expense|{"en":"Others","vi":"Khác"}|false|14|1731632039000
+20240818-0940-8043-b324-6067248730d1|Bars & Coffee|{"codePoint":58852,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|20240818-0921-8602-a361-27cdff20be6a|expense|{}|false|0|1731632039000
+20240818-0941-8235-8729-b567f57b8165|Breakfast|{"codePoint":57604,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|20240818-0921-8602-a361-27cdff20be6a|expense|{"en":"Breakfast","vi":"Ăn sáng"}|false|1|1731632039000
+20240818-0942-8b07-b193-83fea7f607da|Lunch|{"codePoint":58306,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|20240818-0921-8602-a361-27cdff20be6a|expense|{"en":"Lunch","vi":"Ăn trưa"}|false|2|1731632039000
+20240818-0942-8e52-9433-76bb751e54b1|Dinner|{"codePoint":58566,"fontFamily":"FontAwesomeSolid","fontPackage":"font_awesome_flutter","matchTextDirection":false}|20240818-0921-8602-a361-27cdff20be6a|expense|{"en":"Dinner","vi":"Ăn tối"}|false|3|1731632039000
+20240818-0944-8c50-8138-7f3bd9f340c3|Groceries|{"codePoint":62097,"fontFamily":"FontAwesomeSolid","fontPackage":"font_awesome_flutter","matchTextDirection":false}|20240818-0921-8602-a361-27cdff20be6a|expense|{"en":"Groceries","vi":"Tạp hoá"}|false|4|1731632039000
+20240818-0945-8756-a353-5c8a74017a90|Snack|{"codePoint":58647,"fontFamily":"FontAwesomeSolid","fontPackage":"font_awesome_flutter","matchTextDirection":false}|20240818-0921-8602-a361-27cdff20be6a|expense|{}|false|5|1731632039000
+20240818-0946-8f21-9722-2ae964d5e056|Restaurant|{"codePoint":58674,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|20240818-0921-8602-a361-27cdff20be6a|expense|{"en":"Restaurant","vi":"Nhà hàng"}|false|6|1731632039000
+20240818-0947-8235-a673-82e77eee5107|Fruit|{"codePoint":62929,"fontFamily":"FontAwesomeSolid","fontPackage":"font_awesome_flutter","matchTextDirection":false}|20240818-0921-8602-a361-27cdff20be6a|expense|{"en":"Fruit","vi":"Trái cây"}|false|7|1731632039000
+20240818-0953-8312-a369-f81ca1dba348|Clothing|{"codePoint":62803,"fontFamily":"FontAwesomeSolid","fontPackage":"font_awesome_flutter","matchTextDirection":false}|null|expense|{"en":"Clothing","vi":"Quần áo"}|false|12|1731632039000
+20240818-0953-8255-b202-ed64daa3a762|Fuel|{"codePoint":58260,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|20240818-0916-8313-b803-8caf4636f8ed|expense|{"en":"Fuel","vi":"Nhiên liệu"}|false|0|1731632039000
+20240818-0955-8553-9058-ee0481affe92|Car Insurance|{"codePoint":984259,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|20240818-0916-8313-b803-8caf4636f8ed|expense|{"en":"Car Insurance","vi":"Bảo hiểm xe"}|false|1|1731632039000
+20240818-0956-8053-8538-663c912af740|Parking|{"codePoint":62784,"fontFamily":"FontAwesomeSolid","fontPackage":"font_awesome_flutter","matchTextDirection":false}|20240818-0916-8313-b803-8caf4636f8ed|expense|{"en":"Parking","vi":"Gửi xe"}|false|2|1731632039000
+20240818-0957-8b51-b922-a66333c93633|Taxi|{"codePoint":58279,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|20240818-0916-8313-b803-8caf4636f8ed|expense|{}|false|3|1731632039000
+20240818-0959-8500-8442-e8c0c228f547|Car Services & Parts|{"codePoint":57661,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|20240818-0916-8313-b803-8caf4636f8ed|expense|{"en":"Car Services & Parts","vi":"Dịch vụ & Sửa chữa xe"}|false|4|1731632039000
+20240818-1001-8437-8620-df409439e913|Transfer fee|{"codePoint":58664,"fontFamily":"FontAwesomeSolid","fontPackage":"font_awesome_flutter","matchTextDirection":false}|20240818-0917-8a23-8537-c81942dc694b|expense|{"en":"Transfer fee","vi":"Phí chuyển tiền"}|false|0|1731632039000
+20240818-1002-8014-8931-1f95ea0de6d5|Clothes|{"codePoint":62803,"fontFamily":"FontAwesomeSolid","fontPackage":"font_awesome_flutter","matchTextDirection":false}|20240818-0953-8312-a369-f81ca1dba348|expense|{"en":"Clothes","vi":"Quần áo"}|false|0|1731632039000
+20240818-1002-8358-8715-693bf5577ae8|Shoes|{"codePoint":62795,"fontFamily":"LineAwesomeIcons","fontPackage":"flutter_iconpicker","matchTextDirection":false}|20240818-0953-8312-a369-f81ca1dba348|expense|{"en":"Shoes","vi":"Giày dép"}|false|1|1731632039000
+20240818-1006-8515-b515-de25fbe73795|Accessories|{"codePoint":58616,"fontFamily":"FontAwesomeSolid","fontPackage":"font_awesome_flutter","matchTextDirection":false}|20240818-0953-8312-a369-f81ca1dba348|expense|{"en":"Accessories","vi":"Phụ kiện"}|false|14|1731632039000
+20240818-1106-8f50-8736-c3097059a6b4|Movies|{"codePoint":63345,"fontFamily":"CupertinoIcons","fontPackage":"cupertino_icons","matchTextDirection":false}|20240818-0918-8b40-9969-ad37185faad9|expense|{"en":"Movies","vi":"Điện ảnh"}|false|0|1731632039000
+20240818-1107-8b25-a915-c05500bb0fe5|Music|{"codePoint":63738,"fontFamily":"CupertinoIcons","fontPackage":"cupertino_icons","matchTextDirection":false}|20240818-0918-8b40-9969-ad37185faad9|expense|{"en":"Music","vi":"Âm nhạc"}|false|1|1731632039000
+20240818-1108-8202-8564-142b741873c0|Travel|{"codePoint":59004,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|20240818-0918-8b40-9969-ad37185faad9|expense|{"en":"Travel","vi":"Du lịch"}|false|2|1731632039000
+20240818-1108-8b38-a705-88fc5e864150|Gifts|{"codePoint":63116,"fontFamily":"CupertinoIcons","fontPackage":"cupertino_icons","matchTextDirection":false}|20240818-0922-8b17-9936-770a04e383c6|expense|{"en":"Gifts","vi":"Quà tặng"}|false|0|1731632039000
+20240818-1109-8437-8412-28017d012efa|Charity|{"codePoint":58498,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|20240818-0922-8b17-9936-770a04e383c6|expense|{"en":"Charity","vi":"Từ thiện"}|false|1|1731632039000
+20240818-1110-8b20-a397-eea0bb33afa0|Doctor|{"codePoint":61680,"fontFamily":"FontAwesomeSolid","fontPackage":"font_awesome_flutter","matchTextDirection":false}|20240818-0917-8b58-b505-91a519cab619|expense|{"en":"Doctor","vi":"Bác sĩ"}|false|0|1731632039000
+20240818-1111-8843-8115-2f8780e57893|Pharmacy|{"codePoint":62596,"fontFamily":"FontAwesomeSolid","fontPackage":"font_awesome_flutter","matchTextDirection":false}|20240818-0917-8b58-b505-91a519cab619|expense|{"en":"Medicine","vi":"Thuốc chữa bệnh"}|false|1|1731632039000
+20240818-1113-8d05-9524-95b79b109051|Sports|{"codePoint":58866,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|20240818-0917-8b58-b505-91a519cab619|expense|{"en":"Sports","vi":"Thể thao"}|false|2|1731632039000
+20240818-1114-8835-b628-c8fb2f1e7819|Health insurance|{"codePoint":58633,"fontFamily":"FontAwesomeSolid","fontPackage":"font_awesome_flutter","matchTextDirection":false}|20240818-0917-8b58-b505-91a519cab619|expense|{"en":"Health insurance","vi":"Bảo hiểm y tế"}|false|3|1731632039000
+20240818-1116-8040-9125-d48cd745a7f1|Cosmetic|{"codePoint":58646,"fontFamily":"FontAwesomeSolid","fontPackage":"font_awesome_flutter","matchTextDirection":false}|20240818-0924-8a02-a977-e04d8056e5fd|expense|{"en":"Cosmetic","vi":"Mỹ phẩm"}|false|0|1731632039000
+20240818-1118-8727-a261-edf24b18b466|Laundry|{"codePoint":57870,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|20240818-0953-8312-a369-f81ca1dba348|expense|{"en":"Laundry","vi":"Giặt ủi"}|false|3|1731632039000
+20240818-1125-8c27-b165-0921c09e6f08|Clothes Sewing|{"codePoint":62492,"fontFamily":"FontAwesomeBrands","fontPackage":"font_awesome_flutter","matchTextDirection":false}|20240818-0953-8312-a369-f81ca1dba348|expense|{"en":"Clothes Sewing","vi":"May vá áo quần"}|false|4|1731632039000
+20240818-1126-8142-8277-bc31f463b651|Furnishing|{"codePoint":63474,"fontFamily":"FontAwesomeSolid","fontPackage":"font_awesome_flutter","matchTextDirection":false}|20240818-0924-8159-a073-fd1943976cc7|expense|{"en":"Furnishing","vi":"Nội thất"}|false|0|1731632039000
+20240818-1128-8705-8677-3fde6b4883c7|Mortgage & Rent|{"codePoint":57776,"fontFamily":"FontAwesomeSolid","fontPackage":"font_awesome_flutter","matchTextDirection":false}|20240818-0924-8159-a073-fd1943976cc7|expense|{"en":"Mortgage & Rent","vi":"Thế chấp & Thuê"}|false|1|1731632039000
+20240818-1128-8757-b252-5f548fc6f326|Home services|{"codePoint":58641,"fontFamily":"FontAwesomeSolid","fontPackage":"font_awesome_flutter","matchTextDirection":false}|20240818-0924-8159-a073-fd1943976cc7|expense|{"en":"Home services","vi":"Dịch vụ nhà cửa"}|false|2|1731632039000
+20240818-1130-8546-b933-d2ae76caf68d|Allowance|{"codePoint":58618,"fontFamily":"FontAwesomeSolid","fontPackage":"font_awesome_flutter","matchTextDirection":false}|20240818-0925-8936-8960-5512057b03f8|expense|{"en":"Allowance","vi":"Trợ cấp"}|false|0|1731632039000
+20240818-1131-8f29-9500-dd6bec29897f|Baby Supplies|{"codePoint":63357,"fontFamily":"FontAwesomeSolid","fontPackage":"font_awesome_flutter","matchTextDirection":false}|20240818-0925-8936-8960-5512057b03f8|expense|{"en":"Baby Supplies","vi":"Đồ dùng em bé"}|false|1|1731632039000
+20240818-1132-8c20-8748-045dce31d325|Babysitter & Daycare|{"codePoint":57539,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|20240818-0925-8936-8960-5512057b03f8|expense|{"en":"Babysitter & Daycare","vi":"Giữ trẻ"}|false|2|1731632039000
+20240818-1133-8506-a906-05c3ae338143|Toys|{"codePoint":58994,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|20240818-0925-8936-8960-5512057b03f8|expense|{"en":"Toys","vi":"Đồ chơi"}|false|3|1731632039000
+20240818-1133-8042-a365-d79abdd32405|Tuition|{"codePoint":62054,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|20240818-0925-8936-8960-5512057b03f8|expense|{"en":"Tuition","vi":"Học phí"}|false|4|1731632039000
+20240818-1135-8810-b355-91a4c9504d48|Makeup|{"codePoint":62527,"fontFamily":"FontAwesomeRegular","fontPackage":"font_awesome_flutter","matchTextDirection":false}|20240818-0924-8a02-a977-e04d8056e5fd|expense|{"en":"Makeup","vi":"Trang điểm"}|false|14|1731632039000
+20240818-1136-8d55-8205-df905631a249|Spa|{"codePoint":57696,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|20240818-0924-8a02-a977-e04d8056e5fd|expense|{}|false|2|1731632039000
+20240818-1138-8e18-b301-6162e7747cb3|Education|{"codePoint":57670,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|20240818-0926-8f04-b345-0c66fb9ad03e|expense|{"en":"Education","vi":"Học tập"}|false|0|1731632039000
+20240818-1139-8f44-8909-76748a820a56|Hobbies|{"codePoint":62043,"fontFamily":"FontAwesomeSolid","fontPackage":"font_awesome_flutter","matchTextDirection":false}|20240818-0926-8f04-b345-0c66fb9ad03e|expense|{"en":"Hobbies","vi":"Sở thích"}|false|1|1731632039000
+20240818-1140-8b10-8109-761feedaaa54|Pets|{"codePoint":58529,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|20240818-0926-8f04-b345-0c66fb9ad03e|expense|{"en":"Pets","vi":"Thú cưng"}|false|2|1731632039000
+20240818-1141-8b16-b809-a48bc374b0ea|Subscription|{"codePoint":59024,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|20240818-0927-8e53-8521-7514cee10522|expense|{}|false|0|1731632039000
+20240818-1142-8a01-8918-57ec069c7904|Cabble TV|{"codePoint":63617,"fontFamily":"CupertinoIcons","fontPackage":"cupertino_icons","matchTextDirection":false}|20240818-0930-8e06-b551-b47065a0de2f|expense|{"en":"Cabble TV","vi":"Truyền hình cáp"}|false|0|1731632039000
+20240818-1142-8e34-9909-287ac8e17a75|Electricity|{"codePoint":984988,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|20240818-0930-8e06-b551-b47065a0de2f|expense|{"en":"Electricity","vi":"Điện"}|false|1|1731632039000
+20240818-1143-8308-a655-5f5b16c6fb07|Gas|{"codePoint":58609,"fontFamily":"FontAwesomeSolid","fontPackage":"font_awesome_flutter","matchTextDirection":false}|20240818-0930-8e06-b551-b47065a0de2f|expense|{}|false|2|1731632039000
+20240818-1143-8f41-b413-46554f46cbcd|Phone|{"codePoint":62648,"fontFamily":"CupertinoIcons","fontPackage":"cupertino_icons","matchTextDirection":false}|20240818-0930-8e06-b551-b47065a0de2f|expense|{"en":"Phone","vi":"Điện thoại"}|false|3|1731632039000
+20240818-1144-8313-8806-7cb03d0b6db1|Internet|{"codePoint":58406,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|20240818-0930-8e06-b551-b47065a0de2f|expense|{}|false|4|1731632039000
+20240818-1144-8434-8901-1e143c0e7b9f|Water|{"codePoint":984482,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|20240818-0930-8e06-b551-b47065a0de2f|expense|{"en":"Water","vi":"Nước"}|false|5|1731632039000
+20241005-1326-8908-b764-fe5cb32434bd|Convenience store|{"codePoint":58892,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|20240925-0755-8805-8199-8fdd9ccb635c|expense|{"en":"Convenience store","vi":"Cửa hàng tiện lợi"}|false|2|1731632039000
+20241005-1333-8133-a906-7e4db558f38a|Bill payment|{"codePoint":58348,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|20240818-0930-8e06-b551-b47065a0de2f|expense|{"en":"Bill payment","vi":"Thanh toán hoá đơn"}|false|6|1728135213918
+20241011-0918-8449-9006-bb2177ca1ffd|Paper work|{"codePoint":985181,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|20240818-0927-8e53-8521-7514cee10522|expense|{"en":"Paper work","vi":"Hành chính/Giấy tờ"}|false|1|1731632039000
+20241017-0856-8118-b332-f38f429f6625|Home loan repayment|{"codePoint":58313,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|20240818-0924-8159-a073-fd1943976cc7|expense|{"en":"Home loan repayment","vi":"Trả tiền vay mua nhà"}|false|3|1729155378347
+20241005-1322-8428-b089-8dbbd3f8ab9f|😈|{"codePoint":984339,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|20240818-0918-8b40-9969-ad37185faad9|expense|{}|false|3|1731632065000
+20241215-1221-8d00-b067-f1623fd4b70a|Credit card payment|{"codePoint":57759,"fontFamily":"MaterialIcons","fontPackage":null,"matchTextDirection":false}|20240818-0917-8a23-8537-c81942dc694b|expense|{"en":"Credit card payment","vi":"Thanh toán thẻ tín dụng"}|false|1|1734265260070
+=== Transactions ===
+expense|20241213-0605-8f33-a854-da6393c29b0e|1734056917738|568|20240818-0940-8043-b324-6067248730d1||false|0.0|39000.0|1734069933854|1|false|20240923-1601-8716-a430-c762e2b118f8
+expense|20241213-0605-8128-8050-db5d74f89519|1734069914428|785|20240818-0942-8b07-b193-83fea7f607da||false|0.0|33000.0|1734069928053|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20241213-0605-8544-b492-5c5aa1a3f09b|1734069937086|785|20240818-0940-8043-b324-6067248730d1||false|0.0|76500.0|1734069944493|1|false|20240923-1601-8716-a430-c762e2b118f8
+expense|20241214-0905-8123-b771-a56b6dd6b536|1734153483097|660|20240818-0942-8b07-b193-83fea7f607da||false|0.0|50000.0|1734167123772|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20241214-0905-8216-8395-fa63830e8ebe|1734167110380|965|20240818-0940-8043-b324-6067248730d1||false|0.0|104000.0|1734167116398|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20241215-0627-8d04-b390-06f961e6f4e5|1734183398640|1236|20240818-0942-8e52-9433-76bb751e54b1||false|0.0|52000.0|1734244024391|1|false|20240824-1557-8718-b097-5d9d1c51ff98
+expense|20241215-0626-8929-b317-f9038f741943|1734243976312|660|20240818-0940-8043-b324-6067248730d1||false|0.0|15000.0|1734243989320|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20241215-0644-8655-9607-38abb9e81b4e|1734245088082|824|20240818-0959-8500-8442-e8c0c228f547||false|0.0|6000.0|1734245095607|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20241215-1221-8d05-b787-2d635e3118b1|1734265104144|1158|20241215-1221-8d00-b067-f1623fd4b70a||false|0.0|6861737.0|1734265265787|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20241219-0142-8b49-9211-96d4685f3b82|1734282000000|660|20241017-0856-8118-b332-f38f429f6625||false|0.0|14133700.0|1734572569212|1|false|20240923-1601-8716-a430-c762e2b118f8
+expense|20241216-0529-8823-b190-a41c9bc07a83|1734326953731|480|20240818-0941-8235-8729-b567f57b8165||false|0.0|20000.0|1734326963191|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20241216-0529-8b37-9349-491b223eeeba|1734326964089|510|20240818-0940-8043-b324-6067248730d1||false|0.0|44000.0|1734326977349|1|false|20240824-1557-8718-b097-5d9d1c51ff98
+expense|20241216-0529-8b49-8307-ef23b8fea724|1734326978907|660|20240818-0940-8043-b324-6067248730d1||false|0.0|49000.0|1734326989307|1|false|20240824-1557-8718-b097-5d9d1c51ff98
+expense|20241216-0530-8108-8787-dd5a68bb51a0|1734326991325|540|20241005-1322-8428-b089-8dbbd3f8ab9f||false|0.0|1100000.0|1734327008787|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20241216-0553-8424-a571-541f86756f5e|1734328398899|773|20240818-0942-8b07-b193-83fea7f607da||false|0.0|47000.0|1734328404574|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20241217-0051-8440-b973-ec09865f8cf1|1734396691644|471|20240818-0941-8235-8729-b567f57b8165||false|0.0|25000.0|1734396700974|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20241217-0051-8448-8320-faaf4686045a|1734396702766|471|20240818-0940-8043-b324-6067248730d1||false|0.0|20000.0|1734396708321|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20241217-0052-8e03-9172-9993373f90c1|1734396711465|471|20240818-0957-8b51-b922-a66333c93633||false|0.0|12000.0|1734396723173|1|false|20240824-1557-8718-b097-5d9d1c51ff98
+expense|20241217-0216-8a47-b513-bc9bd7d1e8e0|1734401789896|556|20240818-1142-8e34-9909-287ac8e17a75||false|0.0|851766.0|1734401807514|1|false|20240923-1630-8b52-a380-8e7dc5aef337
+expense|20241217-0217-8a01-a880-60b56cd722d9|1734401809827|556|20240818-0957-8b51-b922-a66333c93633||false|0.0|12000.0|1734401821881|1|false|20240824-1557-8718-b097-5d9d1c51ff98
+transfer|20241217-1103-8343-8151-3873e0e563b5|1734433401148|780|20240818-0942-8b07-b193-83fea7f607da||false|0.0|60000.0|1734433423153|1|false|20240823-1529-8009-a864-e7b9299a07f6|20240923-1601-8716-a430-c762e2b118f8|true
+transfer|20241217-1104-8e03-8788-e3a51c9502aa|1734433424811|780|20240818-0942-8b07-b193-83fea7f607da||false|0.0|115000.0|1734433443789|1|false|20240823-1529-8009-a864-e7b9299a07f6|20240923-1630-8b52-a380-8e7dc5aef337|true
+expense|20241217-1104-8325-a459-b74575eda332|1734433451243|810|20240818-0942-8b07-b193-83fea7f607da||false|0.0|60000.0|1734433465460|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20241217-1228-8f05-b223-9b01740df335|1734438476539|1167|20240818-0940-8043-b324-6067248730d1||false|0.0|59000.0|1734438485224|1|false|20240824-1557-8718-b097-5d9d1c51ff98
+expense|20241219-0139-8517-b017-ab267df85bec|1734454800000|720|20240818-0942-8b07-b193-83fea7f607da||false|0.0|61000.0|1734572357018|1|false|20240923-1557-8406-9654-c89ac03d5d48
+expense|20241219-0143-8e43-b587-585b35dfc853|1734454800000|1260|20240818-0942-8e52-9433-76bb751e54b1||false|0.0|104000.0|1734572623588|1|false|20240824-1557-8718-b097-5d9d1c51ff98
+expense|20241218-1159-8e49-a039-079d618b0db6|1734523179764|480|20240818-0940-8043-b324-6067248730d1||false|0.0|20000.0|1734523189042|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20241219-0144-8007-b480-45ea76e23167|1734572639131|523|20240818-0940-8043-b324-6067248730d1||false|0.0|29000.0|1734572647480|1|false|20240824-1557-8718-b097-5d9d1c51ff98
+expense|20241219-0211-8220-8935-066dfec266b7|1734574268778|551|20240925-0755-8557-9160-80ccca9d75f0||false|0.0|404999.0|1734574280936|1|false|20240824-1557-8718-b097-5d9d1c51ff98
+expense|20241219-0502-8858-b831-32492d7585b9|1734584562693|722|20241005-1322-8428-b089-8dbbd3f8ab9f||false|0.0|70000.0|1734584578832|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20241219-0503-8016-a319-620d7094220d|1734584579706|722|20241005-1322-8428-b089-8dbbd3f8ab9f||false|0.0|500000.0|1734584596319|1|false|20240923-1601-8716-a430-c762e2b118f8
+expense|20241219-0707-8245-b673-c6fdd721fdb8|1734592043440|847|20240818-0942-8b07-b193-83fea7f607da||false|0.0|40000.0|1734592065674|1|false|20240923-1630-8b52-a380-8e7dc5aef337
+transfer|20241219-0708-8e01-9958-079449cfc79c|1734592070138|847|20240818-0942-8b07-b193-83fea7f607da||false|0.0|40000.0|1734592081959|1|false|20240923-1630-8b52-a380-8e7dc5aef337|20240823-1529-8009-a864-e7b9299a07f6|true
+expense|20241219-0708-8725-a704-631e5b857da7|1734592098363|848|20240818-0940-8043-b324-6067248730d1||false|0.0|60000.0|1734592105704|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20241221-0449-8642-b879-b6603c8c6576|1734627600000|1260|20241005-1322-8428-b089-8dbbd3f8ab9f||false|0.0|1000000.0|1734756582880|1|false|20240923-1601-8716-a430-c762e2b118f8
+expense|20241221-0525-8014-b533-faf753e2f2e6|1734627600000|1200|20240818-0942-8e52-9433-76bb751e54b1||false|0.0|100000.0|1734758714536|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20241220-0749-8058-a797-42217abe304d|1734680989782|889|20240818-0940-8043-b324-6067248730d1||false|0.0|27500.0|1734680998800|1|false|20240923-1551-8745-a167-ef1ab27a221c
+expense|20241220-0750-8411-9999-d503a0ac1def|1734680999689|750|20240818-0942-8b07-b193-83fea7f607da||false|0.0|33000.0|1734681012000|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20241220-0750-8e52-9794-52c2d81894f3|1734681042867|890|20240818-0940-8043-b324-6067248730d1||false|0.0|45000.0|1734681052794|1|false|20240824-1557-8718-b097-5d9d1c51ff98
+income|20241220-0814-8238-b691-0668bab8085c|1734681057677|540|20240817-1310-8437-a826-458e8b73dc4a||false|0.0|4800000.0|1734682478692|1|false|20240923-1557-8406-9654-c89ac03d5d48
+adjustment|20241220-0753-8b38-8935-e604c3752ba0|1734681191204|893|20240817-1335-8037-8900-7d6dd33ec68f||false|0.0|42450769.0|1734681218936|1|true|20240923-1557-8406-9654-c89ac03d5d48|28958748.0
+adjustment|20241220-0754-8550-a300-a8d15be63412|1734681274093|894|20240817-1335-8037-8900-7d6dd33ec68f||false|0.0|520000.0|1734681290300|1|true|20240823-1529-8009-a864-e7b9299a07f6|3912208.0
+adjustment|20241220-0756-8f25-b571-285514d21ff2|1734681322511|895|20240818-0930-8a38-b801-9590ba5f92f7||false|0.0|874792.0|1734681385571|1|true|20240923-1630-8b52-a380-8e7dc5aef337|-1346328.0
+adjustment|20241220-0811-8d27-9976-8b7e4f6407fc|1734682276153|911|20240817-1335-8037-8900-7d6dd33ec68f||false|0.0|4.0|1734682287979|1|true|20240923-1554-8b47-9102-55c61f9ea489|9.0
+adjustment|20241220-0813-8032-a484-93ab1bc1fc2a|1734682391690|913|20240818-0930-8a38-b801-9590ba5f92f7||false|0.0|28374096.0|1734682412485|1|true|20240923-1601-8716-a430-c762e2b118f8|-47551424.0
+adjustment|20241220-0815-8743-b518-1bc8cbe530a1|1734682521707|915|20240818-0930-8a38-b801-9590ba5f92f7||false|0.0|41629297.0|1734682543518|1|true|20240923-1602-8d34-a574-010bb7471a82|-14640268.0
+adjustment|20241220-0817-8750-b589-23b9a9620070|1734682645572|917|20240818-0930-8a38-b801-9590ba5f92f7||false|0.0|42450000.0|1734682670589|1|true|20240923-1557-8406-9654-c89ac03d5d48|4800769.0
+adjustment|20241220-0819-8914-8148-541d4c442a1f|1734682730841|918|20240818-0930-8a38-b801-9590ba5f92f7||false|0.0|193510142.0|1734682754148|1|true|20240824-1557-8718-b097-5d9d1c51ff98|-194811567.0
+transfer|20241220-1108-8239-a305-7e443c27d25a|1734692895954|1088|20241017-0856-8118-b332-f38f429f6625||false|0.0|14455594.0|1734692919306|1|false|20240824-1557-8718-b097-5d9d1c51ff98|20240923-1554-8b47-9102-55c61f9ea489|true
+expense|20241220-1109-8c16-a856-610828e2b32b|1734692931653|1088|20241017-0856-8118-b332-f38f429f6625||false|0.0|14455598.0|1734692956856|1|false|20240923-1554-8b47-9102-55c61f9ea489
+expense|20241221-0454-8931-a872-4305a483f9fd|1734756846081|714|20240818-0940-8043-b324-6067248730d1||false|0.0|55000.0|1734756871872|1|false|20240824-1557-8718-b097-5d9d1c51ff98
+expense|20241221-0523-8b52-8661-109c25dfef9d|1734758616807|743|20240818-0957-8b51-b922-a66333c93633||false|0.0|45000.0|1734758632662|1|false|20240824-1557-8718-b097-5d9d1c51ff98
+expense|20241221-0524-8112-9365-01a8c548ef62|1734758636546|743|20240818-0942-8b07-b193-83fea7f607da||false|0.0|99000.0|1734758652365|1|false|20240923-1551-8745-a167-ef1ab27a221c
+expense|20241221-0741-8927-a424-5d7c0e72ce24|1734766878216|881|20240818-0957-8b51-b922-a66333c93633||false|0.0|27000.0|1734766887426|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20241221-1210-8650-b619-259e6c13f411|1734783016776|1150|20240925-0755-8557-9160-80ccca9d75f0||false|0.0|41170.0|1734783050620|1|false|20240923-1602-8d34-a574-010bb7471a82
+expense|20241221-1547-8348-a755-c4baa45fdc68|1734796049231|1140|20240818-0942-8e52-9433-76bb751e54b1||false|0.0|111000.0|1734796068757|1|false|20240923-1551-8745-a167-ef1ab27a221c
+expense|20241222-1734-8713-9243-1b6fa96f9769|1734800400000|930|20240818-1141-8b16-b809-a48bc374b0ea||false|0.0|47368.0|1734888853244|1|false|20240923-1630-8b52-a380-8e7dc5aef337
+expense|20241222-1734-8251-8688-3202c5eef9ae|1734800400000|1290|20241005-1322-8428-b089-8dbbd3f8ab9f||false|0.0|900000.0|1734888891689|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20241222-0422-8341-a151-3ac23bb9f971|1734841350183|682|20240818-0941-8235-8729-b567f57b8165||false|0.0|198000.0|1734841361153|1|false|20240923-1551-8745-a167-ef1ab27a221c
+transfer|20241222-1130-8124-a627-4770f10251d2|1734867008447|1110|null||false|0.0|10000000.0|1734867024628|1|false|20240923-1557-8406-9654-c89ac03d5d48|20240823-1529-8009-a864-e7b9299a07f6|true
+expense|20241223-0221-8545-b111-340065db45d1|1734920495410|561|20240818-0953-8255-b202-ed64daa3a762||false|0.0|60000.0|1734920505112|1|false|20240923-1551-8745-a167-ef1ab27a221c
+expense|20241223-0221-8c50-a940-53b04dda7e1e|1734920506160|561|20240818-0940-8043-b324-6067248730d1||false|0.0|29000.0|1734920510940|1|false|20240923-1551-8745-a167-ef1ab27a221c
+expense|20241223-0221-8159-b790-4a2783347c34|1734920513533|561|20240818-0941-8235-8729-b567f57b8165||false|0.0|20000.0|1734920519790|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20241223-0340-8504-b111-4d9c16c48606|1734925195725|639|20241005-1322-8428-b089-8dbbd3f8ab9f||false|0.0|570000.0|1734925204113|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20241223-0426-8823-8193-34e13d1c0d59|1734927970015|686|20240818-1128-8757-b252-5f548fc6f326||false|0.0|2000000.0|1734927983193|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20241223-0605-8017-b075-c33b7f424b5d|1734933908047|785|20240818-0940-8043-b324-6067248730d1||false|0.0|49000.0|1734933917078|1|false|20240923-1551-8745-a167-ef1ab27a221c
+expense|20241223-0605-8524-a678-8d685b3893c2|1734933918257|785|20240818-0942-8b07-b193-83fea7f607da||false|0.0|40000.0|1734933924678|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20241223-1022-8337-9674-4a6000d70410|1734949350067|1042|20240818-0942-8e52-9433-76bb751e54b1||false|0.0|52000.0|1734949357676|1|false|20240923-1551-8745-a167-ef1ab27a221c
+expense|20241224-0307-8422-8167-622764f6ea9a|1735009633497|480|20240818-0941-8235-8729-b567f57b8165||false|0.0|62000.0|1735009642171|1|false|20240923-1551-8745-a167-ef1ab27a221c
+expense|20241224-0307-8e50-b553-3a1c1e7b8750|1735009643947|607|20240818-1139-8f44-8909-76748a820a56||false|0.0|108000.0|1735009670553|1|false|20240923-1551-8745-a167-ef1ab27a221c
+expense|20241224-0308-8908-8873-0512e74f7398|1735009674768|607|20240818-1128-8757-b252-5f548fc6f326||false|0.0|1400000.0|1735009688874|1|false|20240923-1551-8745-a167-ef1ab27a221c
+expense|20241224-0642-8858-9803-74f6b83714b5|1735022569835|822|20240818-0942-8b07-b193-83fea7f607da||false|0.0|35000.0|1735022578804|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20241224-0643-8d08-8938-2d53924b4bdf|1735022579864|822|20240818-0940-8043-b324-6067248730d1||false|0.0|34000.0|1735022588939|1|false|20240923-1551-8745-a167-ef1ab27a221c
+expense|20241225-0722-8010-8583-33908dd41b04|1735111323079|480|20240818-0941-8235-8729-b567f57b8165||false|0.0|30000.0|1735111330583|1|false|20240923-1551-8745-a167-ef1ab27a221c
+expense|20241225-0722-8621-8602-769f038e8913|1735111331720|600|20240818-0957-8b51-b922-a66333c93633||false|0.0|30000.0|1735111341603|1|false|20240923-1551-8745-a167-ef1ab27a221c
+expense|20241225-0722-8250-8574-05e7f3e61185|1735111358598|600|20240818-0957-8b51-b922-a66333c93633||false|0.0|30000.0|1735111370575|1|false|20240923-1601-8716-a430-c762e2b118f8
+expense|20241225-0723-8010-8263-5dc35a29988c|1735111379504|810|20240818-0942-8b07-b193-83fea7f607da||false|0.0|50000.0|1735111390264|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20241225-0723-8529-9036-f7f98d7c3b74|1735111391381|840|20240818-0940-8043-b324-6067248730d1||false|0.0|59000.0|1735111409036|1|false|20240923-1551-8745-a167-ef1ab27a221c
+expense|20241225-1427-8845-a870-bdd8c80565c7|1735136846470|1095|20240818-0942-8e52-9433-76bb751e54b1||false|0.0|57000.0|1735136865873|1|false|20240923-1551-8745-a167-ef1ab27a221c
+transfer|20241226-0751-8a35-a343-1bb21dc19f18|1735199476963|891|null||false|0.0|140000.0|1735199495344|1|false|20240823-1529-8009-a864-e7b9299a07f6|20240923-1601-8716-a430-c762e2b118f8|true
+expense|20241226-0752-8240-b839-fa9a82ef4d2f|1735199549681|780|20240818-0942-8b07-b193-83fea7f607da||false|0.0|60000.0|1735199560840|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20241226-0752-8553-b039-74b1aca66ad6|1735199564141|570|20240818-0940-8043-b324-6067248730d1||false|0.0|20000.0|1735199573040|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20241226-0753-8c50-b079-54bedf87feeb|1735199620305|810|20240818-0940-8043-b324-6067248730d1||false|0.0|15000.0|1735199630080|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20241226-0754-8608-a185-3329cd831672|1735199635357|825|20240818-0940-8043-b324-6067248730d1||false|0.0|49000.0|1735199648186|1|false|20240923-1551-8745-a167-ef1ab27a221c
+expense|20241226-1519-8451-8985-cdc11df54ef8|1735226385136|1339|20240818-0957-8b51-b922-a66333c93633||false|0.0|110000.0|1735226391987|1|false|20240923-1551-8745-a167-ef1ab27a221c
+expense|20241226-1520-8d36-b035-2a5957a321e2|1735226417896|1340|20240818-0930-8a38-b801-9590ba5f92f7||false|0.0|1000000.0|1735226436036|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20241228-0130-8214-b346-91d1963fe706|1735232400000|540|20241005-1322-8428-b089-8dbbd3f8ab9f||false|0.0|1170000.0|1735349414346|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20241228-0130-8a41-8186-394c3a7e51ff|1735232400000|510|20240818-0940-8043-b324-6067248730d1||false|0.0|29000.0|1735349441186|1|false|20240923-1551-8745-a167-ef1ab27a221c
+expense|20241228-0129-8040-b669-856441523c25|1735349369117|509|20240818-0941-8235-8729-b567f57b8165||false|0.0|118000.0|1735349380670|1|false|20240923-1551-8745-a167-ef1ab27a221c
+expense|20241228-0829-8754-a978-e4b9ec7acee1|1735374584218|840|20240818-0940-8043-b324-6067248730d1||false|0.0|59000.0|1735374594979|1|false|20240923-1551-8745-a167-ef1ab27a221c
+expense|20241229-0337-8b27-b971-a0060c931723|1735443437511|540|20240818-0941-8235-8729-b567f57b8165||false|0.0|130000.0|1735443447972|1|false|20240923-1551-8745-a167-ef1ab27a221c
+expense|20241229-0337-8034-9834-d2d223deb40f|1735443449487|637|20240818-0940-8043-b324-6067248730d1||false|0.0|45000.0|1735443454834|1|false|20240923-1551-8745-a167-ef1ab27a221c
+expense|20241229-0735-8228-b486-a12773b824a2|1735457717586|810|20240818-0942-8b07-b193-83fea7f607da||false|0.0|33000.0|1735457728487|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20241229-0735-8e37-a122-f4fa00c28a40|1735457729481|875|20240818-0940-8043-b324-6067248730d1||false|0.0|30000.0|1735457737123|1|false|20240923-1551-8745-a167-ef1ab27a221c
+expense|20241230-0507-8025-9136-2e32b306e691|1735535236505|570|20240818-0940-8043-b324-6067248730d1||false|0.0|40000.0|1735535245137|1|false|20240923-1551-8745-a167-ef1ab27a221c
+expense|20241230-0507-8c38-b231-75bbd36ce350|1735535246118|727|20240818-0942-8b07-b193-83fea7f607da||false|0.0|178000.0|1735535258232|1|false|20240923-1551-8745-a167-ef1ab27a221c
+expense|20241230-0512-8004-b371-36d027d5a3eb|1735535512935|480|20240818-0941-8235-8729-b567f57b8165||false|0.0|42000.0|1735535524371|1|false|20240923-1551-8745-a167-ef1ab27a221c
+expense|20241230-1151-8347-a568-4cd4082da774|1735559484098|1131|20240818-1111-8843-8115-2f8780e57893||false|0.0|84800.0|1735559507569|1|false|20240923-1551-8745-a167-ef1ab27a221c
+expense|20241231-0148-8214-a709-a3a5c5997edf|1735609676277|527|20240925-0756-8f22-a053-a29c19ba8a84||false|0.0|29000.0|1735609694710|1|false|20240923-1551-8745-a167-ef1ab27a221c
+expense|20241231-0553-8d29-8879-9b2b68aee714|1735624389522|570|20240818-0940-8043-b324-6067248730d1||false|0.0|29000.0|1735624409880|1|false|20240923-1551-8745-a167-ef1ab27a221c
+expense|20241231-0553-8037-8858-0cc2ad83c631|1735624412234|773|20240818-0942-8b07-b193-83fea7f607da||false|0.0|58000.0|1735624417859|1|false|20240923-1551-8745-a167-ef1ab27a221c
+expense|20241231-0553-8348-9882-45add2217fd7|1735624419771|773|20241005-1322-8428-b089-8dbbd3f8ab9f||false|0.0|580000.0|1735624428882|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20250101-1437-8e11-b657-55fbb7c1b587|1735742217101|1296|20240925-0755-8557-9160-80ccca9d75f0||false|0.0|245000.0|1735742231657|1|false|20240923-1551-8745-a167-ef1ab27a221c
+expense|20250101-1439-8419-b154-0f4061a3a55c|1735742349578|780|20240818-0942-8b07-b193-83fea7f607da||false|0.0|170000.0|1735742359155|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20250102-0309-8607-b200-d6778c225adf|1735787341284|609|20240818-0940-8043-b324-6067248730d1||false|0.0|29000.0|1735787347201|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20250102-0309-8514-9954-ab3cef15a510|1735787348023|609|20240818-0940-8043-b324-6067248730d1||false|0.0|45000.0|1735787354955|1|false|20240923-1551-8745-a167-ef1ab27a221c
+expense|20250102-0309-8c22-b436-7f9ea21bd8e9|1735787356014|609|20240818-0941-8235-8729-b567f57b8165||false|0.0|20000.0|1735787362437|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20250102-0407-8123-a715-9d537684c41c|1735790835708|667|20240818-0945-8756-a353-5c8a74017a90||false|0.0|49000.0|1735790843717|1|false|20240923-1551-8745-a167-ef1ab27a221c
+expense|20250102-0734-8505-8802-91896afc0a0b|1735803240853|874|20240818-0940-8043-b324-6067248730d1||false|0.0|30000.0|1735803245803|1|false|20240923-1551-8745-a167-ef1ab27a221c
+expense|20250103-0633-8027-b785-d70f8da5adb9|1735865056433|464|20240818-0940-8043-b324-6067248730d1||false|0.0|29000.0|1735886007786|1|false|20240923-1551-8745-a167-ef1ab27a221c
+expense|20250103-0044-8428-a902-9a89a4d0fadc|1735865064531|464|20240818-0941-8235-8729-b567f57b8165||false|0.0|20000.0|1735865068903|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20250103-0044-8950-a486-6cc7998866ed|1735865070102|464|20240818-0953-8255-b202-ed64daa3a762||false|0.0|50000.0|1735865090486|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20250103-0633-8303-9273-78a29006c606|1735885976642|812|20240818-0942-8b07-b193-83fea7f607da||false|0.0|40000.0|1735885983274|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20250103-0633-8d18-a460-c8b6c5eb0d34|1735885991536|813|20240818-0940-8043-b324-6067248730d1||false|0.0|41000.0|1735885998463|1|false|20240923-1551-8745-a167-ef1ab27a221c
+expense|20250103-1222-8550-b169-1e94f31cf6d9|1735906958900|1162|20240818-0942-8e52-9433-76bb751e54b1||false|0.0|47000.0|1735906970170|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20250104-0400-8b00-9012-0f725a01a462|1735963188577|510|20240818-0941-8235-8729-b567f57b8165||false|0.0|115000.0|1735963200013|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20250104-0539-8d12-8796-d4300677d6fc|1735963201253|660|20240818-0942-8b07-b193-83fea7f607da||false|0.0|162100.0|1735969152796|1|false|20240923-1551-8745-a167-ef1ab27a221c
+expense|20250105-0839-8751-a381-ab7f7a9442df|1736066384182|750|20240818-0940-8043-b324-6067248730d1||false|0.0|29000.0|1736066391383|1|false|20240923-1551-8745-a167-ef1ab27a221c
+expense|20250105-0839-8f57-9441-62f0cba3078c|1736066392431|939|20240818-0942-8b07-b193-83fea7f607da||false|0.0|98000.0|1736066397442|1|false|20240923-1551-8745-a167-ef1ab27a221c
+expense|20250105-0840-8739-a235-f5f5fe28ceb9|1736066429676|570|20240818-0941-8235-8729-b567f57b8165||false|0.0|76000.0|1736066439236|1|false|20240923-1551-8745-a167-ef1ab27a221c
+expense|20250105-0841-8600-8166-c0d1f5d5860d|1736066444647|720|20240818-0959-8500-8442-e8c0c228f547||false|0.0|884000.0|1736066460166|1|false|20240923-1551-8745-a167-ef1ab27a221c
+expense|20250107-0803-8a15-a569-e2cf46e244a6|1736236985048|903|20240818-0940-8043-b324-6067248730d1||false|0.0|36953.0|1736236995570|1|false|20240824-1557-8718-b097-5d9d1c51ff98
+expense|20250107-0803-8927-8171-08566c862eb7|1736236997060|570|20240818-0940-8043-b324-6067248730d1||false|0.0|20000.0|1736237007171|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20250107-0803-8b38-a862-2c097d90993c|1736237008210|480|20240818-0941-8235-8729-b567f57b8165||false|0.0|20000.0|1736237018862|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20250107-0904-8418-a935-d3bad433ef04|1736240651456|780|20240818-0942-8b07-b193-83fea7f607da||false|0.0|66000.0|1736240658936|1|false|20240823-1529-8009-a864-e7b9299a07f6
+transfer|20250107-1254-8106-8872-c13f19dda210|1736254430951|1193|null||false|0.0|438000.0|1736254446873|1|false|20240923-1557-8406-9654-c89ac03d5d48|20240923-1630-8b52-a380-8e7dc5aef337|true
+expense|20250107-1254-8a18-b816-7506fa4b1dc9|1736254448139|1194|20240818-0942-8e52-9433-76bb751e54b1||false|0.0|218000.0|1736254458816|1|false|20240923-1557-8406-9654-c89ac03d5d48
+expense|20250110-0116-8531-9886-86029469bc8b|1736471784911|496|20240818-0940-8043-b324-6067248730d1||false|0.0|59000.0|1736471791888|1|false|20240824-1557-8718-b097-5d9d1c51ff98
+expense|20250110-0518-8450-b374-e953a3638919|1736486324437|738|20240818-0942-8b07-b193-83fea7f607da||false|0.0|58000.0|1736486330374|1|false|20240824-1557-8718-b097-5d9d1c51ff98
+expense|20250110-1243-8749-b489-0410b0715b8f|1736513023415|1183|20240818-0942-8e52-9433-76bb751e54b1||false|0.0|55000.0|1736513029491|1|false|20240824-1557-8718-b097-5d9d1c51ff98
+expense|20250112-0406-8853-a854-da3855bad011|1736528400000|666|20240818-0940-8043-b324-6067248730d1||false|0.0|29000.0|1736654813854|1|false|20240824-1557-8718-b097-5d9d1c51ff98
+expense|20250112-0407-8d32-b612-4da424a3ac32|1736528400000|667|20240818-0942-8b07-b193-83fea7f607da||false|0.0|49000.0|1736654852612|1|false|20240824-1557-8718-b097-5d9d1c51ff98
+expense|20250112-0408-8800-9738-cf4413a7e5f1|1736528400000|1140|20240818-0930-8a38-b801-9590ba5f92f7||false|0.0|1000000.0|1736654880738|1|false|20240824-1557-8718-b097-5d9d1c51ff98
+expense|20250112-0411-8d23-8165-494e3b56f1ba|1736528400000|1200|20240818-0957-8b51-b922-a66333c93633||false|0.0|77000.0|1736655083165|1|false|20240824-1557-8718-b097-5d9d1c51ff98
+expense|20250112-0411-8c58-9864-6401f5dfbc2f|1736528400000|1140|20240818-0957-8b51-b922-a66333c93633||false|0.0|60000.0|1736655118865|1|false|20240824-1557-8718-b097-5d9d1c51ff98
+expense|20250112-0406-8738-a109-b02686d26bde|1736654792271|666|20240818-0942-8b07-b193-83fea7f607da||false|0.0|187700.0|1736654798110|1|false|20240824-1557-8718-b097-5d9d1c51ff98
+expense|20250112-0412-8f28-8127-fae1e13d74f1|1736655132097|540|20240818-0941-8235-8729-b567f57b8165||false|0.0|42000.0|1736655148127|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20250114-0032-8115-a988-46d3ecde36fe|1736814725902|452|20240818-0941-8235-8729-b567f57b8165||false|0.0|20000.0|1736814735989|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20250114-0032-8425-8602-3244271578d5|1736814737009|452|20240818-0953-8255-b202-ed64daa3a762||false|0.0|60000.0|1736814745602|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20250114-0032-8634-8607-0d5852c40f08|1736814747576|452|20240818-0940-8043-b324-6067248730d1||false|0.0|39000.0|1736814754608|1|false|20240824-1557-8718-b097-5d9d1c51ff98
+expense|20250115-0105-8216-a117-ebd769df3aa0|1736903111277|485|20240818-0940-8043-b324-6067248730d1||false|0.0|39000.0|1736903116118|1|false|20240824-1557-8718-b097-5d9d1c51ff98
+expense|20250117-0607-8d24-8448-99f2cc7d4ed4|1737094016787|480|20240818-0941-8235-8729-b567f57b8165||false|0.0|20000.0|1737094044448|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20250117-0607-8618-a964-e30ac15fdef9|1737094025977|480|20240818-0953-8255-b202-ed64daa3a762||false|0.0|50000.0|1737094038965|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20250117-0607-8758-a254-84992e5bc3da|1737094049745|510|20240818-0940-8043-b324-6067248730d1||false|0.0|39000.0|1737094078255|1|false|20240824-1557-8718-b097-5d9d1c51ff98
+expense|20250117-0608-8359-9681-86a94e61f13c|1737094126361|788|20240818-1136-8d55-8205-df905631a249||false|0.0|10591000.0|1737094139681|1|false|20240824-1557-8718-b097-5d9d1c51ff98
+expense|20250117-0609-8f20-a647-7b027ea7e788|1737094148153|789|20240818-1136-8d55-8205-df905631a249||false|0.0|3185000.0|1737094160648|1|false|20240824-1557-8718-b097-5d9d1c51ff98
+expense|20250117-0627-8d10-8030-6585b2ea1cfe|1737095223713|807|20240818-0942-8b07-b193-83fea7f607da||false|0.0|84000.0|1737095230033|1|false|20240824-1557-8718-b097-5d9d1c51ff98
+expense|20250119-0309-8438-b659-b0db1aeb8518|1737256164315|540|20240818-0941-8235-8729-b567f57b8165||false|0.0|126000.0|1737256178660|1|false|20240824-1557-8718-b097-5d9d1c51ff98
+expense|20250119-0309-8e46-8908-5ce1c20303af|1737256181370|609|20240818-0940-8043-b324-6067248730d1||false|0.0|39000.0|1737256186908|1|false|20240824-1557-8718-b097-5d9d1c51ff98
+expense|20250120-1132-8f46-8593-aa14d86996b7|1737372761730|1112|20240818-0940-8043-b324-6067248730d1||false|0.0|55000.0|1737372766594|1|false|20240824-1557-8718-b097-5d9d1c51ff98
+expense|20250120-1132-8357-a863-4a70cf2792c4|1737372767552|540|20240818-0940-8043-b324-6067248730d1||false|0.0|20000.0|1737372777863|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20250120-1133-8710-9244-2d582a16afa8|1737372779368|510|20240818-0941-8235-8729-b567f57b8165||false|0.0|20000.0|1737372790244|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20250120-1133-8930-b161-da8c1f1c79b9|1737372795781|540|20241005-1322-8428-b089-8dbbd3f8ab9f||false|0.0|1080000.0|1737372810161|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20250120-1133-8845-9464-15e6ac8fa3ce|1737372813344|780|20240818-0942-8b07-b193-83fea7f607da||false|0.0|55000.0|1737372825464|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20250121-0733-8027-8052-64b6b1568118|1737444792973|420|20240818-0941-8235-8729-b567f57b8165||false|0.0|13000.0|1737444807052|1|false|20240823-1529-8009-a864-e7b9299a07f6
+expense|20250121-0733-8a41-a692-05bae46d05ec|1737444811056|450|20240818-0940-8043-b324-6067248730d1||false|0.0|39000.0|1737444821692|1|false|20240824-1557-8718-b097-5d9d1c51ff98
+expense|20250121-0734-8a38-a274-58011c721aaf|1737444869088|750|20240818-0942-8b07-b193-83fea7f607da||false|0.0|28000.0|1737444878274|1|false|20240824-1557-8718-b097-5d9d1c51ff98
+=== END ===
